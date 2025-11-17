@@ -76,16 +76,15 @@
                 <br>
                 <div class="filter-group desktop-sort-group">
                     <h4>Sort by</h4>
-                    <select name="sort" id="sort-by" class="sort-select" onchange="this.form.submit();" value='{{request.GET.sort}}'>
+                    <select name="sort" id="sort-by" class="sort-select" onchange="this.form.submit();">
                         <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>New arrivals</option>
                         <option value="price-low-high" {% if selected_sort == 'price-low-high' %}selected{% endif %}>Price: Low to High</option>
                         <option value="price-high-low" {% if selected_sort == 'price-high-low' %}selected{% endif %}>Price: High to Low</option>
                         <option value="name-asc" {% if selected_sort == 'name-asc' %}selected{% endif %}>Name: aA - zZ</option>
                         <option value="name-desc" {% if selected_sort == 'name-desc' %}selected{% endif %}>Name: zZ - aA</option>
-                        <option value="popularity" {% if selected_sort == 'popularity' %}selected{% endif %}>Popularity</option>
-                        <option value="rating" {% if selected_sort == 'rating' %}selected{% endif %}>Average ratings</option>
                         <option value="featured" {% if selected_sort == 'featured' %}selected{% endif %}>Featured</option>
                     </select>
+
                 </div>
                 <div class="filter-buttons">
                     <a href="{% url "products_page_user" %}" class="btn-filter-reset">Reset</a>
@@ -121,7 +120,7 @@
                                 <div class="product-actions">
                                     <i class='bx bx-heart'></i>
                                     <i class='bx bx-shopping-bag'></i>
-                                </div>
+                                 </div>
                             </div>
                         </div>
                     {% empty %}
@@ -167,28 +166,28 @@
             </div>
             <ul class="filter-list">
                 <li>
-                    <input type="radio" id="sort-newest" name="sort" value="newest" onchange="this.form.submit();" {% if selected_sort == 'newest' %}checked{% endif %}>
+                    <input type="radio" id="sort-newest" class="mobile-sort-radio" value="newest" {% if selected_sort == 'newest' %}checked{% endif %}>
                     <label for="sort-newest">New arrivals</label>
                 </li>
                 <li>
-                    <input type="radio" id="sort-low-high" name="sort" value="price-low-high" onchange="this.form.submit();" {% if selected_sort == 'price-low-high' %}checked{% endif %}>
+                    <input type="radio" id="sort-low-high" class="mobile-sort-radio" value="price-low-high" {% if selected_sort == 'price-low-high' %}checked{% endif %}>
                     <label for="sort-low-high">Price: Low to High</label>
                 </li>
                 <li>
-                    <input type="radio" id="sort-high-low" name="sort" value="price-high-low" onchange="this.form.submit();" {% if selected_sort == 'price-high-low' %}checked{% endif %}>
+                    <input type="radio" id="sort-high-low" class="mobile-sort-radio" value="price-high-low" {% if selected_sort == 'price-high-low' %}checked{% endif %}>
                     <label for="sort-high-low">Price: High to Low</label>
                 </li>
                 <li>
-                    <input type="radio" id="sort-name-asc" name="sort" value="name-asc" onchange="this.form.submit();" {% if selected_sort == 'name-asc' %}checked{% endif %}>
+                    <input type="radio" id="sort-name-asc" class="mobile-sort-radio" value="name-asc" {% if selected_sort == 'name-asc' %}checked{% endif %}>
                     <label for="sort-name-asc">Name: aA - zZ</label>
                 </li>
                 <li>
-                    <input type="radio" id="sort-name-desc" name="sort" value="name-desc" onchange="this.form.submit();" {% if selected_sort == 'name-desc' %}checked{% endif %}>
+                    <input type="radio" id="sort-name-desc" class="mobile-sort-radio" value="name-desc" {% if selected_sort == 'name-desc' %}checked{% endif %}>
                     <label for="sort-name-desc">Name: zZ - aA</label>
                 </li>
-                </ul>
+            </ul>
         </div>
-        </form> 
+    </form> 
 {% endblock content %}
 
 
@@ -197,12 +196,25 @@
         document.addEventListener('DOMContentLoaded', function () {
             const filterForm = document.getElementById('filter-form');
             
-            // === Auto-submit for radio/checkboxes ===
+            // === Synchronize Sort Inputs ===
+            const desktopSort = document.getElementById('sort-by');
+            const mobileSortRadios = document.querySelectorAll('.mobile-sort-radio');
+
+            if (desktopSort && mobileSortRadios.length > 0) {
+                mobileSortRadios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        if (this.checked) {
+                            desktopSort.value = this.value;
+                            filterForm.submit();
+                        }
+                    });
+                });
+            }
+
+            // === Auto-submit for other filters ===
             const filterInputs = filterForm.querySelectorAll('input[type="radio"], input[type="checkbox"]');
             filterInputs.forEach(function (input) {
-                // We add a check to NOT auto-submit the mobile sort buttons,
-                // as they already have an onchange attribute.
-                if (input.name !== 'sort') {
+                if (!input.classList.contains('mobile-sort-radio')) {
                     input.addEventListener('change', function () {
                         filterForm.submit();
                     });
@@ -222,7 +234,7 @@
                 });
             }
 
-            // === SEARCH BOX LOGIC (Unchanged) ===
+            // === SEARCH BOX LOGIC ===
             const searchBox = document.getElementById('search-box');
             const clearBtn = document.getElementById('clear-search-btn');
 
@@ -233,40 +245,38 @@
                     clearBtn.style.display = 'none';
                 }
             }
-            toggleClearButton();
-            searchBox.addEventListener('input', toggleClearButton);
-            clearBtn.addEventListener('click', function() {
-                searchBox.value = '';
+            if(searchBox && clearBtn) {
                 toggleClearButton();
-                filterForm.submit();
-            });
+                searchBox.addEventListener('input', toggleClearButton);
+                clearBtn.addEventListener('click', function() {
+                    searchBox.value = '';
+                    toggleClearButton();
+                    filterForm.submit();
+                });
+            }
 
-            // === CATEGORY DROPDOWN TOGGLE (Unchanged) ===
+            // === CATEGORY DROPDOWN TOGGLE ===
             const categoryToggle = document.getElementById('category-toggle');
             const categoryList = document.getElementById('category-list');
             const categoryArrow = document.getElementById('category-arrow');
             let categoryOpen = true;
 
-            categoryToggle.addEventListener('click', () => {
-                categoryOpen = !categoryOpen;
-                categoryList.style.display = categoryOpen ? 'flex' : 'none';
-                categoryArrow.innerHTML = categoryOpen ? '&#9652;' : '&#9662;'; // ▲ / ▼
-            });
+            if (categoryToggle && categoryList && categoryArrow) {
+                categoryToggle.addEventListener('click', () => {
+                    categoryOpen = !categoryOpen;
+                    categoryList.style.display = categoryOpen ? 'flex' : 'none';
+                    categoryArrow.innerHTML = categoryOpen ? '&#9652;' : '&#9662;'; 
+                });
+            }
 
-
-            // ===================================================
-            // ============ NEW RESPONSIVE JS LOGIC ==============
-            // ===================================================
-
+            // ============ RESPONSIVE JS LOGIC ==================
             const overlay = document.getElementById('overlay');
             const body = document.body;
 
-            // --- Filter Sidebar Modal ---
             const filterSidebar = document.querySelector('.products-sidebar');
             const openFilterBtn = document.getElementById('mobile-filter-btn');
             const closeFilterBtn = document.getElementById('close-filter-btn');
 
-            // --- Sort Bottom-Sheet Modal ---
             const sortModal = document.getElementById('sort-modal-mobile');
             const openSortBtn = document.getElementById('mobile-sort-btn');
             const closeSortBtn = document.getElementById('close-sort-btn');
@@ -274,7 +284,7 @@
             function openFilter() {
                 filterSidebar.classList.add('is-open');
                 overlay.classList.add('is-open');
-                body.style.overflow = 'hidden'; // Prevents scrolling background
+                body.style.overflow = 'hidden'; 
             }
 
             function openSort() {
@@ -284,31 +294,19 @@
             }
 
             function closeAllModals() {
-                filterSidebar.classList.remove('is-open');
-                sortModal.classList.remove('is-open');
-                overlay.classList.remove('is-open');
-                body.style.overflow = ''; // Re-enables scrolling
+                if(filterSidebar) filterSidebar.classList.remove('is-open');
+                if(sortModal) sortModal.classList.remove('is-open');
+                if(overlay) overlay.classList.remove('is-open');
+                body.style.overflow = ''; 
             }
 
-            // Event Listeners
-            if (openFilterBtn) {
-                openFilterBtn.addEventListener('click', openFilter);
-            }
-            if (closeFilterBtn) {
-                closeFilterBtn.addEventListener('click', closeAllModals);
-            }
+            if (openFilterBtn) openFilterBtn.addEventListener('click', openFilter);
+            if (closeFilterBtn) closeFilterBtn.addEventListener('click', closeAllModals);
             
-            if (openSortBtn) {
-                openSortBtn.addEventListener('click', openSort);
-            }
-            if (closeSortBtn) {
-                closeSortBtn.addEventListener('click', closeAllModals);
-            }
+            if (openSortBtn) openSortBtn.addEventListener('click', openSort);
+            if (closeSortBtn) closeSortBtn.addEventListener('click', closeAllModals);
 
-            if (overlay) {
-                overlay.addEventListener('click', closeAllModals);
-            }
-            
+            if (overlay) overlay.addEventListener('click', closeAllModals);
         });
     </script>
 {% endblock extra_script %}

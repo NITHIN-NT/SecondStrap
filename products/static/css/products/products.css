@@ -1,21 +1,26 @@
 /* ==================== PRODUCTS PAGE LAYOUT ==================== */
 
+.products-page-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
 .products-page-header h2 {
     font-size: 28px;
     font-weight: 600;
-    margin-bottom: 24px;
+    display: inline-block;
+    border-bottom: 2px solid #000;
+    padding-bottom: 5px;
 }
 
 .products-page-container {
     display: flex;
     gap: 40px;
-    /* Space between sidebar and grid */
 }
 
 /* ==================== SIDEBAR STYLES ==================== */
 
 .products-sidebar {
-    /* Sidebar will be 240px wide, and won't grow or shrink */
     flex: 0 0 240px;
 }
 
@@ -27,7 +32,6 @@
 
 .filter-group {
     margin-bottom: 32px;
-    /* Space between each filter block */
 }
 
 .filter-group h4 {
@@ -36,25 +40,26 @@
     margin-bottom: 16px;
 }
 
+.products-sidebar hr {
+    border: none;
+    border-top: 1px solid #e4e1e1;
+    margin: 16px 0;
+}
+
 /* Category Filter List */
 .filter-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    /* space between category items */
     list-style-type: none;
-    /* Remove default list bullets */
     padding-left: 0;
-    /* Remove default list padding */
     margin: 0;
-    /* Remove default list margin */
 }
 
 .filter-list li {
     display: flex;
     align-items: center;
     gap: 8px;
-    /* space between radio/checkbox and label */
     line-height: 1.2;
 }
 
@@ -66,74 +71,78 @@
 }
 
 .filter-list input[type="radio"] {
-    /* Using default radio buttons for simplicity */
-    /* You can add custom styles here if you want */
     margin: 0;
     cursor: pointer;
 }
 
 /* === Custom Checkbox Styles === */
-/* This is for the 'Brand' filter */
 .filter-list input[type="checkbox"] {
-    /* Reset and hide default checkbox */
     -webkit-appearance: none;
     appearance: none;
     margin: 0;
-
-    /* Custom checkbox styles */
     width: 20px;
     height: 20px;
     border-radius: 4px;
-    /* Square with rounded corners */
     border: 2px solid #adb5bd;
-    /* Grey border */
     cursor: pointer;
-
-    /* For centering the checkmark */
     display: grid;
     place-content: center;
     transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-/* Inner checkmark (using a ::before pseudo-element) */
 .filter-list input[type="checkbox"]::before {
     content: "";
     width: 5px;
-    /* Checkmark line width */
     height: 10px;
-    /* Checkmark line height */
-
-    /* Create a checkmark shape using borders */
     border: solid #fff;
-    /* White checkmark */
     border-width: 0 3px 3px 0;
-
-    /* Hide by default */
     transform: rotate(45deg) scale(0);
     transition: transform 0.2s ease;
 }
 
-/* Checked state */
 .filter-list input[type="checkbox"]:checked {
     border-color: #007bff;
-    /* Blue border */
     background-color: #007bff;
-    /* Blue background */
 }
 
-/* Show checkmark when checked */
 .filter-list input[type="checkbox"]:checked::before {
     transform: rotate(45deg) scale(1);
 }
 
-/* Optional: Focus ring for accessibility */
 .filter-list input[type="checkbox"]:focus-visible {
     outline: 2px solid #007bff;
     outline-offset: 2px;
 }
 
-/* ============================================== */
+/* === Category Dropdown === */
+.category-dropdown h4 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s ease;
+}
 
+.category-dropdown h4:hover {
+    color: #000;
+}
+
+.category-dropdown .arrow {
+    font-size: 20px;
+    color: #333;
+    font-weight: 600;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+#category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
 
 /* Price Range */
 .price-range-labels {
@@ -147,23 +156,16 @@
 .price-slider-placeholder {
     width: 100%;
     accent-color: #000;
-    /* Styles the slider thumb and track */
 }
 
-/* ==================== NEW FILTER BUTTONS ==================== */
-/* This is the new style block you requested */
-
+/* Filter Buttons */
 .filter-buttons {
-    /* A container to hold the buttons */
     display: flex;
     flex-direction: column;
     gap: 10px;
-    /* Space between the two buttons */
     margin-top: 24px;
-    /* Space above the buttons */
 }
 
-/* Base style for both buttons */
 .btn-filter-apply,
 .btn-filter-reset {
     width: 100%;
@@ -174,64 +176,35 @@
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    /* For <a> tags used as buttons */
     display: inline-block;
-    /* Ensures <a> tags behave like buttons */
     transition: all 0.3s ease;
 }
 
-/* Primary "Apply" button */
 .btn-filter-apply {
     background-color: #000;
-    /* Solid black background */
     color: #fff;
-    /* White text */
     border: 2px solid #000;
 }
 
 .btn-filter-apply:hover {
     background-color: #333;
-    /* Darker grey on hover */
     border-color: #333;
 }
 
-/* Secondary "Reset" button (outline) */
 .btn-filter-reset {
     background-color: #fff;
-    /* White background */
     color: #333;
-    /* Dark grey text */
     border: 2px solid #ddd;
-    /* Light grey border */
 }
 
 .btn-filter-reset:hover {
     background-color: #f5f5f5;
-    /* Light grey background on hover */
     border-color: #bbb;
 }
 
-/* ========================================================== */
-
-
-/* ==================== PRODUCTS GRID STYLES ==================== */
-
-.products-grid-container {
-    /* This container will take up the remaining space */
-    flex: 1;
-}
-
-
-.price-slider-placeholder {
-    width: 100%;
-    accent-color: #000;
-    /* Styles the slider thumb and track */
-}
-
-/* === NEW STYLE FOR SORT BY DROPDOWN === */
+/* Sort Select (Desktop) */
 .filter-group .sort-select {
     width: 100%;
-    /* Make it fill the sidebar */
     padding: 10px 8px;
     font-size: 15px;
     border: 1px solid #ccc;
@@ -240,46 +213,35 @@
     cursor: pointer;
 }
 
-/* ==================== NEW FILTER BUTTONS ==================== */
+/* ==================== PRODUCTS GRID STYLES ==================== */
 
-/* =================================================================== */
+.products-grid-container {
+    flex: 1;
+}
 
 .products-grid {
     display: grid;
-    /* Creates a responsive grid:
-       - Fills the space with as many columns as possible
-       - Each column will be at least 250px wide
-       - Extra space is distributed equally (1fr)
-    */
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 24px;
-    /* Space between cards */
 }
 
 .product-card {
-    /* This card will hold the image and info */
     width: 100%;
 }
 
 .product-image-placeholder {
     width: 100%;
-    /* Creates a square image area */
     aspect-ratio: 1 / 1;
     background-color: #f5f5f5;
-    /* Default solid placeholder color */
     margin-bottom: 12px;
     border-radius: 8px;
-    /* Added rounded corners */
 }
 
 .product-info-container {
     display: flex;
     justify-content: space-between;
-    /* Pushes details left, actions right */
     align-items: flex-start;
-    /* Aligns top of text with top of icons */
     padding: 0 4px;
-    /* Small padding to align with grid */
 }
 
 .product-details h5 {
@@ -298,7 +260,6 @@
 .product-actions {
     display: flex;
     gap: 12px;
-    /* Space between heart and bag */
 }
 
 .product-actions i {
@@ -312,38 +273,24 @@
     color: #000;
 }
 
-
-/* ==================== NO PRODUCTS MESSAGE (NEW) ==================== */
-/* Style for the 'No Products' message when the grid is empty */
-
+/* No Products Message */
 .product-empty {
-    /* This tells the message to span ALL columns of its parent grid */
     grid-column: 1 / -1;
-
-    /* Center the text horizontally */
     text-align: center;
-
-    /* Add some vertical and horizontal padding */
     padding: 60px 20px;
-
-    /* Optional: Some nice styling to make it look good */
     font-size: 20px;
     font-weight: 500;
     color: #777;
-    /* A softer grey text */
     background-color: #fcfcfc;
-    /* A very light background */
     border-radius: 8px;
     border: 1px dashed #ddd;
-    /* A subtle dashed border */
 }
 
 .product-empty p {
     margin: 0;
-    /* Remove the default margin from the <p> tag */
 }
 
-/* ==================== BUTTON-BASED PAGINATION ==================== */
+/* ==================== PAGINATION ==================== */
 
 .pagination-container {
     margin-top: 48px;
@@ -355,94 +302,66 @@
     justify-content: center;
     align-items: center;
     gap: 8px;
-    /* This creates the space between the buttons */
 }
 
-/* This is the base style for ALL buttons:
-  - Clickable links (<a>)
-  - The current page (<span>.current)
-  - Disabled arrows (<span>.disabled)
-*/
 .pagination a,
 .pagination .current,
 .pagination .disabled {
     display: inline-flex;
-    /* Helps center the text/arrow perfectly */
     align-items: center;
     justify-content: center;
-
     width: 40px;
-    /* Makes the button square */
     height: 40px;
-    /* Makes the button square */
-
     border: 1px solid #ddd;
-    /* The light grey border */
     border-radius: 6px;
-    /* The rounded corners */
-
     text-decoration: none;
     color: #333;
     font-size: 16px;
     font-weight: 500;
-
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Style for the clickable links (<a>) on HOVER */
 .pagination a:hover {
     background-color: #f5f5f5;
-    /* Light grey background on hover */
     border-color: #bbb;
 }
 
-/* Style for the CURRENT page button */
 .pagination .current {
-    color: #000000;
-    /* The blue text color from your image */
-    border-color: #000000;
-    /* A matching blue border */
+    color: #000;
+    border-color: #000;
     font-weight: 600;
     cursor: default;
-    /* It's not clickable */
 }
 
-/* Style for the DISABLED arrow buttons */
 .pagination .disabled {
     color: #aaa;
-    /* Faded grey text */
     border-color: #eee;
-    /* Faded grey border */
     cursor: default;
 }
+
+/* ==================== SEARCH HEADER ==================== */
 
 .products-grid-header {
     display: flex;
     justify-content: flex-end;
-    /* Aligns search box to the right */
     margin-bottom: 24px;
-    /* Space between search and grid */
 }
 
 .search-input-container {
     position: relative;
     width: 100%;
     max-width: 320px;
-    /* Set a max-width for the search bar */
 }
 
 .search-input-container input[type="search"] {
     width: 100%;
     padding: 10px 30px 10px 12px;
-    /* Right padding for the 'x' button */
     font-size: 15px;
     border: 1px solid #ccc;
     border-radius: 25px;
     box-sizing: border-box;
-    /* Ensures padding doesn't affect width */
 }
 
-/* Hide the default 'x' (if any) from type="search" */
 .search-input-container input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
     appearance: none;
@@ -453,19 +372,13 @@
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
-
     background: none;
     border: none;
     padding: 0 4px;
-    /* Makes it easier to click */
-
     font-size: 24px;
-    /* Makes the 'x' larger */
     color: #999;
     cursor: pointer;
     line-height: 1;
-
-    /* Hide by default */
     display: none;
 }
 
@@ -474,121 +387,38 @@
 }
 
 /* ============================================================= */
-
-/* === CATEGORY DROPDOWN STYLES === */
-.category-dropdown h4 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.2s ease;
-}
-
-.category-dropdown h4:hover {
-    color: #000;
-}
-
-.category-dropdown .arrow {
-    font-size: 20px;
-    /* increased from 14px → 20px */
-    color: #333;
-    font-weight: 600;
-    transition: transform 0.3s ease, color 0.3s ease;
-}
-
-
-/* Category list hidden smoothly */
-#category-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-/* Light horizontal lines between filter groups */
-.products-sidebar hr {
-    border: none;
-    border-top: 1px solid #e4e1e1;
-    /* lighter shade than default #ccc */
-    margin: 16px 0;
-    /* adds nice spacing */
-}
-
-.products-page-header {
-    text-align: center;
-    /* centers the heading text */
-    margin-bottom: 24px;
-}
-
-.products-page-header h2 {
-    font-size: 28px;
-    font-weight: 600;
-    display: inline-block;
-    /* optional: keeps heading size neat when centered */
-    border-bottom: 2px solid #000;
-    /* optional: adds a subtle underline */
-    padding-bottom: 5px;
-    /* space above the underline */
-}
-
-/* ============================================================= */
-/* ============================================================= */
 /* ============ NEW: RESPONSIVE & MOBILE STYLES ================ */
 /* ============================================================= */
-/* ============================================================= */
 
-/*
-  This is our "breakpoint".
-  Any screen WIDER than 991px will use the Desktop styles.
-  Any screen NARROWER than 991px will use the Mobile styles.
-*/
 @media (max-width: 991px) {
-
     /* --- 1. Main Layout --- */
-
     .products-page-container {
-        /* On mobile, stack everything vertically */
         flex-direction: column;
     }
 
     /* --- 2. Desktop Sidebar (Hiding) --- */
-
     .products-sidebar {
-        /* This transforms the sidebar into an off-canvas modal */
         position: fixed;
         left: 0;
         top: 0;
         height: 100%;
         width: 300px;
-        /* A good width for a mobile filter menu */
         max-width: 80%;
-        /* Don't let it get too wide on tablets */
-
         background-color: #fff;
         z-index: 1001;
-        /* Above the overlay */
         padding: 20px;
         overflow-y: auto;
-        /* Allows scrolling if filters are long */
-
-        /* Hide it by default */
         transform: translateX(-100%);
         transition: transform 0.3s ease-in-out;
     }
 
     .products-sidebar.is-open {
-        /* This class (added by JS) slides it into view */
         transform: translateX(0);
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     }
 
     /* --- 3. Mobile-Only Headers --- */
-
     .mobile-filter-header {
-        /* This is the "Sort | Filter" bar from your image */
         display: flex;
         border-top: 1px solid #eee;
         border-bottom: 1px solid #eee;
@@ -597,7 +427,6 @@
 
     .mobile-nav-btn {
         flex: 1;
-        /* Each button takes 50% width */
         text-align: center;
         padding: 14px 10px;
         font-size: 16px;
@@ -618,7 +447,6 @@
     }
 
     .sidebar-mobile-header {
-        /* This is the "Filters [X]" header inside the modal */
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -642,14 +470,11 @@
     }
 
     .sidebar-desktop-header {
-        /* Hide the "Filters" title that was for desktop */
         display: none;
     }
 
     /* --- 4. Mobile Sort Modal (Bottom Sheet) --- */
-
     #sort-modal-mobile {
-        /* This is the modal that slides up from the bottom */
         position: fixed;
         bottom: 0;
         left: 0;
@@ -660,30 +485,23 @@
         border-top-left-radius: 16px;
         border-top-right-radius: 16px;
         box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.1);
-
-        /* Hide it by default */
         transform: translateY(100%);
         transition: transform 0.3s ease-in-out;
     }
 
     #sort-modal-mobile.is-open {
-        /* This class (added by JS) slides it up */
         transform: translateY(0);
     }
 
     #sort-modal-mobile .filter-list {
-        /* Re-use the filter list styles for our sort options */
         gap: 16px;
-        /* A bit more spacing for mobile */
     }
 
     .desktop-sort-group {
-        /* Hide the desktop <select> dropdown */
         display: none;
     }
 
     /* --- 5. Background Overlay --- */
-
     #overlay {
         position: fixed;
         top: 0;
@@ -691,26 +509,19 @@
         width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.4);
-        /* Semi-transparent black */
         z-index: 1000;
-        /* Below the modals, above the content */
-
-        /* Hide it by default */
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s ease-in-out;
     }
 
     #overlay.is-open {
-        /* Show it when a modal is open */
         opacity: 1;
         pointer-events: auto;
     }
 
     /* --- 6. Grid & Search Adjustments --- */
-
     .products-grid-header {
-        /* Make search bar full width on mobile */
         margin-bottom: 20px;
     }
 
@@ -719,8 +530,6 @@
     }
 
     .products-grid {
-        /* Adjust grid for smaller screens */
-        /* Show 2 columns, each at least 150px wide */
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 16px;
     }
@@ -736,19 +545,11 @@
     .product-actions i {
         font-size: 18px;
     }
-
 }
 
-/* ================================================================== */
-/* ============ STYLES FOR DESKTOP (The "min-width" query) ========== */
-/* ================================================================== */
+/* ============ STYLES FOR DESKTOP ========== */
 
-/*
-  These styles apply ONLY to screens WIDER than 991px.
-  We use this to HIDE the new mobile-only elements on desktop.
-*/
 @media (min-width: 992px) {
-
     .mobile-filter-header {
         display: none;
     }
@@ -765,7 +566,6 @@
         display: none !important;
     }
 
-    /* Just in case, ensure the sidebar is not a modal */
     .products-sidebar {
         position: static;
         transform: none;
@@ -778,5 +578,4 @@
         overflow-y: visible;
         box-shadow: none;
     }
-
 }

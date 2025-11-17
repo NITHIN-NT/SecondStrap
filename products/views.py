@@ -61,6 +61,7 @@ def product_list_view(request):
     categories = Category.objects.filter(is_active=True).order_by('name')
     products = Product.objects.filter(is_active=True).order_by('name')
 
+    # Query Params
     selected_category_id = request.GET.get('category')
     selected_price = request.GET.get('price_range')
     selected_sort = request.GET.get('sort')

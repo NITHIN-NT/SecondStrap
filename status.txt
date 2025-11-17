@@ -5,3 +5,12 @@ i think everything works
 
 17/11/2025 - 2:58PM
 "commit backup before major updates for develop"
+
+17/11/2025 - 3:03PM
+Week - 1 Pendings
+- Sorting ( high to low )  // fixed - 8:16 PM
+- remove <p> from description 
+- use list instead of cards in category listing
+- minimum 3 image validation 
+- session issue in user side
+- while loop in product post code
