@@ -2,20 +2,19 @@
 {% load static %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/category/category.css' %}">
+    <link rel="stylesheet" href="{% static 'css/category/category.css' %}">
 {% endblock extra_css %}
-
 
 {% block content %}
     
     <div class="page-header-container">
         <div class="page-header">
             <h1>Category Management</h1>
-            <p>Organize your products into categories</p>
+            <p>View and manage your product categories.</p>
         </div>
         <a href="{% url "admin_category_add" %}" class="btn btn-primary">
             <i class="fa-solid fa-plus"></i>
-            Add Category
+            Add New Category
         </a>
     </div>
 
@@ -24,167 +23,201 @@
             <div class="table-toolbar">
                 <div class="search-bar">
                     <i class="fa-solid fa-search"></i>
-                    <input type="text" name="search" placeholder="Search categories..." value="{{ search }}">
+                    <input type="text" name="search" placeholder="Search categories by name..." value="{{ search }}">
                 </div>
                 <div class="filters">
-                    <select name="category_status" class='filter-dropdown'>
-                        <option value="" {% if status == "" %}selected{% endif %}>All Status </option>
+                    <select name="category_status" class='filter-dropdown' onchange="this.form.submit()">
+                        <option value="" {% if status == "" %}selected{% endif %}>All Status</option>
                         <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
-                        <option value="blocked"{% if status == "blocked" %}selected{% endif %}>Blocked</option>
+                        <option value="blocked" {% if status == "blocked" %}selected{% endif %}>Blocked</option>
                     </select>
+                    <a href="{% url "admin_category" %}" class="btn btn-secondary" title="Reset Filters">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </a>
                 </div>
-                <a href="{% url "admin_category" %}" class="btn btn-secondary">Clear</a>
-                <button type="submit" class="btn btn-primary">Search</button>
             </div>
         </form>
 
-       <div class="categories-grid">
-            
-            {% for category in categorys %}
-                {% cycle '#dfeafe' '#f1e2ff' '#e2f9e6' '#fff9d3' '#ffe2e8' '#ffe2f2' as card_color silent %}
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th width="25%">Category Name</th>
+                        <th width="35%">Description</th>
+                        <th width="10%" style="text-align: center;">Products</th>
+                        <th width="15%">Status</th>
+                        <th width="15%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categorys %}
+                    <tr>
+                        <td>
+                            <div class="cat-name-wrapper">
+                                <div class="cat-icon-small">
+                                    <i class="fa-solid fa-shirt"></i>
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <strong>{{ category.name }}</strong>
+                                    <small style="color: #94a3b8;">ID: #{{ category.id }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <p class="desc-text">{{ category.description|default:"No description available"|truncatechars:80 }}</p>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="count-badge">{{ category.count|default:0 }}</span>
+                        </td>
+                        <td>
+                            {% if category.is_active %}
+                                <span class="status-badge status-active">
+                                    <i class="fa-solid fa-circle-check" style="margin-right: 4px;"></i>Active
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-blocked">
+                                    <i class="fa-solid fa-circle-xmark" style="margin-right: 4px;"></i>Blocked
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <a href="{% url "admin_category_edit" category.id %}" class="btn-icon btn-edit" title="Edit Category">
+                                    <i class="fa-solid fa-pen"></i> Edit
+                                </a>
 
-                <div class="cat-card" style="--bg: {{ card_color }};">
-                    <div class="icon-box"><i class="fa-regular fa-folder"></i></div>
-
-                    <h3>{{ category.name }}</h3>
-                    <p class="desc">{{ category.description }}</p>
-
-                    <p class="count">
-                        <strong>{{ category.count | default:0 }}</strong> 
-                        products
-                    </p>
-
-                    <div class="actions">
-                        
-                        <a href="{% url "admin_category_edit" category.id %}" class="edit">
-                            <i class="fa-solid fa-pen-to-square"></i> Edit
-                        </a>
-
-                        {% if category.is_active %}
-                            <form action="{% url 'admin_category_block' category.id %}" method="POST" style="display: contents;" id="block-form-{{ category.id }}">
-                                {% csrf_token %}
-                                <button type="button" 
-                                        class="btn-action btn-block modal-trigger" 
-                                        title="Block"
-                                        data-form-id="block-form-{{ category.id }}">
-                                    <i class="fas fa-times"></i> Block
-                                </button>
-                            </form>
-                        {% else %}
-                            <form action="{% url 'admin_category_block' category.id %}" method="POST" style="display: contents;" id="unblock-form-{{ category.id }}">
-                                {% csrf_token %}
-                                <button type="button" 
-                                        class="btn-action btn-unblock modal-trigger" 
-                                        title="Unblock"
-                                        data-form-id="unblock-form-{{ category.id }}">
-                                    <i class="fas fa-check-circle"></i> Unblock
-                                </button>
-                            </form>
-                        {% endif %}
-
-                        {# View option removed as requested #}
-                    </div>
-                </div>
-            {% empty %}
-                <p>No categories found.</p>
-            {% endfor %}
+                                {% if category.is_active %}
+                                    <form action="{% url 'admin_category_block' category.id %}" method="POST" id="block-form-{{ category.id }}">
+                                        {% csrf_token %}
+                                        <button type="button" 
+                                                class="btn-icon btn-block-action modal-trigger" 
+                                                title="Block Category"
+                                                data-action="block"
+                                                data-form-id="block-form-{{ category.id }}">
+                                            <i class="fas fa-ban"></i> Block
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form action="{% url 'admin_category_block' category.id %}" method="POST" id="unblock-form-{{ category.id }}">
+                                        {% csrf_token %}
+                                        <button type="button" 
+                                                class="btn-icon btn-unblock-action modal-trigger" 
+                                                title="Unblock Category"
+                                                data-action="unblock"
+                                                data-form-id="unblock-form-{{ category.id }}">
+                                            <i class="fas fa-unlock"></i> Unblock
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">
+                            <i class="fa-regular fa-folder-open" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                            <p>No categories found matching your search.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        </div>
+    </div>
 
-<section class='pagination-container'>
-    <div class="pagination">
-
-        {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}">&lt;</a>
-        {% else %}
-            <span class="disabled">&lt;</span>
-        {% endif %}
-
-        {% for i in custom_page_range %}
-            {% if i == paginator.ELLIPSIS %}
-                <span class="ellipsis">{{ i }}</span>
-            {% elif page_obj.number == i %}
-                <span class="current">{{ i }}</span>
+    <section class='pagination-container'>
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}"><i class="fa-solid fa-chevron-left"></i></a>
             {% else %}
-                <a href="?page={{ i }}&{{ query_params }}">{{ i }}</a>
+                <span class="disabled"><i class="fa-solid fa-chevron-left"></i></span>
             {% endif %}
-        {% endfor %}
 
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}">&gt;</a>
-        {% else %}
-            <span class="disabled">&gt;</span>
-        {% endif %}
-            
-    </div>
-</section>
+            {% for i in custom_page_range %}
+                {% if i == paginator.ELLIPSIS %}
+                    <span class="ellipsis">...</span>
+                {% elif page_obj.number == i %}
+                    <span class="current">{{ i }}</span>
+                {% else %}
+                    <a href="?page={{ i }}&{{ query_params }}">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
 
-<div class="modal-overlay" id="confirmation-modal-overlay" aria-hidden="true">
-    <div class="modal-content" id="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-modal-title">
-        <h2 id="confirmation-modal-title">Confirm Action</h2><br>
-        <p id="confirmation-modal-text">Are you sure you want to perform this action?</p>
-        <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" id="modal-btn-cancel">Cancel</button>
-            <button type="button" class="btn" id="modal-btn-confirm">Confirm</button>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}"><i class="fa-solid fa-chevron-right"></i></a>
+            {% else %}
+                <span class="disabled"><i class="fa-solid fa-chevron-right"></i></span>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="confirmation-modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title">Confirm Action</h2>
+            <p id="modal-text">Are you sure you want to proceed?</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="modal-btn-cancel">Cancel</button>
+                <button type="button" class="btn btn-danger" id="modal-btn-confirm">Confirm</button>
+            </div>
         </div>
     </div>
-</div>
 
 {% endblock content %}
 
-{% block extraJs %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Confirmation modal elements
-    const modalOverlay = document.getElementById('confirmation-modal-overlay');
-    if (modalOverlay) {
-        const modalTitle = modalOverlay.querySelector('h2');
-        const modalText = modalOverlay.querySelector('p');
-        const confirmBtn = document.getElementById('modal-btn-confirm');
-        const cancelBtn = document.getElementById('modal-btn-cancel');
-        const triggerButtons = document.querySelectorAll('.modal-trigger');
+{% block extra_script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // === MODAL LOGIC ===
+            const modalOverlay = document.getElementById('confirmation-modal-overlay');
+            const cancelBtn = document.getElementById('modal-btn-cancel');
+            const confirmBtn = document.getElementById('modal-btn-confirm');
+            const modalTitle = document.getElementById('modal-title');
+            const modalText = document.getElementById('modal-text');
+            
+            let targetFormId = null;
 
-        function closeModal() {
-            modalOverlay.classList.remove('show');
-            if (confirmBtn) confirmBtn.dataset.formId = '';
-        }
+            // Open Modal
+            document.querySelectorAll('.modal-trigger').forEach(button => {
+                button.addEventListener('click', function () {
+                    targetFormId = this.getAttribute('data-form-id');
+                    const actionType = this.getAttribute('data-action');
 
-        triggerButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const action = this.title; // "Block" or "Unblock"
-                const formId = this.dataset.formId; // e.g., "block-form-1"
-                if (!formId) return;
-                modalTitle.textContent = `${action} Category`;
-                modalText.textContent = `Are you sure you want to ${action.toLowerCase()} this category?`;
-                confirmBtn.dataset.formId = formId;
-                confirmBtn.textContent = action;
-                confirmBtn.classList.remove('btn-danger', 'btn-success');
-                if (action === 'Block') confirmBtn.classList.add('btn-danger');
-                else if (action === 'Unblock') confirmBtn.classList.add('btn-success');
-                modalOverlay.classList.add('show');
+                    // Customize message based on action
+                    if (actionType === 'block') {
+                        modalTitle.textContent = 'Block Category?';
+                        modalText.textContent = 'This category will be hidden from users. Products in this category may also be affected.';
+                        confirmBtn.className = 'btn btn-danger'; // Red for danger
+                        confirmBtn.textContent = 'Block';
+                    } else {
+                        modalTitle.textContent = 'Unblock Category?';
+                        modalText.textContent = 'This category will be visible to users again.';
+                        confirmBtn.className = 'btn btn-primary'; // Purple for safe
+                        confirmBtn.textContent = 'Unblock';
+                    }
+
+                    modalOverlay.classList.add('show');
+                });
             });
-        });
 
-        if (confirmBtn) {
-            confirmBtn.addEventListener('click', function() {
-                const formId = this.dataset.formId;
-                if (formId) {
-                    const formToSubmit = document.getElementById(formId);
-                    if (formToSubmit) formToSubmit.submit();
+            // Close Modal
+            function closeModal() {
+                modalOverlay.classList.remove('show');
+                targetFormId = null;
+            }
+
+            cancelBtn.addEventListener('click', closeModal);
+            
+            // Close on click outside
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeModal();
+            });
+
+            // Confirm Action
+            confirmBtn.addEventListener('click', function () {
+                if (targetFormId) {
+                    document.getElementById(targetFormId).submit();
                 }
             });
-        }
-
-        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
-        modalOverlay.addEventListener('click', function(e) {
-            if (e.target === modalOverlay) closeModal();
         });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modalOverlay.classList.contains('show')) closeModal();
-        });
-    }
-
-});
-</script>
-{% endblock extraJs %}
+    </script>
+{% endblock extra_script %}

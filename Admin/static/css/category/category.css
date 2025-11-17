@@ -1,5 +1,6 @@
-/* ===== BASE CATEGORY PAGE STYLES ===== */
-
+/* =========================================
+   1. Page Header & Layout
+   ========================================= */
 .page-header-container {
     display: flex;
     justify-content: space-between;
@@ -8,386 +9,398 @@
 }
 
 .page-header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-    color: #1a202c;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
 }
 
 .page-header p {
-    margin: 4px 0 0;
-    font-size: 16px;
-    color: #718096;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
 }
 
+/* =========================================
+   2. General Button Styles
+   ========================================= */
 .btn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    padding: 10px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
     gap: 8px;
-    border: 1px solid transparent;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
     cursor: pointer;
-    font-size: 14px;
-    transition: .2s ease;
+    border: 1px solid transparent;
 }
 
 .btn-primary {
-    background-color: #6b46c1;
-    color: #fff;
-    border-color: #6b46c1;
+    background-color: #000000; /* Matches sidebar */
+    color: #ffffff;
 }
 
 .btn-primary:hover {
-    background-color: #553c9a;
+    background-color: #333333;
 }
 
 .btn-secondary {
-    background: #fff;
-    color: #4a5568;
-    border: 1px solid #cbd5e0;
+    background-color: #ffffff;
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
 }
 
 .btn-secondary:hover {
-    background-color: #f7fafc;
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
 }
 
-/* ===== CATEGORY GRID ===== */
+.btn-danger {
+    background-color: #ef4444;
+    color: #ffffff;
+}
 
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
+/* =========================================
+   3. Data Table Card & Toolbar
+   ========================================= */
 .data-table-card {
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    padding: 24px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .05);
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
 }
 
 .table-toolbar {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--color-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
     gap: 16px;
+    flex-wrap: wrap;
 }
 
+/* Search Bar */
 .search-bar {
     position: relative;
     flex-grow: 1;
-    min-width: 250px;
+    max-width: 400px;
+}
+
+.search-bar i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
 }
 
 .search-bar input {
     width: 100%;
-    padding: 10px 16px 10px 40px;
-    border: 1px solid #cbd5e0;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 10px 12px 10px 36px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    outline: none;
+    transition: border-color 0.2s;
 }
 
-.search-bar .fa-search {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #a0aec0;
+.search-bar input:focus {
+    border-color: #000;
 }
 
+/* Filters */
 .filters {
     display: flex;
-    gap: 12px;
+    gap: 10px;
 }
 
 .filter-dropdown {
-    padding: 10px 14px;
-    border: 1px solid #cbd5e0;
-    border-radius: 8px;
-    background: #fff;
-    color: #4a5568;
+    padding: 9px 32px 9px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    background-color: #fff;
     cursor: pointer;
-    font-size: 14px;
 }
 
-.categories-grid {
-    margin-top: 30px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-}
-
-/* === MODIFIED STYLES START HERE === */
-
-.cat-card {
-    background: #fff;
-    border-radius: 14px;
-    border: 1px solid #e2e8f0;
-    /* Light border */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
-    /* Softer shadow */
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    /* Crucial for rounded corners on children */
-    padding: 0;
-    /* Remove old padding */
-    transition: .3s ease;
-    /* min-height: 310px; <-- Removed to allow content to define height */
-}
-
-.cat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, .08);
-}
-
-.icon-box {
-    /* This is now the light blue header section */
-    background-color: #f0f6ff;
-    /* Light blue from image */
-    padding: 30px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0;
-    border-bottom: 1px solid #e2e8f0;
-
-    /* Reset old styles */
+/* =========================================
+   4. Custom Table Styles
+   ========================================= */
+.table-responsive {
     width: 100%;
-    height: auto;
-    border-radius: 0;
-    
-    /* Set order to 0 (default, stays on top) */
-    order: 0; 
+    overflow-x: auto;
 }
 
-.icon-box i {
-    /* This is the white folder icon container */
-    background: #fff;
-    width: 70px;
-    height: 70px;
-    border-radius: 12px;
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.custom-table thead th {
+    background-color: #f9fafb;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.custom-table tbody td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Category Name Column */
+.cat-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cat-icon-small {
+    width: 40px;
+    height: 40px;
+    background-color: #f3f4f6;
+    color: #6b7280;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    /* Icon size */
-    color: #1e293b;
-    /* Icon color */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .05);
+    font-size: 1.1rem;
 }
 
-.cat-card h3 {
-    font-size: 22px;
-    /* Larger title */
-    font-weight: 700;
-    margin-top: 24px;
-    /* Space from header */
-    margin-bottom: 6px;
-    color: #1a202c;
-    
-    /* Set order to 1 (after header) */
-    order: 1;
+.desc-text {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0;
 }
 
-.cat-card .desc {
-    font-size: 15px;
-    color: #64748b;
-    /* Softer gray */
-    margin-bottom: 24px; /* <-- Swapped margin */
-    line-height: 1.5;
-    padding: 0 16px;
-    /* Prevent long text from touching edges */
-
-    /* Set order to 3 (after count) */
-    order: 3;
-}
-
-.cat-card .count {
-    font-size: 16px;
-    /* "products" text */
-    color: #64748b;
-    margin-bottom: 20px; /* <-- Swapped margin */
-    
-    /* Set order to 2 (after title, before desc) */
-    order: 2;
-}
-
-.cat-card .count strong {
-    font-size: 40px;
-    /* "45" */
-    color: #1e293b;
-    font-weight: 700;
-    margin-right: 8px;
-    /* Space between number and text */
-    display: inline-block;
-    /* Aligns better */
-}
-
-.actions {
-    display: flex;
-    gap: 0;
-    /* No gap between buttons */
-    margin-top: auto;
-    /* Pushes buttons to the bottom */
-    
-    /* Set order to 4 (last item) */
-    order: 4;
-}
-
-/* Base style for both buttons */
-.actions button,
-.actions a {
-    flex: 1;
-    padding: 16px 10px;
-    /* Taller buttons */
-    border-radius: 0;
-    /* No rounded corners on buttons */
-    font-size: 15px;
+/* Count Badge */
+.count-badge {
+    background-color: #f3f4f6;
+    color: var(--color-text-primary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 600;
-    cursor: pointer;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background-color: var(--color-status-delivered-bg); /* Greenish bg */
+    color: var(--color-status-delivered-text);         /* Greenish text */
+}
+
+.status-blocked {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* =========================================
+   5. Action Buttons (UPDATED)
+   ========================================= */
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-icon {
+    width: auto; /* Flexible width to fit text */
+    height: 32px;
+    padding: 0 12px; /* Added padding for text space */
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* Space between icon and text */
+    
+    font-size: 0.85rem;
+    font-weight: 600;
     text-decoration: none;
-    transition: .2s ease;
-    border: none;
-    /* Remove default border */
-    border-top: 1px solid #e2e8f0;
-    /* Divider from content */
+    
+    background: #fff;
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
 }
 
-.actions .edit {
-    /* "Edit" button style from image */
-    background: #0f172a;
-    /* Light gray */
+/* --- EDIT BUTTON (Dark Blue) --- */
+.btn-edit {
+    color: #1e40af;        /* Dark Blue Text */
+    border-color: #1e40af; /* Dark Blue Border */
+}
+
+.btn-edit:hover {
+    background-color: #1e40af;
     color: #ffffff;
-    border-right: 1px solid #e2e8f0;
-    /* Divider between buttons */
+    box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.3);
 }
 
-.actions .edit:hover {
-    background: #03226a;
+/* --- BLOCK BUTTON (Dark Red) --- */
+.btn-block-action {
+    color: #991b1b;        /* Dark Red Text */
+    border-color: #991b1b; /* Dark Red Border */
 }
 
-/* This styles BOTH "Block" and "Unblock" to look like the dark "View Products" button */
-.actions .btn-block{
-    background: #B91C1C;
-    /* Dark blue/black from image */
+.btn-block-action:hover {
+    background-color: #991b1b;
     color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(153, 27, 27, 0.3);
 }
-.actions .btn-unblock {
-    background: #0c7932;
-    /* Dark blue/black from image */
+
+/* --- UNBLOCK BUTTON (Dark Green) --- */
+.btn-unblock-action {
+    color: #14532d;        /* Dark Green Text */
+    border-color: #14532d; /* Dark Green Border */
+}
+
+.btn-unblock-action:hover {
+    background-color: #14532d;
     color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(20, 83, 45, 0.3);
 }
 
-.actions .btn-block:hover {
-    background: #c50101;
-}
-
-.actions .btn-unblock:hover {
-    background: #067d2f;
-    /* Slightly lighter dark */
-}
-
-/* === MODIFIED STYLES END HERE === */
-
-/* ===== PAGINATION ===== */
-
+/* =========================================
+   6. Pagination
+   ========================================= */
 .pagination-container {
-    margin-top: 48px;
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .pagination {
     display: flex;
-    justify-content: center;
-    gap: 8px;
+    align-items: center;
+    gap: 6px;
+    background-color: #fff;
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
 }
 
-.pagination a,
+.pagination a, 
 .pagination span {
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+}
+
+.pagination a:hover {
+    background-color: #f3f4f6;
+    color: var(--color-text-primary);
 }
 
 .pagination .current {
-    border-color: #000;
-    font-weight: bold;
+    background-color: #000;
+    color: #fff;
+    font-weight: 600;
 }
 
 .pagination .disabled {
-    color: #aaa;
-    border-color: #eee;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-/* ===== CONFIRMATION MODAL ===== */
-
+/* =========================================
+   7. Modal Styles
+   ========================================= */
 .modal-overlay {
     position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, .6);
-    display: none;
-    align-items: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    display: flex;
     justify-content: center;
+    align-items: center;
+    z-index: 1000;
     opacity: 0;
-    transition: .3s ease;
+    visibility: hidden;
+    transition: all 0.3s ease;
 }
 
 .modal-overlay.show {
-    display: flex;
     opacity: 1;
+    visibility: visible;
 }
 
 .modal-content {
-    background: #fff;
-    padding: 24px;
+    background-color: #fff;
+    padding: 32px;
     border-radius: 12px;
-    width: 90%;
+    width: 100%;
     max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.modal-overlay.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-content h2 {
+    margin-bottom: 12px;
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+}
+
+.modal-content p {
+    color: var(--color-text-secondary);
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
 .modal-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 12px;
 }
 
-.btn-danger {
-    background: #e53e3e;
-    color: #fff;
-}
-
-.btn-success {
-    background: #0a875a;
-    color: #fff;
-}
-
-/* ===== RESPONSIVE ===== */
-
-@media(max-width:1024px) {
-    .categories-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media(max-width:640px) {
-    .categories-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .table-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .filters,
-    .filter-dropdown {
-        width: 100%;
-    }
+.modal-actions button {
+    min-width: 100px;
+    justify-content: center;
 }
