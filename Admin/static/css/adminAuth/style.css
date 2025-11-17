@@ -1,0 +1,219 @@
+/* --- Global Styles & Reset --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body,
+html {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #333;
+}
+
+/* --- Main Layout Container --- */
+.login-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- Left Panel (Black) --- */
+.login-panel-left {
+    flex: 1;
+    /* Takes up 50% of the space */
+    background-color: #000000;
+    color: #ffffff;
+
+    /* --- This is the key for perfect centering --- */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.brand-container h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.brand-container p {
+    font-size: 1.25rem;
+    color: #a0a0a0;
+    /* Lighter color for the subtitle */
+}
+
+/* --- Right Panel (White) --- */
+.login-panel-right {
+    flex: 1;
+    /* Takes up the other 50% */
+    background-color: #ffffff;
+
+    /* Center the form wrapper */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    position: relative;
+    /* For positioning the footer */
+}
+
+/* This wrapper helps position the form and footer */
+.form-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 420px;
+    height: 100%;
+    justify-content: center;
+    /* Center the form vertically */
+    position: relative;
+}
+
+.form-container {
+    width: 100%;
+}
+
+.form-container h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.form-container .subtitle {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* --- Form Groups & Inputs --- */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* --- AFTER (THE FIX) --- */
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+/* <-- ADD THIS LINE */
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+/* <-- AND ADD THIS LINE */
+.form-group input[type="password"]:focus {
+    border-color: #333;
+}
+
+/* Password field with eye icon */
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    /* Add padding to the right to make space for the icon */
+    padding-right: 45px;
+}
+
+.password-wrapper .toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    cursor: pointer;
+}
+
+/* --- Form Options (Remember & Forgot) --- */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+}
+
+.remember-me input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.remember-me label {
+    margin-bottom: 0;
+    /* Override default form-group label margin */
+    font-weight: 500;
+    color: #555;
+}
+
+.forgot-password {
+    color: #000;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* --- Login Button --- */
+.login-button {
+    width: 100%;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: #000000;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-button:hover {
+    background-color: #333;
+}
+
+/* --- Footer --- */
+.page-footer {
+    /* Positioned at the bottom of the right panel */
+    position: absolute;
+    bottom: 30px;
+    /* 30px from the bottom */
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+/* This wrapper helps position the form and footer */
+.form-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 420px;
+    /* REMOVE height: 100%; */
+    /* REMOVE justify-content: center; */
+    position: relative;
+}

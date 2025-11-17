@@ -1,0 +1,62 @@
+/* ==================== BREADCRUMBS ==================== */
+
+.breadcrumbs-container {
+    /* This adds the "decent distance" */
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+
+    /* Adds a clean separator line */
+    border-bottom: 1px solid #eaeaea;
+}
+
+/* This is the <ol> list from django-dynamic-breadcrumbs */
+.breadcrumb {
+    display: flex;
+    /* Aligns items horizontally */
+    flex-wrap: wrap;
+    /* Allows wrapping on small screens */
+    list-style: none;
+    /* Removes default list bullets */
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    /* Sets a clean, readable font size */
+}
+
+/* This is each <li> item */
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    /* Vertically centers the text and separator */
+
+    /* Style for the *CURRENT* page (which is not a link) */
+    color: #111;
+    font-weight: 600;
+}
+
+/* This adds the separator (/) before every item *except* the first one. */
+.breadcrumb-item+.breadcrumb-item::before {
+    content: '/';
+    /* The separator character */
+    margin: 0 12px;
+    /* Adds space around the separator */
+    color: #999;
+    /* Makes the separator a light gray */
+    font-weight: 400;
+}
+
+/* This styles the <a> links for *previous* pages */
+.breadcrumb-item a {
+    color: #666;
+    /* A muted gray for non-active links */
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+/* A simple hover effect for the links */
+.breadcrumb-item a:hover {
+    color: #000;
+    /* Darkens the link on hover */
+    text-decoration: underline;
+}

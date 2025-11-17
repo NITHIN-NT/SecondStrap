@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ product.name }}{% endblock title %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{% static 'css/products/product_detail.css' %}">
+{% endblock extra_styles %}
+
+{% block content %}
+
+<div class="product-detail-page-wrapper">
+
+    <div class="product-detail-container">
+        
+        <div class="product-gallery">
+            <div class="gallery-main img-zoom-container">
+                <span class="product-offer-tag">30% OFF</span>
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" id="main-product-image">
+            </div>
+            <div class="gallery-thumbnails">
+                {% for image in images_list_limited %}
+                <img src="{{ image.image.url }}" alt="{{ product.name }}" class="thumbnail-img" data-image="{{ image.image.url }}">
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="imageModal" class="image-modal">
+            <span class="close-modal">&times;</span>
+            <img class="modal-content" id="modalImage">
+        </div>
+
+        <div class="product-info">
+            
+            <h1>{{ product.name }}</h1>
+
+            <div class="product-review-summary">
+                <div class="stars">
+                    <i class='bx bxs-star'></i>
+                    <i class='bx bxs-star'></i>
+                    <i class='bx bxs-star'></i>
+                    <i class='bx bxs-star'></i>
+                    <i class='bx bxs-star-half'></i>
+                </div>
+                <span class="review-count">(128 reviews)</span>
+            </div>
+
+            <div class="product-price-container">
+                <del>₹ {{ product.base_price }}</del>
+                <span class="offer-price">₹ {{ product.offer_price }}</span>
+            </div>
+
+            {% comment %} <div class="info-accordion-group">
+
+                <details class="info-accordion">
+                    <summary class="info-accordion-header">
+                        Apply Coupon
+                    </summary>
+                    <div class="info-accordion-content">
+                        <form class="apply-coupon-form-compact">
+                            <input type="text" class="apply-coupon-input-compact" placeholder="Enter coupon code">
+                            <button type="submit" class="apply-coupon-btn-compact">Apply</button>
+                        </form>
+                    </div>
+                </details>
+            </div> {% endcomment %}
+
+
+            <div class="product-options">
+                <div class="option-group">
+                    <label class="option-label"><strong>Size:</strong></label>
+                    <div class="option-buttons size-buttons">
+                        {% for size in sizes %}
+                            <button class="btn-size" data-size="{{ size }}">{{ size.size }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <label for="quantity-display" class="quantity-label option-label"><strong>Quantity</strong></label>
+                    <div class="quantity-selector">
+                        <button class="btn-quantity" id="btn-decrease"><i class='bx bx-minus'></i></button>
+                        <span id="quantity-display">1 item</span>
+                        <button class="btn-quantity" id="btn-increase"><i class='bx bx-plus'></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-outline">Add to Cart</button>
+                <button class="btn btn-solid">Buy Now</button>
+            </div>
+
+            <div class="secondary-actions">
+                <a href="#" class="action-link"><i class='bx bx-heart'></i> <span>Add to Wishlist</span></a>
+                <a href="#" class="action-link"><i class='bx bx-share'></i> <span>Share</span></a>
+            </div>
+            
+            <br>
+
+            <details class="info-accordion description-accordion">
+                <summary class="info-accordion-header">Description</summary>
+                <div class="info-accordion-content">
+                    {{ product.description|linebreaks }}
+                </div>
+            </details>
+            <details class="info-accordion"> <summary class="info-accordion-header">
+                        Available Offers
+                    </summary>
+                    <div class="info-accordion-content">
+                        <ul class="offer-list">
+                            <li class="offer-item">
+                                <span class="offer-tag offer-tag-sale">SALE</span>
+                                <span>Get 30% off on all orders above ₹1500</span>
+                            </li>
+                            <li class="offer-item">
+                                <span class="offer-tag offer-tag-bogo">BOGO</span>
+                                <span>Buy 2 t-shirts and get 1 free</span>
+                            </li>
+                            <li class="offer-item">
+                                <span class="offer-tag offer-tag-ship">SHIP</span>
+                                <span>Free shipping on all orders above ₹999</span>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+                
+                <details class="info-accordion">
+                    <summary class="info-accordion-header">
+                        Discount Coupons
+                    </summary>
+                    <div class="info-accordion-content">
+                        <ul class="coupon-list">
+                            <li class="coupon-item">
+                                <div class="coupon-details">
+                                    <span class="coupon-code">NEWUSER20</span>
+                                    <span class="coupon-description">20% off for new users</span>
+                                </div>
+                                <a href="#" class="coupon-apply-link">Apply</a>
+                            </li>
+                            <li class="coupon-item">
+                                <div class="coupon-details">
+                                    <span class="coupon-code">SUMMER10</span>
+                                    <span class="coupon-description">10% off on summer collection</span>
+                                </div>
+                                <a href="#" class="coupon-apply-link">Apply</a>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+        </div>
+    </div>
+
+  <div class="customer-reviews-container">
+  <h2>Customer Reviews</h2>
+  <div class="reviews-summary">
+    <div class="average-rating">
+      <span class="rating-value">4.5</span>
+      <div class="stars">
+        <i class='bx bxs-star'></i>
+        <i class='bx bxs-star'></i>
+        <i class='bx bxs-star'></i>
+        <i class='bx bxs-star'></i>
+        <i class='bx bxs-star-half'></i>
+      </div>
+      <span class="total-reviews">(Based on 12 reviews)</span>
+    </div>
+    <button class="btn btn-outline" id="btn-write-review">Write a Review</button>
+  </div>
+  <div class="review-list">
+    <div class="review-item">
+      <div class="review-header">
+        <span class="review-author">Nithin S.</span>
+        <div class="review-rating stars">
+          <i class='bx bxs-star'></i>
+          <i class='bx bxs-star'></i>
+          <i class='bx bxs-star'></i>
+          <i class='bx bxs-star'></i>
+          <i class='bx bxs-star'></i>
+        </div>
+      </div>
+      <span class="review-date">October 28, 2025</span>
+      <p class="review-text">
+        Excellent quality shirt! The fit is perfect and the material feels very premium. Exactly as described. Highly recommend.
+      </p>
+    </div>
+    <div class="review-item">
+      <div class="review-header">
+        <span class="review-author">Arjun</span>
+        <div class="review-rating stars">
+          <i class='bx bxs-star'></i>
+          <i class='bx bxs-star'></i>
+          <i class='bx bxs-star'></i>
+          <i class='bx bxs-star'></i>
+          <i class='bx bx-star'></i>
+        </div>
+      </div>
+      <span class="review-date">October 25, 2025</span>
+      <p class="review-text">
+        Good shirt, but the color was slightly different than the picture. Still, the quality is nice.
+      </p>
+    </div>
+  </div>
+</div>
+<div class="related-products-container">
+    <h2>You Might Also Like</h2>
+    <div class="related-products-grid">
+            {% for related_product in related_products %}
+                <a href="{% url 'Product_card_view' related_product.slug %}" class="product-card">
+                    <div class="product-card-image">
+                        <img src="{{ related_product.image.url }}" alt="{{ related_product.name }}">
+                    </div>
+                    <div class="product-card-info">
+                        <h3 class="product-card-name">{{ related_product.name }}</h3>
+                        <div class="product-card-price-container">
+                            <del>₹ {{ related_product.base_price }}</del>
+                            <span class="offer-price">₹ {{ related_product.offer_price }}</span>
+                        </div>
+                    </div>
+                </a>
+            
+        {% empty %}
+            {% for random_product in random_products %}
+                <a href="{% url 'Product_card_view' random_product.slug %}" class="product-card">
+                    <div class="product-card-image">
+                        <img src="{{ random_product.image.url }}" alt="{{ random_product.name }}">
+                    </div>
+                    <div class="product-card-info">
+                        <h3 class="product-card-name">{{ random_product.name }}</h3>
+                        <div class="product-card-price-container">
+                            <del>₹ {{ random_product.base_price }}</del>
+                            <span class="offer-price">₹ {{ related_product.offer_price }}</span>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+</div> {% endblock content %}
+
+{% block extra_script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- Thumbnail Switcher ---
+        const mainImage = document.getElementById('main-product-image');
+        const thumbnails = document.querySelectorAll('.thumbnail-img');
+
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                mainImage.src = this.dataset.image;
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // --- Size Selector ---
+        const sizeButtons = document.querySelectorAll('.btn-size');
+        const selectedSize = document.getElementById('selected-size');
+
+        sizeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                sizeButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                if (selectedSize) { 
+                    selectedSize.textContent = this.dataset.size;
+                }
+            });
+        });
+        
+        // --- Quantity Selector ---
+        const decreaseBtn = document.getElementById('btn-decrease');
+        const increaseBtn = document.getElementById('btn-increase');
+        const quantityDisplay = document.getElementById('quantity-display');
+        let quantity = 1;
+        const maxQuantity = 5; 
+
+        function updateDisplay() {
+            quantityDisplay.textContent = `${quantity} ${quantity === 1 ? 'item' : 'items'}`;
+            decreaseBtn.disabled = quantity === 1;
+            increaseBtn.disabled = quantity === maxQuantity;
+        }
+
+        decreaseBtn.addEventListener('click', function() {
+            if (quantity > 1) {
+                quantity--;
+                updateDisplay();
+            }
+        });
+
+        increaseBtn.addEventListener('click', function() {
+            if (quantity < maxQuantity) {
+                quantity++;
+                updateDisplay();
+            }
+        });
+
+        updateDisplay(); // Initial call to set state
+
+        // --- Image Zoom Logic ---
+        const galleryMain = document.querySelector('.gallery-main');
+     
+        galleryMain.addEventListener('mousemove', function(e) {
+            const rect = galleryMain.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+        
+            const xPercent = (x / rect.width) * 100;
+            const yPercent = (y / rect.height) * 100;
+        
+            mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+        });
+        
+        // Reset the zoom origin when the mouse leaves
+        galleryMain.addEventListener('mouseleave', function() {
+            mainImage.style.transformOrigin = 'center center';
+        });
+
+        // --- Image Click to Enlarge (Modal) ---
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeModal = document.querySelector('.close-modal');
+
+        // When user clicks on main product image
+        mainImage.addEventListener('click', function() {
+            modal.style.display = 'block';
+            modalImg.src = this.src;
+        });
+
+        // Also allow thumbnails to open modal when clicked (optional)
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('dblclick', function() {
+                modal.style.display = 'block';
+                modalImg.src = this.dataset.image;
+            });
+        });
+
+        // Close modal when clicking on close button or outside image
+        closeModal.addEventListener('click', () => modal.style.display = 'none');
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock extra_script %}

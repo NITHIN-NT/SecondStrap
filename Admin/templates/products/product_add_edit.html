@@ -1,0 +1,462 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block title %}
+    <title>Admin - {% if product %}Edit Product{% else %}Add Product{% endif %}</title>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/products/add_product.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <a href="{% url "admin_products" %}" class="back-link" title="Back to products">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div>
+            <h2>{% if product %}Edit Product{% else %}Add Product{% endif %}</h2>
+            <p>{% if product %}Update the product listing{% else %}Create a new product listing{% endif %}</p>
+        </div>
+    </div>
+
+    {% if product_form.non_field_errors or formset.non_field_errors or formset_images.non_field_errors %}
+        <div class="form-errors alert alert-danger">
+            {{ product_form.non_field_errors }}
+            {{ formset.non_field_errors }}
+            {{ formset_images.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form action="" method="POST" enctype="multipart/form-data" class="product-form" id="product-form">
+        {% csrf_token %}
+
+        <div class="form-main">
+            <div class="form-left">
+                <div class="form-group">
+                    <label for="{{ product_form.name.id_for_label }}">Product Name</label>
+                    {{ product_form.name }}
+                    {{ product_form.name.errors }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ product_form.category.id_for_label }}">Category</label>
+                    {{ product_form.category }}
+                    {{ product_form.category.errors }}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ product_form.base_price.id_for_label }}">Base Price (₹)</label>
+                        {{ product_form.base_price }}
+                        {{ product_form.base_price.errors }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ product_form.offer_price.id_for_label }}">Offer Price (₹)</label>
+                        {{ product_form.offer_price }}
+                        {{ product_form.offer_price.errors }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ product_form.description.id_for_label }}">Description</label>
+                    {{ product_form.description }}
+                    {{ product_form.description.errors }}
+                </div>
+            </div>
+
+            <div class="form-right">
+                <div class="form-group card-style">
+                    <label for="{{ product_form.image.id_for_label }}">Main Product Image</label>
+
+                    {% if product and product.image %}
+                        <div class="current-image-preview">
+                            <img src="{{ product.image.url }}" alt="{{ product.alt_text|default:product.name }}" style="max-width:100%; height:auto; border-radius:8px; margin-bottom:10px;">
+                            <p style="font-size:0.8rem; color:#666;">Current image</p>
+                        </div>
+                    {% endif %}
+
+                    {{ product_form.image }}
+                    {{ product_form.image.errors }}
+                </div>
+
+                <div class="form-group card-style">
+                    <label>Product Flags</label>
+                    <div class="checkbox-group"> 
+                        {{ product_form.is_featured }}
+                        <label for="{{ product_form.is_featured.id_for_label }}">Is Featured</label>
+                    </div>
+                    <div class="checkbox-group">
+                        {{ product_form.is_selective }}
+                        <label for="{{ product_form.is_selective.id_for_label }}">Is Selective</label>
+                    </div>
+                    <div class="checkbox-group">
+                        {{ product_form.is_most_demanded }}
+                        <label for="{{ product_form.is_most_demanded.id_for_label }}">Is Most Demanded</label>
+                    </div>
+                    <div class="checkbox-group">
+                        {{ product_form.is_active }}
+                        <label for="{{ product_form.is_active.id_for_label }}">Is Active</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dynamic-section variants-section">
+            <h3>Product Variants</h3>
+            <p>Add sizes and stock for each variant.</p>
+
+            {{ formset.management_form }}
+
+            <div id="variants-container" class="dynamic-rows-container">
+                {% for form in formset %}
+                <div class="dynamic-row">
+                    <div style="display: none;">
+                        {{ form.id }}
+                        {{ form.DELETE }}
+                    </div>
+                    <div class="form-group">
+                        <label>Size</label>
+                        {{ form.size }}
+                        {{ form.size.errors }}
+                    </div>
+                    <div class="form-group">
+                        <label>Stock</label>
+                        {{ form.stock }}
+                        {{ form.stock.errors }}
+                    </div>
+                    <button type="button" class="btn-remove-row" title="Remove variant">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" id="add-variant-btn" class="btn btn-secondary">
+                <i class="fa-solid fa-plus"></i> Add Variant
+            </button>
+        </div>
+
+        <div class="dynamic-section gallery-section">
+            <h3>Product Gallery Images</h3>
+            <p>Add additional images for the product gallery.</p>
+
+            {{ formset_images.management_form }}
+
+            <div id="gallery-container" class="dynamic-rows-container">
+                {% for form in formset_images %}
+                <div class="dynamic-row">
+                    <div style="display: none;">
+                        {{ form.id }}
+                        {{ form.DELETE }}
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>Image File</label>
+                        {{ form.image }}
+                        {{ form.image.errors }}
+                        {% if form.instance.image %}
+                            <div style="margin-top:8px;">
+                                <img src="{{ form.instance.image.url }}" height="50" alt="Current gallery image">
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group" style="flex: 3;">
+                        <label>Alt Text (Optional)</label>
+                        {{ form.alt_text }}
+                        {{ form.alt_text.errors }}
+                    </div>
+                    <button type="button" class="btn-remove-row" title="Remove image">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" id="add-image-btn" class="btn btn-secondary">
+                <i class="fa-solid fa-plus"></i> Add Image
+            </button>
+        </div>
+
+        <div class="form-footer">
+            <a href="{% url "admin_products" %}" class="btn btn-cancel">Cancel</a>
+            <button type="submit" class="btn btn-save">
+                {% if product %}Update Product{% else %}Save Product{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+{# TEMPLATES FOR DYNAMIC ROWS #}
+<template id="variant-empty-form">
+    {{ formset.empty_form }}
+</template>
+
+<template id="image-empty-form">
+    {{ formset_images.empty_form }}
+</template>
+
+<div class="crop-modal" id="cropModal">
+    <div class="crop-container">
+        <h4>Crop & Resize Image</h4>
+        <div class="crop-image-container">
+            <img id="cropImage" style="max-width: 100%;">
+        </div>
+        <div class="crop-actions">
+            <button type="button" class="btn btn-primary" id="cropSave">Apply</button>
+            <button type="button" class="btn btn-secondary" id="cropCancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block extraJs %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const variantTemplate = document.getElementById('variant-empty-form').innerHTML;
+    const imageTemplate = document.getElementById('image-empty-form').innerHTML;
+
+    function addFormRow(containerId, templateHtml, prefix) {
+        const container = document.getElementById(containerId);
+        const totalForms = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
+        const formIdx = parseInt(totalForms.value, 10);
+
+        let newFormHtml = templateHtml.replace(/__prefix__/g, formIdx);
+        newFormHtml = newFormHtml.replace(/<label[^>]*>.*?<\/label>/g, ''); // optional
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newFormHtml;
+        
+        const rowWrapper = document.createElement('div');
+        rowWrapper.className = 'dynamic-row';
+        
+        // Add all child nodes from the template's content
+        while (tempDiv.firstChild) {
+            rowWrapper.appendChild(tempDiv.firstChild);
+        }
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn-remove-row';
+        removeBtn.title = prefix === 'variants' ? 'Remove variant' : 'Remove image';
+        removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        rowWrapper.appendChild(removeBtn);
+
+        // Find the DELETE checkbox that's already in the empty_form template
+        const deleteCheckbox = rowWrapper.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (deleteCheckbox) {
+            // Hide it, as it's part of the template
+            deleteCheckbox.parentElement.style.display = 'none';
+        }
+
+        container.appendChild(rowWrapper);
+        totalForms.value = formIdx + 1;
+    }
+
+    document.getElementById('add-variant-btn').addEventListener('click', () => {
+        addFormRow('variants-container', variantTemplate, 'variants');
+    });
+
+    document.getElementById('add-image-btn').addEventListener('click', () => {
+        addFormRow('gallery-container', imageTemplate, 'images');
+    });
+
+    // Remove row (existing or new)
+    document.getElementById('product-form').addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-remove-row');
+        if (!btn) return;
+
+        const row = btn.closest('.dynamic-row');
+        const container = row.closest('.dynamic-rows-container');
+
+        // --- FIX #2: Check for minimum variant (for "one variant is must") ---
+        if (container && container.id === 'variants-container') {
+            // Count how many rows are *not* already hidden
+            const visibleRows = container.querySelectorAll('.dynamic-row:not([style*="display: none"])').length;
+            
+            if (visibleRows <= 1) {
+                // We are trying to remove the last visible row
+                alert('You must have at least one product variant.');
+                return; // Stop the function
+            }
+        }
+        // --- END FIX #2 ---
+
+        const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+
+        if (deleteCheckbox) {
+            // This is an existing form. Hide it, check the box, and disable inputs.
+            deleteCheckbox.checked = true;
+            row.style.display = 'none';
+            
+            // --- FIX #1: for 'not focusable' error ---
+            const inputs = row.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input !== deleteCheckbox) {
+                    input.disabled = true;
+                }
+            });
+            // --- END FIX #1 ---
+
+        } else {
+            // This is a new, unsaved form. Just remove it from the DOM.
+            row.remove();
+        }
+    });
+
+    // ---- Image preview + cropper integration ----
+    let cropper = null;
+    let currentFileInput = null;
+    let currentPreviewImg = null;
+
+    const cropModal = document.getElementById('cropModal');
+    const cropImage = document.getElementById('cropImage');
+    const cropSaveBtn = document.getElementById('cropSave');
+    const cropCancelBtn = document.getElementById('cropCancel');
+
+    function openCropperForInput(fileInput, previewImg, dataURL) {
+        currentFileInput = fileInput;
+        currentPreviewImg = previewImg || null;
+        cropImage.src = dataURL;
+        cropModal.classList.add('active');
+
+        setTimeout(() => {
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(cropImage, {
+                aspectRatio: NaN,
+                viewMode: 1,
+                autoCropArea: 1,
+                movable: true,
+                zoomable: true,
+                rotatable: true,
+                scalable: true
+            });
+        }, 100);
+    }
+
+    function fileToDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('File read error'));
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function replaceFileInputWithBlob(inputEl, blob, fileName) {
+        const newFile = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+        const dt = new DataTransfer();
+        dt.items.add(newFile);
+        inputEl.files = dt.files;
+    }
+
+    function getOrCreatePreviewForInput(inputEl) {
+        // Find the existing preview for the main image
+        if (inputEl.id === '{{ product_form.image.id_for_label }}') {
+             let existingPreview = document.querySelector('.current-image-preview img');
+             if (existingPreview) return existingPreview;
+        }
+
+        // Find preview for gallery images
+        let fg = inputEl.closest('.form-group') || inputEl.parentElement;
+        
+        // Check for existing gallery preview (the `form.instance.image` one)
+        let galleryImg = fg.querySelector('img[height="50"]');
+        if (galleryImg) return galleryImg;
+
+        // Create a new preview element if one doesn't exist
+        let preview = fg.querySelector('.image-preview img');
+        if (!preview) {
+            let previewContainer = fg.querySelector('.image-preview');
+            if (!previewContainer) {
+                previewContainer = document.createElement('div');
+                previewContainer.className = 'image-preview';
+                previewContainer.style.marginTop = '8px';
+                previewContainer.innerHTML = '<img style="border-radius:6px;">'; // Removed fixed size
+                inputEl.insertAdjacentElement('afterend', previewContainer);
+            }
+            preview = previewContainer.querySelector('img');
+        }
+        return preview;
+    }
+    
+    // Event delegation for ANY file input inside the form
+    document.getElementById('product-form').addEventListener('change', async function(e) {
+        const target = e.target;
+        if (!target || target.tagName.toLowerCase() !== 'input' || target.type !== 'file') return;
+
+        const file = target.files && target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+
+        const previewImg = getOrCreatePreviewForInput(target);
+        const dataURL = await fileToDataURL(file);
+
+        if (previewImg) {
+            previewImg.src = dataURL;
+            previewImg.style.display = 'block';
+            previewImg.style.height = 'auto'; // Unset any fixed height
+
+            // *** NEW: Check if this is the MAIN image input or a GALLERY input ***
+            if (target.id === '{{ product_form.image.id_for_label }}') {
+                previewImg.style.maxWidth = '100%'; // Main image
+            } else {
+                previewImg.style.maxWidth = '100px'; // Gallery images
+            }
+        }
+        
+        openCropperForInput(target, previewImg, dataURL);
+    });
+
+    // Save cropped image back to input
+    cropSaveBtn.addEventListener('click', function() {
+        if (!cropper || !currentFileInput) return;
+
+        cropper.getCroppedCanvas().toBlob((blob) => {
+            if (!blob) {
+                console.error('Cropper produced no blob');
+                return;
+            }
+
+            const originalFile = (currentFileInput.files && currentFileInput.files[0]) || null;
+            const filename = originalFile ? originalFile.name : `cropped_${Date.now()}.jpg`;
+
+            replaceFileInputWithBlob(currentFileInput, blob, filename);
+
+            if (currentPreviewImg) {
+                const url = URL.createObjectURL(blob);
+                currentPreviewImg.src = url;
+                currentPreviewImg.style.display = 'block';
+                currentPreviewImg.style.height = 'auto'; // Unset any fixed height
+
+                // *** NEW: Check if this was the MAIN image input or a GALLERY input ***
+                if (currentFileInput && currentFileInput.id === '{{ product_form.image.id_for_label }}') {
+                    currentPreviewImg.style.maxWidth = '100%'; // Main image
+                } else {
+                    currentPreviewImg.style.maxWidth = '100px'; // Gallery images
+                }
+            }
+
+            cropper.destroy();
+            cropper = null;
+            cropModal.classList.remove('active');
+
+        }, 'image/jpeg', 0.9);
+    });
+
+    cropCancelBtn.addEventListener('click', function() {
+        if (cropper) cropper.destroy();
+        cropper = null;
+        cropModal.classList.remove('active');
+    });
+
+    cropModal.addEventListener('click', (e) => {
+        if (e.target === cropModal) {
+            if (cropper) cropper.destroy();
+            cropper = null;
+            cropModal.classList.remove('active');
+        }
+    });
+    // ---- end cropper integration ----
+});
+</script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/dashboard/dashboard.css' %}">
+{% endblock extra_css %}
+
+
+{% block content %}
+    
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Overview of your store's performance</p>
+    </div>
+
+    <div class="stats-grid">
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span>Total Users</span>
+                <div class="stat-icon-wrapper">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
+            <h2 class="stat-card-value">{{total_users}}</h2>
+            <p class="stat-card-footer">+12% from last month</p>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span>Total Products</span>
+                <div class="stat-icon-wrapper">
+                    <i class="fa-solid fa-box"></i>
+                </div>
+            </div>
+            <h2 class="stat-card-value">{{total_products}}</h2>
+            <p class="stat-card-footer">+5% from last month</p>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span>Total Orders</span>
+                <div class="stat-icon-wrapper">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+            </div>
+            <h2 class="stat-card-value">{{total_orders}}</h2>
+            <p class="stat-card-footer">+15% from last month</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span>Total Revenue</span>
+                <div class="stat-icon-wrapper">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                </div>
+            </div>
+            <h2 class="stat-card-value">₹{{total_revenue}}</h2>
+            <p class="stat-card-footer">+18% from last month</p>
+        </div>
+    </div>
+
+
+    <div class="dashboard-row">
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>Sales Overview</h3>
+            </div>
+            <div class="chart-container">
+                </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Top Selling Products</h3>
+            </div>
+            <div class="product-list">
+                <div class="product-item">
+                    <span class="product-item-name">Running Shoes</span>
+                    <span class="product-item-count">210</span>
+                </div>
+                <div class="product-item">
+                    <span class="product-item-name">Wireless Headphones</span>
+                    <span class="product-item-count">120</span>
+                </div>
+                <div class="product-item">
+                    <span class="product-item-name">Fitness Tracker</span>
+                    <span class="product-item-count">150</span>
+                </div>
+                <div class="product-item">
+                    <span class="product-item-name">Smartphone X</span>
+                    <span class="product-item-count">65</span>
+                </div>
+                <div class="product-item">
+                    <span class="product-item-name">Coffee Maker</span>
+                    <span class="product-item-count">75</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card orders-table">
+        <div class="card-header">
+            <h3>Recent Orders</h3>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ORD-1001</td>
+                    <td>John Doe</td>
+                    <td>2025-05-15</td>
+                    <td><span class="status status-delivered">Delivered</span></td>
+                    <td>₹129.99</td>
+                </tr>
+                <tr>
+                    <td>ORD-1002</td>
+                    <td>Jane Smith</td>
+                    <td>2025-05-16</td>
+                    <td><span class="status status-processing">Processing</span></td>
+                    <td>₹89.99</td>
+                </tr>
+                </tbody>
+        </table>
+    </div>
+
+{% endblock content %}

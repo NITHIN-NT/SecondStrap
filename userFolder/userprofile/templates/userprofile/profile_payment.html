@@ -1,0 +1,60 @@
+{% extends "./profile_base.html" %}
+{% load static %}
+
+{% block title %}Payment Methods - Profile{% endblock %}
+
+{% block profile_extra_style %}
+    <link rel="stylesheet" href="{% static 'css/userprofile/profile_addresses.css' %}">
+{% endblock profile_extra_style %}
+
+
+{% block profile_content %}
+
+<div class="profile-card">
+    
+    <div class="profile-card-header">
+        <h2>Payment Methods</h2>
+        <a href="#" class="add-new-link"> 
+            <i class='bx bx-plus'></i>
+            <span>Add New Payment Method</span>
+        </a>
+    </div>
+
+    <div class="profile-card-body">
+        
+        <div class="address-list">
+            
+            <div class="address-card">
+                <div class="address-card-header">
+                    <div class="address-card-title">
+                        <h4>Visa •••• 4242</h4>
+                        <span class="default-badge">Default</span>
+                    </div>
+                    <a href="#" class="edit-address-link">
+                        <i class='bx bxs-pencil'></i>
+                    </a>
+                </div>
+                <div class="address-card-body">
+                    <p>Expires 05/25</p>
+                </div>
+            </div>
+
+            <div class="address-card">
+                <div class="address-card-header">
+                    <div class="address-card-title">
+                        <h4>Mastercard •••• 8888</h4>
+                    </div>
+                    <a href="#" class="edit-address-link">
+                        <i class='bx bxs-pencil'></i>
+                    </a>
+                </div>
+                <div class="address-card-body">
+                    <p>Expires 12/24</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+</div>
+{% endblock profile_content %}

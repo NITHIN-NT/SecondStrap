@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Cart{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'css/cart/cart.css' %}">
+{% endblock extra_styles %}
+
+
+{% block content %}
+<div class="cart-empty-container">
+    <h2 class="barlow-condensed-semibold">Your Cart</h2>
+    <p>Your cart is currently empty.</p>
+    
+   {% if user.is_authenticated %}
+        <a href="{% url "products_page_user" %}" class="btn-dark">Continue Shopping</a>
+    {% else %}
+        <a href="{% url "login" %}" class="btn-dark">Login Continue</a>   
+    {% endif %}
+</div>
+{% endblock content %}

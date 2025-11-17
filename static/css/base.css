@@ -1,0 +1,558 @@
+/* ==================== GLOBAL RESET & VARIABLES ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ================================================= */
+/* ==== FONT FAMILY: BARLOW CONDENSED (DEFAULT) ==== */
+/* ================================================= */
+
+body {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+input,
+button,
+a {
+    font-family: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ==================== LAYOUT CONTAINERS ==================== */
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+/* ==================== HEADER / NAVBAR ==================== */
+.header {
+    width: 100%;
+    background-color: #fff;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+    padding-left: 40px;
+    padding-right: 40px;
+    position: relative;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 32px;
+}
+
+.nav-links a {
+    font-size: 16px;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: #000;
+}
+
+.nav-icons {
+    display: flex;
+    gap: 24px;
+}
+
+.nav-icons i {
+    font-size: 22px;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.nav-icons a:hover i {
+    color: #000;
+}
+
+/* ==================== MAIN CONTENT ==================== */
+.main-content {
+    flex-grow: 1;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+/* ==================== FOOTER ==================== */
+.footer {
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    padding-top: 60px;
+    padding-bottom: 30px;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.footer-column {
+    flex: 1;
+    min-width: 220px;
+}
+
+.footer-column h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.footer-column ul li {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.footer-column ul li a:hover,
+.footer-column ul li:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.footer-column p {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 20px;
+}
+
+.newsletter-form {
+    display: flex;
+    border-bottom: 1px solid #fff;
+}
+
+.newsletter-form input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 10px 0;
+    color: #fff;
+    font-size: 14px;
+}
+
+.newsletter-form input::placeholder {
+    color: #888;
+}
+
+.newsletter-form button {
+    background-color: #fff;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.newsletter-form button:hover {
+    background-color: #ccc;
+}
+
+.footer-divider {
+    border: none;
+    border-top: 1px solid #444;
+    margin-bottom: 20px;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #aaa;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+
+/* ==================== OFFER CAROUSEL ==================== */
+.offer-carousel {
+    background-color: #000;
+    color: #fff;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.offer-track {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scrollOffers 40s linear infinite;
+}
+
+.offer-item {
+    display: inline-block;
+    margin-right: 80px;
+}
+
+@keyframes scrollOffers {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.offer-carousel:hover .offer-track {
+    animation-play-state: paused;
+}
+
+/* ==================== MOBILE MENU ==================== */
+.menu-toggle {
+    display: none;
+}
+
+.menu-icon {
+    display: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #333;
+    z-index: 1001;
+    order: 3;
+}
+
+/* Drawer */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    max-width: 80%;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Overlay */
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+/* Toggle */
+.menu-toggle:checked~.mobile-menu {
+    transform: translateX(0);
+}
+
+.menu-toggle:checked~.mobile-menu-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Drawer Content */
+.mobile-menu-header {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.mobile-menu-header a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111;
+}
+
+.mobile-menu-header a i {
+    font-size: 1.5rem;
+    color: #444;
+}
+
+.mobile-menu-divider {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 15px 0;
+}
+
+.mobile-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mobile-menu-links li a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 10px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.mobile-menu-links li a:hover,
+.mobile-menu-links li a:focus {
+    background-color: #f4f4f4;
+    color: #000;
+}
+
+.mobile-menu-links li a i {
+    font-size: 1.3rem;
+    width: 25px;
+    text-align: center;
+    color: #555;
+}
+
+/* Hide mobile items on desktop */
+@media (min-width: 769px) {
+
+    .menu-icon,
+    .mobile-menu,
+    .mobile-menu-overlay {
+        display: none !important;
+    }
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .navbar {
+        height: 70px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .logo {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 22px;
+    }
+
+    .nav-links,
+    .nav-icons {
+        display: none;
+    }
+
+    /* ✅ Correct Hamburger Position */
+    .menu-icon {
+        display: block;
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 10px;
+        margin: 0;
+    }
+
+    /* ✅ Hide hamburger when menu is open */
+    .menu-toggle:checked~.menu-icon {
+        display: none !important;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        gap: 40px;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .offer-carousel {
+        height: 35px;
+        font-size: 0.8rem;
+    }
+
+    .offer-item {
+        margin-right: 50px;
+    }
+}
+
+/* ==================== TOASTR.JS STYLES (NEW CLEAN STYLE) ==================== */
+#toast-container>div {
+    /* --- Base Styling --- */
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    opacity: 1 !important;
+    font-family: inherit;
+    /* Inherits "Barlow Condensed" from body */
+
+    /* --- Shape & Shadow (Your Request) --- */
+    padding: 12px 18px 12px 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    /* "dropbox" shadow */
+    border: none;
+    /* Remove old border */
+
+    /* --- Color Indicator (Your Request) --- */
+    border-left: 5px solid #cccccc;
+    /* Default border color */
+}
+
+/* --- Font Styles --- */
+.toast-title {
+    font-family: inherit !important;
+    font-weight: 600 !important;
+    /* Semibold */
+    font-size: 16px !important;
+    color: #333 !important;
+    /* Default title color */
+}
+
+.toast-message {
+    font-family: inherit !important;
+    font-weight: 400 !important;
+    /* Regular */
+    font-size: 14px !important;
+    color: #555 !important;
+    /* Slightly lighter for message */
+}
+
+/* --- Close Button --- */
+.toast-close-button {
+    color: #999 !important;
+    text-shadow: none !important;
+    font-size: 24px !important;
+    opacity: 0.7 !important;
+    margin-left: 15px;
+}
+
+.toast-close-button:hover {
+    color: #333 !important;
+    opacity: 1 !important;
+}
+
+/* --- Progress Bar --- */
+.toast-progress {
+    height: 3px;
+    opacity: 1;
+    background-color: #cccccc;
+    /* Default progress bar */
+}
+
+/* This rule moves the entire toast container down */
+#toast-container.toast-top-right {
+    top: 60px !important;
+    /* Default is 12px. Increase this value to move it lower. */
+}
+
+/* --- Style Variations (Color as Indication) --- */
+
+/* Success */
+#toast-container>.toast-success {
+    border-left-color: #4CAF50;
+}
+
+#toast-container>.toast-success .toast-title {
+    color: #4CAF50 !important;
+}
+
+#toast-container>.toast-success .toast-progress {
+    background-color: #4CAF50;
+}
+
+/* Error */
+#toast-container>.toast-error {
+    border-left-color: #E53935;
+}
+
+#toast-container>.toast-error .toast-title {
+    color: #E53935 !important;
+}
+
+#toast-container>.toast-error .toast-progress {
+    background-color: #E53935;
+}
+
+/* Warning */
+#toast-container>.toast-warning {
+    border-left-color: #FB8C00;
+}
+
+#toast-container>.toast-warning .toast-title {
+    color: #FB8C00 !important;
+}
+
+#toast-container>.toast-warning .toast-progress {
+    background-color: #FB8C00;
+}
+
+/* Info */
+#toast-container>.toast-info {
+    border-left-color: #1E88E5;
+}
+
+#toast-container>.toast-info .toast-title {
+    color: #1E88E5 !important;
+}
+
+#toast-container>.toast-info .toast-progress {
+    background-color: #1E88E5;
+}

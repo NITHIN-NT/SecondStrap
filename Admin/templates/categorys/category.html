@@ -1,0 +1,190 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/category/category.css' %}">
+{% endblock extra_css %}
+
+
+{% block content %}
+    
+    <div class="page-header-container">
+        <div class="page-header">
+            <h1>Category Management</h1>
+            <p>Organize your products into categories</p>
+        </div>
+        <a href="{% url "admin_category_add" %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i>
+            Add Category
+        </a>
+    </div>
+
+    <div class="data-table-card">
+        <form method="get">
+            <div class="table-toolbar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" name="search" placeholder="Search categories..." value="{{ search }}">
+                </div>
+                <div class="filters">
+                    <select name="category_status" class='filter-dropdown'>
+                        <option value="" {% if status == "" %}selected{% endif %}>All Status </option>
+                        <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
+                        <option value="blocked"{% if status == "blocked" %}selected{% endif %}>Blocked</option>
+                    </select>
+                </div>
+                <a href="{% url "admin_category" %}" class="btn btn-secondary">Clear</a>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+
+       <div class="categories-grid">
+            
+            {% for category in categorys %}
+                {% cycle '#dfeafe' '#f1e2ff' '#e2f9e6' '#fff9d3' '#ffe2e8' '#ffe2f2' as card_color silent %}
+
+                <div class="cat-card" style="--bg: {{ card_color }};">
+                    <div class="icon-box"><i class="fa-regular fa-folder"></i></div>
+
+                    <h3>{{ category.name }}</h3>
+                    <p class="desc">{{ category.description }}</p>
+
+                    <p class="count">
+                        <strong>{{ category.count | default:0 }}</strong> 
+                        products
+                    </p>
+
+                    <div class="actions">
+                        
+                        <a href="{% url "admin_category_edit" category.id %}" class="edit">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                        </a>
+
+                        {% if category.is_active %}
+                            <form action="{% url 'admin_category_block' category.id %}" method="POST" style="display: contents;" id="block-form-{{ category.id }}">
+                                {% csrf_token %}
+                                <button type="button" 
+                                        class="btn-action btn-block modal-trigger" 
+                                        title="Block"
+                                        data-form-id="block-form-{{ category.id }}">
+                                    <i class="fas fa-times"></i> Block
+                                </button>
+                            </form>
+                        {% else %}
+                            <form action="{% url 'admin_category_block' category.id %}" method="POST" style="display: contents;" id="unblock-form-{{ category.id }}">
+                                {% csrf_token %}
+                                <button type="button" 
+                                        class="btn-action btn-unblock modal-trigger" 
+                                        title="Unblock"
+                                        data-form-id="unblock-form-{{ category.id }}">
+                                    <i class="fas fa-check-circle"></i> Unblock
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {# View option removed as requested #}
+                    </div>
+                </div>
+            {% empty %}
+                <p>No categories found.</p>
+            {% endfor %}
+        </div>
+        </div>
+
+<section class='pagination-container'>
+    <div class="pagination">
+
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}">&lt;</a>
+        {% else %}
+            <span class="disabled">&lt;</span>
+        {% endif %}
+
+        {% for i in custom_page_range %}
+            {% if i == paginator.ELLIPSIS %}
+                <span class="ellipsis">{{ i }}</span>
+            {% elif page_obj.number == i %}
+                <span class="current">{{ i }}</span>
+            {% else %}
+                <a href="?page={{ i }}&{{ query_params }}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}">&gt;</a>
+        {% else %}
+            <span class="disabled">&gt;</span>
+        {% endif %}
+            
+    </div>
+</section>
+
+<div class="modal-overlay" id="confirmation-modal-overlay" aria-hidden="true">
+    <div class="modal-content" id="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-modal-title">
+        <h2 id="confirmation-modal-title">Confirm Action</h2><br>
+        <p id="confirmation-modal-text">Are you sure you want to perform this action?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="modal-btn-cancel">Cancel</button>
+            <button type="button" class="btn" id="modal-btn-confirm">Confirm</button>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block extraJs %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation modal elements
+    const modalOverlay = document.getElementById('confirmation-modal-overlay');
+    if (modalOverlay) {
+        const modalTitle = modalOverlay.querySelector('h2');
+        const modalText = modalOverlay.querySelector('p');
+        const confirmBtn = document.getElementById('modal-btn-confirm');
+        const cancelBtn = document.getElementById('modal-btn-cancel');
+        const triggerButtons = document.querySelectorAll('.modal-trigger');
+
+        function closeModal() {
+            modalOverlay.classList.remove('show');
+            if (confirmBtn) confirmBtn.dataset.formId = '';
+        }
+
+        triggerButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const action = this.title; // "Block" or "Unblock"
+                const formId = this.dataset.formId; // e.g., "block-form-1"
+                if (!formId) return;
+                modalTitle.textContent = `${action} Category`;
+                modalText.textContent = `Are you sure you want to ${action.toLowerCase()} this category?`;
+                confirmBtn.dataset.formId = formId;
+                confirmBtn.textContent = action;
+                confirmBtn.classList.remove('btn-danger', 'btn-success');
+                if (action === 'Block') confirmBtn.classList.add('btn-danger');
+                else if (action === 'Unblock') confirmBtn.classList.add('btn-success');
+                modalOverlay.classList.add('show');
+            });
+        });
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                const formId = this.dataset.formId;
+                if (formId) {
+                    const formToSubmit = document.getElementById(formId);
+                    if (formToSubmit) formToSubmit.submit();
+                }
+            });
+        }
+
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('show')) closeModal();
+        });
+    }
+
+});
+</script>
+{% endblock extraJs %}

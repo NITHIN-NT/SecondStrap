@@ -1,0 +1,134 @@
+/* OTP form - responsive, accessible, and stable */
+:root {
+    --container-max: 540px;
+    --accent: #007bff;
+    --accent-strong: #0056b3;
+    --muted: #666;
+}
+
+/* Base layout */
+.otp-container {
+    max-width: var(--container-max);
+    width: 92%;
+    margin: 3.5rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.otp-container h2 {
+    font-size: 1.5rem;
+    line-height: 1.15;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+.otp-container p {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+}
+
+.otp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* 6 boxes container */
+.otp-input-boxes {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    /* no wrap — boxes will scale down with clamp to remain on one row on most screens */
+}
+
+/* OTP box sizing: keeps tappable area and scales responsively */
+.otp-box {
+    width: clamp(44px, 8vw, 64px);
+    height: clamp(44px, 8vw, 64px);
+    min-width: 44px;
+    min-height: 44px;
+    font-size: clamp(1.05rem, 3.2vw, 1.5rem);
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    line-height: 1;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    -moz-appearance: textfield;
+    touch-action: manipulation;
+    background-clip: padding-box;
+}
+
+/* remove spinner in webkit */
+.otp-box::-webkit-outer-spin-button,
+.otp-box::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Focus and accessible outline */
+.otp-box:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+}
+
+/* Invalid indication (aria-invalid="true" will match this selector too) */
+.otp-box[aria-invalid="true"] {
+    border-color: #DA4453;
+    box-shadow: 0 0 0 3px rgba(218,68,83,0.08);
+}
+
+/* Button */
+.btn-submit {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.18s ease;
+}
+.btn-submit:hover { background-color: var(--accent-strong); }
+
+/* Timer/resend */
+.resend-timer-container {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #555;
+}
+#timer-container #timer { font-weight: 700; color: #000; }
+#resend-link { font-weight: 600; color: var(--accent); text-decoration: none; }
+#resend-link:hover { text-decoration: underline; }
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+    .otp-container { padding: 1.75rem; }
+    .otp-box { gap: 0.6rem; }
+}
+
+@media (max-width: 480px) {
+    .otp-container { margin: 2rem auto; padding: 1.25rem; width: 96%; }
+    .otp-container h2 { font-size: 1.25rem; }
+    .otp-container p { font-size: 0.92rem; margin-bottom: 1rem; }
+    .otp-input-boxes { gap: 0.5rem; }
+    .btn-submit { padding: 0.9rem; font-size: 0.98rem; border-radius: 6px; }
+}
+
+/* prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .otp-box, .btn-submit { transition: none !important; }
+    .otp-box:focus { box-shadow: none; outline: 3px solid rgba(0,123,255,0.12); }
+}

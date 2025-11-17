@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_styles %}
+    {# This links to the same CSS file from the signup page #}
+    <link rel="stylesheet" href="{% static 'css/accounts/auth.css' %}">
+{% endblock extra_styles %}
+
+
+{% block content %}
+<div class="auth-form-container">
+    <h2>Login to your account</h2>
+    <p class="subtitle">Sign in to continue</p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="email">Email address</label>
+            {# This is the 'email' field your view already uses #}
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <div class="label-row">
+                <label for="password">Password</label>
+                <a href="{% url "forgot-password" %}" class="form-link">Forgot password?</a>
+                {# Tip: Use {% url 'password_reset' %} if you have it #}
+            </div>
+            {# This is the 'password' field your view already uses #}
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn-primary">Sign in</button>
+    </form>
+    
+    <div class="separator">
+        <span>Or continue with</span>
+    </div>
+
+    <div class="social-login">
+        <a href="{%provider_login_url 'google'%}" class="social-btn" aria-label="Login with Google">
+            <i class='bx bxl-google'></i>
+        </a>
+        <a href="#" class="social-btn" aria-label="Login with Facebook">
+            <i class='bx bxl-facebook'></i>
+        </a>
+        <a href="#" class="social-btn" aria-label="Login with Apple">
+            <i class='bx bxl-apple'></i> {# As requested, changed from phone to Apple #}
+        </a>
+    </div>
+
+    <p class="auth-switch">
+        Don't have an account? <a href="{% url "signup" %}">Sign up</a>
+        {# Tip: Use {% url 'signup' %} here #}
+    </p>
+</div>
+{% endblock content %}
+{% comment %} <form method="POST">{% csrf_token %}
+  <h2>Login</h2>
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="password" placeholder="Password" required>
+  <button type="submit">Login</button>
+</form> {% endcomment %}

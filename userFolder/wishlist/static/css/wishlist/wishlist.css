@@ -1,0 +1,67 @@
+.wishlist-empty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centers content horizontally */
+    text-align: center;
+
+    /* Adds the large vertical spacing */
+    padding: 120px 0;
+}
+
+.wishlist-empty-container h2 {
+    font-size: 2.2rem;
+    color: #111;
+    margin-bottom: 16px;
+}
+
+.wishlist-empty-container p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+/*
+  This is the style for the black "Continue Shopping" button.
+  You can reuse this .btn-dark class elsewhere.
+*/
+.btn-dark {
+    display: inline-block;
+    background-color: #000;
+    color: #fff;
+    padding: 14px 32px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.btn-dark:hover {
+    background-color: #333;
+}
+
+
+@media (max-width: 768px) {
+    .wishlist-empty-container {
+        /* Reduce padding on smaller screens */
+        padding: 60px 0;
+    }
+
+    .wishlist-empty-container h2 {
+        font-size: 1.8rem;
+    }
+
+    .wishlist-empty-container p {
+        font-size: 1rem;
+        margin-bottom: 24px;
+    }
+
+    .btn-dark {
+        padding: 12px 28px;
+        font-size: 0.85rem;
+    }
+}

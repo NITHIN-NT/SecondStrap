@@ -1,0 +1,388 @@
+/* ==================== HERO SECTION ==================== */
+.hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 20px;
+    min-height: 70vh;
+    /* Gives the section height */
+    color: #fff;
+    /* Makes all text inside white */
+    margin-bottom: 40px;
+
+    /* This creates the animated gradient background */
+    background: linear-gradient(-45deg, #333, #001f3f, #222, #001f3f);
+    background: url("images/d2cad9f9-4d7f-48f9-90ae-fec006b2c505.jpg");
+    background-size: 400% 400%;
+    animation: animatedGradient 15s ease infinite;
+
+    /* These are the curved border styles */
+    border-radius: 50px;
+    /* This is the stronger curve you asked for */
+    margin-left: 20px;
+    /* Adds space on the left */
+    margin-right: 20px;
+    /* Adds space on the right */
+}
+
+/* This animation creates the "auto-changing" effect */
+@keyframes animatedGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+}
+
+.hero-content h1 {
+    font-size: 48px;
+    /* Bigger, like the screenshot */
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+}
+
+.hero-content p {
+    font-size: 18px;
+    /* Slightly bigger */
+    color: rgba(255, 255, 255, 0.9);
+    /* Not pure white */
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+/* Your .btn-primary class is already black */
+.btn-primary {
+    display: inline-block;
+    background-color: #000;
+    color: #fff;
+    padding: 14px 32px;
+    /* A bit larger */
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 6px;
+    /* Slightly rounded */
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+    /* Adds a little lift */
+}
+
+/* ==================== GENERAL SECTION STYLING ==================== */
+.home-section {
+    margin-bottom: 60px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 32px;
+}
+
+/* ==================== CATEGORY GRID ==================== */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 0.5fr);
+    gap: 20px;
+}
+
+.category-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 3 / 4;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+.category-card:not(.category-text-card)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.35);
+    z-index: 1;
+}
+
+.category-card span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.category-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.category-card:hover img {
+    transform: scale(1.05);
+}
+
+.category-text-card {
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    transition: background-color 0.3s ease;
+    aspect-ratio: 3 / 4;
+}
+
+.category-text-card span {
+    color: #333;
+    text-shadow: none;
+    font-size: 18px;
+    z-index: 2;
+}
+
+.category-text-card:hover {
+    background-color: #e0e0e0;
+}
+
+
+/* ==================== PRODUCT GRID ==================== */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.product-card {
+    background-color: #fff;
+}
+
+.product-image-container {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+    aspect-ratio: 3 / 4;
+    background-color: #f9f9f9;
+}
+
+.product-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
+    border: 1px solid #e0e0e0;
+}
+
+.product-card-icons {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.product-card:hover .product-card-icons {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.product-card-icons button {
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: #000;
+    transition: all 0.3s ease;
+}
+
+.product-card-icons button:hover {
+    background-color: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.product-info {
+    text-align: left;
+}
+
+.product-name {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.product-name a {
+    color: #333;
+    text-decoration: none;
+}
+
+.product-name a:hover {
+    text-decoration: underline;
+}
+
+.product-price {
+    font-size: 15px;
+    font-weight: 500;
+    color: #000;
+}
+
+
+/* ======================================================== */
+/* ==================== RESPONSIVE (MOBILE) ==================== */
+/* ======================================================== */
+
+/* Tablet and larger phones */
+@media (max-width: 768px) {
+
+    /* --- Hero Section (Mobile) --- */
+    .hero-section {
+        padding: 60px 20px;
+        min-height: 50vh;
+        margin-bottom: 30px;
+
+        /* These are the mobile curved border styles */
+        margin-left: 10px;
+        /* Smaller margin for mobile */
+        margin-right: 10px;
+        /* Smaller margin for mobile */
+        border-radius: 30px;
+        /* This is the stronger mobile curve */
+    }
+
+    .hero-content h1 {
+        font-size: 32px;
+        /* Smaller font for mobile */
+    }
+
+    .hero-content p {
+        font-size: 16px;
+    }
+
+    .btn-primary {
+        padding: 12px 24px;
+        font-size: 15px;
+    }
+
+
+    /* --- General Section --- */
+    .home-section {
+        margin-bottom: 40px;
+    }
+
+    .section-title {
+        font-size: 20px;
+        /* Smaller title */
+        margin-bottom: 24px;
+    }
+
+    /* --- Grids (The main change) --- */
+    .category-grid {
+        grid-template-columns: 1fr;
+        /* 1 column for mobile */
+        gap: 15px;
+        /* Slightly smaller gap */
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 columns for mobile */
+        gap: 15px;
+        /* Slightly smaller gap */
+    }
+
+    /* --- Product Card Icons (to match screenshot) --- */
+    .product-card-icons {
+        opacity: 1;
+        /* Always visible on mobile */
+        transform: none;
+        /* Remove hover-in animation */
+    }
+
+    .product-card:hover .product-card-icons {
+        /* Disable any remaining hover effect */
+        transform: none;
+    }
+
+    /* Hide "Quick view" icon on mobile */
+    .product-card-icons button[aria-label="Quick view"] {
+        display: none;
+    }
+
+    .product-name {
+        font-size: 14px;
+        /* Slightly smaller for 2-col layout */
+    }
+}
+
+/* Smaller mobile phones */
+@media (max-world: 480px) {
+
+    /* --- Hero Section --- */
+    .hero-content h1 {
+        font-size: 24px;
+    }
+
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    /* --- Product Card --- */
+    .product-name {
+        font-size: 13px;
+        letter-spacing: 0.3px;
+    }
+
+    .product-price {
+        font-size: 14px;
+    }
+
+    .product-card-icons button {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+    }
+}

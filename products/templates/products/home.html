@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{% static 'css/products/home.css' %}">
+{% endblock extra_styles %}
+
+{% block content %}
+
+{% comment %} 
+  ▼▼▼ THIS IS THE UPDATED HERO SECTION ▼▼▼ 
+{% endcomment %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Effortless Style, Arrived.</h1>
+        <p>Discover our new Spring collection.</p>
+        {% comment %} <a href="/products" class="btn-primary">Shop Now</a> {% endcomment %}
+    </div>
+</section>
+{% comment %} 
+  ▲▲▲ END OF UPDATED HERO SECTION ▲▲▲ 
+{% endcomment %}
+{% comment %} 
+
+{% if new_arrivals %}
+<section class="home-section">
+    <h2 class="section-title">New Arrivals</h2>
+    <div class="product-grid">
+        {% for new_arrival in new_arrivals %}
+        <div class="product-card">
+            <div class="product-image-container">
+                {% if new_arrival.slug %}
+                <a href="{% url 'Product_card_view' new_arrival.slug %}">
+                    {% if new_arrival.image_url %}
+                        <img src="{{ new_arrival.image_url }}" alt="{{ new_arrival.name }}">
+                    {% else %}
+                        <img src="{{ new_arrival.image }}" alt="{{ new_arrival.name }}">                    
+                    {% endif %}
+                </a>
+                {% else %}
+                    {% if new_arrival.image_url %}
+                        <img src="{{ new_arrival.image_url }}" alt="{{ new_arrival.name }}">
+                    {% else %}
+                        <img src="{{ new_arrival.image }}" alt="{{ new_arrival.name }}">                    
+                    {% endif %}
+                {% endif %}
+                <div class="product-card-icons">
+                    <button aria-label="Add to wishlist"><i class='bx bx-heart'></i></button>
+                    <button aria-label="Quick view"><i class='bx bx-search'></i></button>
+                </div>
+            </div>
+            <div class="product-info">
+                <h3 class="product-name"><a href="#">{{ new_arrival.name }}</a></h3>
+                <p class="product-price">{{ new_arrival.price }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %} {% endcomment %}
+
+<section class="home-section">
+    <h2 class="section-title">Shop By Category</h2>
+    <div class="category-grid">
+        {% for category_data in categories_for_template %}
+        <a href="{% url 'products_page_user' %}?category={{ category_data.id }}" class="category-card">
+            <span>{{ category_data.name }}</span>
+            <img src="{{ category_data.image.url}}" alt="{{ category_data.alt_text }}">
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+{% if featured_products %}
+<section class="home-section">
+    <h2 class="section-title">Featured Products</h2>
+    <div class="product-grid">
+        {% for featured_product in featured_products %}
+            <div class="product-card">
+                <div class="product-image-container">
+                    {% if featured_product.slug %}
+                    <a href="{% url 'Product_card_view' featured_product.slug %}">
+                        {% if featured_product.image %}
+                        <img src="{{ featured_product.image.url }}" alt="{{ featured_product.name }}">
+                        {% else %}
+                        <div class="image-placeholder"></div>
+                        {% endif %}
+                    </a>
+                    <div class="product-card-icons">
+                        <button aria-label="Add to wishlist"><i class='bx bx-heart'></i></button>
+                        <button aria-label="Quick view"><i class='bx bx-search'></i></button>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name"><a href="#">{{ featured_product.name }}</a></h3>
+                    <p class="product-price">{{ featured_product.price }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if most_demanded %}
+<section class="home-section">
+    <h2 class="section-title">Most Demanded Accessories</h2>
+    <div class="product-grid">
+        {% for most_demand in most_demanded %}
+        <div class="product-card">
+            <div class="product-image-container">
+                <a href="{% url 'Product_card_view' most_demand.slug %}">
+                    {% if most_demand.image %}
+                    <img src="{{ most_demand.image.url }}" alt="{{ most_demand.name }}">
+                    {% else %}
+                    <div class="image-placeholder"></div>
+                    {% endif %}
+                </a>
+                <div class="product-card-icons">
+                    <button aria-label="Add to wishlist"><i class='bx bx-heart'></i></button>
+                    <button aria-label="Quick view"><i class='bx bx-search'></i></button>
+                </div>
+            </div>
+            <div class="product-info">
+                <h3 class="product-name"><a href="#">{{ most_demand.name }}</a></h3>
+                <p class="product-price">{{ most_demand.price }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %} 
+
+{% endblock content %}

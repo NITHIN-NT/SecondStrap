@@ -1,0 +1,106 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block title %}
+<title>Admin - Stock Management</title>
+{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/stock/stock_management.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Stock Management</h1>
+        <p>Monitor and manage inventory levels by size</p>
+    </div>
+    <div class="main-actions">
+        <button class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Update Stock
+        </button>
+    </div>
+</div>
+
+<div class="page-filters">
+    <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search products...">
+    </div>
+    <select name="categories" id="categories">
+        <option value="all">All Categories</option>
+        <option value="sunglasses">Sunglasses</option>
+        <option value="watches">Watches</option>
+    </select>
+    <button class="btn btn-secondary">Filter</button>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 2%;"></th> <th>Product Name</th>
+                <th>Size</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+       <tbody>
+    {% for product in products %}
+    <tr class="product-row expandable" data-target="product-{{ product.id }}">
+        <td><i class="fa-solid fa-chevron-right toggle-icon"></i></td>
+        <td>
+            <div class="product-cell">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                <span>{{ product.name }}</span>
+            </div>
+        </td>
+        <td>{{ product.variant_count }} size{{ product.variant_count|pluralize }}</td>
+        
+        <td>-</td>
+        
+        <td><strong>{{ product.total_stock|default:0 }} total</strong></td>
+        
+        <td></td>
+        <td><button class="btn btn-details">View Details</button></td>
+    </tr>
+
+    {% for variant in product.variants.all %}
+    <tr class="variant-row hidden" data-parent="product-{{ product.id }}">
+        <td></td>
+        <td class="variant-name"><i class="bi bi-arrow-return-right"></i> {{ product.name }}</td>
+        <td>{{ variant.size.size }}</td>
+        <td>₹{{ variant.price }}</td>
+        <td>{{ variant.stock }}</td>
+        
+        <td>
+            {% if variant.stock == 0 %}
+                <span class="status-tag status-out-of-stock">Out of Stock</span>
+            {% elif variant.stock < 10 %}
+                <span class="status-tag status-low-stock">Low Stock</span>
+            {% else %}
+                <span class="status-tag status-in-stock">In Stock</span>
+            {% endif %}
+        </td>
+        
+        <td>
+        </td>
+    </tr>
+    {% endfor %}
+    {% empty %}
+    <tr>
+        <td colspan="7" style="text-align: center; padding: 20px;">
+            No products found.
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+    </table>
+</div>
+{% endblock content %}
+
+{% block extraJs %}
+<script src="{% static 'js/stock_management.js' %}"></script>
+{% endblock extraJs %}

@@ -1,0 +1,241 @@
+/* ==================== FORM STYLES (for reset pages) ==================== */
+.form-wrapper {
+    max-width: 500px;
+    margin: 40px auto;
+    /* 40px top/bottom, centered left/right */
+    padding: 40px;
+    background-color: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.form-wrapper h2 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.form-wrapper p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #000;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-button:hover {
+    background-color: #333;
+}
+
+.form-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.form-link a {
+    color: #000;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.form-link a:hover {
+    text-decoration: underline;
+}
+
+/* ==================== ALERT / ERROR STYLES ==================== */
+
+/* For field-specific errors (e.g., "Invalid email") */
+.error-feedback {
+    color: #DA4453;
+    /* From your toastr styles */
+    font-size: 13px;
+    margin-top: 5px;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+/* For non-field errors (e.g., "Passwords do not match") */
+.non-field-errors {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    list-style-type: none;
+}
+
+/* Make sizing predictable */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Fluid container with comfortable side gutters */
+.form-wrapper {
+    max-width: 540px;
+    /* slightly more forgiving on tablets */
+    width: 92%;
+    /* fluid on narrow screens */
+    margin: 40px auto;
+    padding: 40px;
+    background-color: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Slightly smaller headings on small screens */
+.form-wrapper h2 {
+    font-size: 1.5rem;
+    /* responsive by default */
+    margin-bottom: 10px;
+}
+
+/* Ensure inputs/buttons remain touch-friendly but shrink on phones */
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focus style for keyboard users */
+.form-input:focus {
+    outline: none;
+    border-color: #000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Primary button */
+.form-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #000;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+}
+
+/* Error / alert tweaks for smaller screens */
+.non-field-errors {
+    padding: 12px;
+    margin-bottom: 18px;
+    border-radius: 6px;
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    list-style-type: none;
+    font-size: 14px;
+}
+
+/* ===== Tablet breakpoint (small laptops / tablets) ===== */
+@media (max-width: 900px) {
+    .form-wrapper {
+        max-width: 620px;
+        padding: 32px;
+    }
+
+    .form-input,
+    .form-button {
+        font-size: 15px;
+        padding: 11px 14px;
+    }
+}
+
+/* ===== Mobile phones ===== */
+@media (max-width: 480px) {
+    .form-wrapper {
+        margin: 20px auto;
+        padding: 18px;
+        width: 96%;
+        border-radius: 6px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .form-wrapper h2 {
+        font-size: 1.25rem;
+        /* ~20px */
+    }
+
+    .form-wrapper p {
+        font-size: 0.95rem;
+        margin-bottom: 18px;
+    }
+
+    .form-input {
+        padding: 10px 12px;
+        font-size: 15px;
+    }
+
+    .form-button {
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .error-feedback {
+        font-size: 12.5px;
+    }
+
+    .non-field-errors {
+        padding: 10px;
+        font-size: 13px;
+        margin-bottom: 14px;
+    }
+
+    .form-link {
+        margin-top: 14px;
+    }
+}
+
+/* Accessibility and UX micro-improvements */
+.form-button:focus {
+    outline: 3px solid rgba(0, 0, 0, 0.06);
+    outline-offset: 2px;
+}

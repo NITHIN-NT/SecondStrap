@@ -1,0 +1,448 @@
+.auth-form-container {
+    max-width: 500px;
+    margin: 2rem auto 4rem auto;
+    /* Center the form with bottom margin */
+    padding: 2.5rem;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.auth-form-container h2 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #000;
+}
+
+.auth-form-container .subtitle {
+    text-align: center;
+    color: #555;
+    margin-bottom: 2.5rem;
+}
+
+/* This creates the side-by-side layout for First/Last name */
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+    /* Each field takes up equal space */
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 0.8rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    /* Important! */
+    font-size: 15px;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus {
+    border-color: #000;
+    outline: none;
+}
+
+.form-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+}
+
+.form-group-checkbox label {
+    margin-bottom: 0;
+    color: #555;
+}
+
+.form-group-checkbox a {
+    color: #000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.form-group-checkbox a:hover {
+    text-decoration: underline;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #333;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #666;
+}
+
+.auth-switch a {
+    color: #000;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* ================================================
+ADD THIS TO THE BOTTOM OF YOUR existing auth.css
+================================================
+*/
+
+/* For the "Password" and "Forgot password?" row */
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    /* Matches the old label margin */
+}
+
+.label-row label {
+    margin-bottom: 0;
+    /* We don't need margin on the label anymore */
+}
+
+.form-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+}
+
+.form-link:hover {
+    text-decoration: underline;
+}
+
+/* For the "Or continue with" separator */
+.separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #888;
+    margin: 2rem 0;
+    /* Adds space above and below */
+}
+
+.separator::before,
+.separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.separator span {
+    padding: 0 1rem;
+}
+
+/* For the social login buttons (Google, FB, Apple) */
+.social-login {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 55px;
+    height: 55px;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    /* Makes it a circle */
+    text-decoration: none;
+    color: #333;
+    font-size: 26px;
+    /* Icon size */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.social-btn:hover {
+    background-color: #f5f5f5;
+    border-color: #aaa;
+}
+
+/*
+================================================
+  Error Styles (Add to bottom of auth.css)
+================================================
+*/
+
+/* Styles for field-specific errors 
+  (e.g., "This email is already taken.") 
+*/
+.error-list {
+    font-size: 14px;
+    color: #D8000C;
+    /* A strong, clear red */
+    margin-top: 0.5rem;
+    /* Space below the input field */
+}
+
+/* Django renders errors as a <ul> by default.
+  This removes the bullet points and default padding.
+*/
+.error-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Styles for non-field errors 
+  (e.g., "Passwords do not match.") 
+  (Uses the .non-field-errors class you just added to the HTML)
+*/
+.non-field-errors {
+    padding: 1rem;
+    background-color: #fff5f5;
+    /* Light red background */
+    border: 1px solid #e53e3e;
+    border-radius: 4px;
+    color: #c53030;
+    /* Darker red text */
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* This resets the <ul> inside the non-field error box */
+.non-field-errors ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* OPTIONAL: If your form setup adds an 'error' class
+  to invalid <input> fields, this will add a red border.
+*/
+.form-group input.error {
+    border-color: #e53e3e;
+}
+
+.form-group input.error:focus {
+    border-color: #e53e3e;
+    outline: none;
+}
+
+/* ---------- RESPONSIVE ENHANCEMENTS (add at bottom of auth.css) ---------- */
+
+/* Make the form container fluid but capped, with comfortable side padding */
+.auth-form-container {
+    max-width: 540px;
+    /* slightly wider for tablets */
+    margin: 2rem auto 4rem auto;
+    padding: 2.25rem;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    background-color: #fff;
+    width: 92%;
+    box-sizing: border-box;
+}
+
+/* Ensure headings scale a little on small screens */
+.auth-form-container h2 {
+    font-size: 1.75rem;
+    /* ~28px on larger, scales down naturally */
+    line-height: 1.1;
+}
+
+/* Inputs: touch-friendly sizes preserved but slightly reduced on small screens */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+    padding: 0.75rem 0.75rem;
+    font-size: 15px;
+}
+
+/* Social buttons: make them slightly smaller on narrow screens */
+.social-btn {
+    width: 55px;
+    height: 55px;
+    font-size: 26px;
+}
+
+/* Separator keeps breathing room but shrinks on small screens */
+.separator {
+    margin: 1.5rem 0;
+}
+
+/* Label-row: allow the "Forgot password?" link to wrap gracefully */
+.label-row {
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Make form rows wrap on smaller screens so First/Last name stack */
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.form-row .form-group {
+    flex: 1 1 220px;
+    /* grow, shrink, base width */
+}
+
+/* Error container: keep it visible but compact on mobile */
+.non-field-errors {
+    padding: 0.85rem;
+    font-size: 0.95rem;
+}
+
+/* ---------- MEDIA QUERY: Tablets / small laptops ---------- */
+@media (max-width: 900px) {
+    .auth-form-container {
+        max-width: 600px;
+        padding: 2rem;
+    }
+
+    .auth-form-container h2 {
+        font-size: 1.6rem;
+    }
+
+    .social-login {
+        gap: 1rem;
+    }
+
+    .social-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+}
+
+/* ---------- MEDIA QUERY: Mobile phones (narrow) ---------- */
+@media (max-width: 480px) {
+    .auth-form-container {
+        margin: 1rem auto 2rem auto;
+        padding: 1.25rem;
+        width: 96%;
+        border-radius: 6px;
+    }
+
+    .auth-form-container h2 {
+        font-size: 1.35rem;
+        /* ~22px */
+        margin-bottom: 0.4rem;
+    }
+
+    .auth-form-container .subtitle {
+        margin-bottom: 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"] {
+        padding: 0.65rem 0.65rem;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        padding: 0.75rem;
+        font-size: 15px;
+    }
+
+    /* Stack label and link vertically if there's not enough horizontal room */
+    .label-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+    }
+
+    /* make social icons smaller and allow wrap */
+    .social-login {
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .social-btn {
+        width: 46px;
+        height: 46px;
+        font-size: 22px;
+    }
+
+    /* Reduce separator margin */
+    .separator {
+        margin: 1rem 0;
+    }
+
+    /* Form-row stacks */
+    .form-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-row .form-group {
+        flex: 1 1 100%;
+    }
+
+    .auth-switch {
+        font-size: 0.95rem;
+    }
+
+    .form-link {
+        font-size: 13px;
+    }
+
+    .error-list,
+    .non-field-errors {
+        font-size: 13.5px;
+    }
+}
+
+/* ---------- Small accessibility and UX tweaks ---------- */
+/* Increase focus outline thickness for keyboard users */
+.form-group input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Make social buttons easier to tap on mobile */
+.social-btn {
+    touch-action: manipulation;
+}
+
+/* Reduce layout shift if icons load late */
+.social-btn i {
+    display: inline-block;
+    line-height: 1;
+}

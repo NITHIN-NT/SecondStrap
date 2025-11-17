@@ -1,0 +1,276 @@
+/* ===================================
+   Stock Management CSS (Light Theme)
+   ===================================
+   This file styles the stock page to work with a light content area.
+*/
+
+/* Variables for Light Theme */
+:root {
+    --page-bg: #F4F7FA;        /* Matches your light grey page background */
+    --content-bg: #FFFFFF;      /* White for tables, filters, etc. */
+    --border-color: #E0E0E0;    /* Light grey borders */
+    --text-primary: #1C1C1C;    /* Primary dark text */
+    --text-secondary: #6c757d;  /* Secondary grey text */
+    --primary-color: #000000;   /* Black for primary buttons */
+    --primary-text: #FFFFFF;    /* White text on primary buttons */
+    
+    /* Status Tag Colors */
+    --status-low-color-text: #B26B00;
+    --status-low-bg: #FFF4D9;
+    --status-out-color-text: #D92D20;
+    --status-out-bg: #FFEBEB;
+    --status-in-color-text: #027A48;
+    --status-in-bg: #ECFDF3;
+}
+
+/* If your admin_base.css doesn't set this, uncomment the lines below
+   to force the correct page background color.
+*/
+/*
+.content-area {
+    background-color: var(--page-bg) !important; 
+}
+*/
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    color: var(--text-primary); /* Fixed: Dark text */
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.page-header p {
+    color: var(--text-secondary); /* Fixed: Grey text */
+    font-size: 14px;
+    margin: 4px 0 0 0;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color); /* Fixed: Black button */
+    color: var(--primary-text);
+}
+.btn-primary:hover {
+    opacity: 0.85;
+}
+
+.btn-secondary {
+    background-color: var(--content-bg); /* Fixed: White button */
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+.btn-secondary:hover {
+    background-color: #F8F9FA; /* Slightly off-white hover */
+}
+
+.btn-details {
+    background-color: var(--content-bg); /* Fixed: White button */
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 6px 12px;
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+}
+.btn-details:hover {
+    background-color: #F8F9FA;
+    color: var(--text-primary);
+}
+
+/* Filters */
+.page-filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: var(--content-bg); /* Fixed: White background */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0 12px;
+    flex-grow: 1;
+    max-width: 400px;
+}
+
+.search-bar i {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary); /* Fixed: Dark text */
+    padding: 10px 8px;
+    font-size: 14px;
+    width: 100%;
+}
+.search-bar input::placeholder {
+    color: var(--text-secondary);
+}
+
+#categories {
+    background-color: var(--content-bg); /* Fixed: White background */
+    color: var(--text-primary); /* Fixed: Dark text */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Table Styling */
+.table-container {
+    background-color: var(--content-bg); /* Fixed: White background */
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-primary); /* Fixed: Dark text */
+}
+
+th, td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+thead {
+    background-color: #F9FAFB; /* Very light grey for header */
+}
+
+th {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.product-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.product-row:hover {
+    background-color: #F9FAFB; /* Light hover */
+}
+
+.toggle-icon {
+    color: var(--text-secondary);
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.product-cell {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.product-cell img {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+}
+
+.product-cell span {
+    font-weight: 500;
+}
+
+/* Variant Rows */
+.variant-row {
+    background-color: #FAFAFA; /* Slightly off-white */
+}
+
+.variant-row.hidden {
+    display: none;
+}
+
+.variant-name {
+    padding-left: 30px !important; /* Force indentation */
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.variant-name .bi-arrow-return-right {
+    margin-right: 10px;
+    font-size: 16px;
+    color: #b0b0b0;
+}
+
+/* Status Tags */
+.status-tag {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-low-stock {
+    color: var(--status-low-color-text);
+    background-color: var(--status-low-bg);
+}
+
+.status-out-of-stock {
+    color: var(--status-out-color-text);
+    background-color: var(--status-out-bg);
+}
+
+.status-in-stock {
+    /* From your screenshot */
+    color: var(--status-in-color-text);
+    background-color: var(--status-in-bg);
+}
+
+/* Action Icons */
+.action-icons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-icons button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 15px;
+}
+.action-icons button:hover {
+    color: var(--text-primary);
+}

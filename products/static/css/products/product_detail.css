@@ -1,0 +1,943 @@
+/* ==================== PRODUCT DETAIL PAGE (SCOPED) ==================== */
+/* All rules are now prepended with .product-detail-page-wrapper */
+
+.product-detail-page-wrapper .product-detail-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    padding-top: 40px;
+    padding-bottom: 60px;
+}
+
+/* ==================== LEFT - PRODUCT GALLERY ==================== */
+.product-detail-page-wrapper .product-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.product-detail-page-wrapper .gallery-main {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #eaeaea;
+    position: relative;
+}
+
+.product-detail-page-wrapper .gallery-main img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.product-detail-page-wrapper .gallery-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.product-detail-page-wrapper .gallery-thumbnails img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid #eaeaea;
+    cursor: pointer;
+    transition: border-color 0.3s ease, opacity 0.3s ease;
+    opacity: 0.7;
+}
+
+.product-detail-page-wrapper .gallery-thumbnails img:hover {
+    opacity: 1;
+    border-color: #999;
+}
+
+.product-detail-page-wrapper .gallery-thumbnails img.active {
+    opacity: 1;
+    border-color: #000;
+}
+
+/* ==================== RIGHT - PRODUCT INFO ==================== */
+.product-detail-page-wrapper .product-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-detail-page-wrapper .product-info h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+/* --- Review Summary --- */
+.product-detail-page-wrapper .product-review-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.product-detail-page-wrapper .product-review-summary .stars {
+    font-size: 18px;
+    color: #f5a623;
+    display: flex;
+    gap: 2px;
+}
+
+.product-detail-page-wrapper .product-review-summary .review-count {
+    font-size: 15px;
+    color: #555;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* --- Price Container --- */
+.product-detail-page-wrapper .product-price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.product-detail-page-wrapper .product-price-container .offer-price {
+    font-size: 28px;
+    font-weight: 600;
+    color: #000;
+}
+
+.product-detail-page-wrapper .product-price-container del {
+    font-size: 20px;
+    font-weight: 400;
+    color: #777;
+}
+
+/* --- Info Accordions (Offers, Coupons, Description) --- */
+.product-detail-page-wrapper .info-accordion-group {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #eaeaea;
+    margin-bottom: 24px;
+}
+
+.product-detail-page-wrapper .info-accordion {
+    border-bottom: 1px solid #eaeaea;
+    display: grid;
+    grid-template-rows: auto 0fr;
+    transition: grid-template-rows 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.product-detail-page-wrapper .info-accordion[open] {
+    grid-template-rows: auto 1fr;
+}
+
+.product-detail-page-wrapper .info-accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #000;
+    cursor: pointer;
+    list-style: none;
+}
+
+.product-detail-page-wrapper .info-accordion-header::-webkit-details-marker {
+    display: none;
+}
+
+.product-detail-page-wrapper .info-accordion-header::after {
+    content: '+';
+    font-family: inherit;
+    font-size: 24px;
+    font-weight: 300;
+    color: #333;
+    transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.product-detail-page-wrapper .info-accordion[open]>.info-accordion-header::after {
+    content: '−';
+    transform: rotate(180deg);
+}
+
+.product-detail-page-wrapper .info-accordion-content {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-out, padding-bottom 0.3s ease-out;
+}
+
+.product-detail-page-wrapper .info-accordion[open]>.info-accordion-content {
+    opacity: 1;
+    padding-bottom: 20px;
+    transition: opacity 0.3s ease-in 0.2s, padding-bottom 0.3s ease-in 0.2s;
+}
+
+/* =================================================================== */
+/* CSS FOR COUPONS/OFFERS (THIS IS NOW SCOPED)                         */
+/* =================================================================== */
+
+/* Apply Coupon Form */
+.product-detail-page-wrapper .apply-coupon-form {
+    display: flex;
+    gap: 10px;
+}
+
+.product-detail-page-wrapper .apply-coupon-input {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 15px;
+}
+
+.product-detail-page-wrapper .apply-coupon-input:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.product-detail-page-wrapper .apply-coupon-btn {
+    background-color: #000;
+    color: #fff;
+    border: 1px solid #000;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.product-detail-page-wrapper .apply-coupon-btn:hover {
+    background-color: #333;
+}
+
+/* Available Offers List */
+.product-detail-page-wrapper .offer-list,
+.product-detail-page-wrapper .coupon-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.product-detail-page-wrapper .offer-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #333;
+}
+
+/* --- THIS IS THE CRITICAL PART THAT IS NOW FIXED --- */
+.product-detail-page-wrapper .offer-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    /* Fallback border */
+    line-height: 1.5;
+}
+
+.product-detail-page-wrapper .offer-tag-sale {
+    background-color: #e9e0ff;
+    /* Light Lavender */
+    color: #6a40d5;
+    /* Dark Purple Text */
+    border-color: #d1bfff;
+    /* Slightly darker border */
+}
+
+.product-detail-page-wrapper .offer-tag-bogo {
+    background-color: #dffff0;
+    /* Light Mint */
+    color: #008a55;
+    /* Dark Green Text */
+    border-color: #b7e8d7;
+    /* Slightly darker border */
+}
+
+.product-detail-page-wrapper .offer-tag-ship {
+    background-color: #dff5ff;
+    /* Light Blue */
+    color: #006b9d;
+    /* Dark Blue Text */
+    border-color: #b6e3ff;
+    /* Slightly darker border */
+}
+
+/* --- END OF CRITICAL PART --- */
+
+
+/* Discount Coupons List */
+.product-detail-page-wrapper .coupon-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    background-color: #fafafa;
+}
+
+.product-detail-page-wrapper .coupon-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.product-detail-page-wrapper .coupon-code {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+    text-transform: uppercase;
+}
+
+.product-detail-page-wrapper .coupon-description {
+    font-size: 14px;
+    color: #555;
+}
+
+.product-detail-page-wrapper .coupon-apply-link {
+    font-size: 15px;
+    font-weight: 600;
+    color: #337ab7;
+    text-decoration: none;
+    padding: 5px;
+}
+
+.product-detail-page-wrapper .coupon-apply-link:hover {
+    text-decoration: underline;
+}
+
+/* =================================================================== */
+/* (Rest of your CSS is now scoped)                                    */
+/* =================================================================== */
+
+/* --- Options (Size, Color, Quantity) --- */
+.product-detail-page-wrapper .product-options {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.product-detail-page-wrapper .option-label {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.product-detail-page-wrapper .option-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.product-detail-page-wrapper .size-buttons .btn-size {
+    padding: 10px 18px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    min-width: 50px;
+    text-align: center;
+}
+
+.product-detail-page-wrapper .size-buttons .btn-size:hover {
+    border-color: #000;
+}
+
+.product-detail-page-wrapper .size-buttons .btn-size.active {
+    background-color: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.product-detail-page-wrapper .quantity-selector {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: fit-content;
+}
+
+.product-detail-page-wrapper .quantity-selector .btn-quantity {
+    background: #f9f9f9;
+    border: none;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #333;
+    line-height: 1;
+}
+
+.product-detail-page-wrapper .quantity-selector .btn-quantity:first-child {
+    border-right: 1px solid #ccc;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+.product-detail-page-wrapper .quantity-selector .btn-quantity:last-child {
+    border-left: 1px solid #ccc;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.product-detail-page-wrapper .quantity-selector .btn-quantity:hover {
+    background: #f1f1f1;
+}
+
+.product-detail-page-wrapper .quantity-selector #quantity-display {
+    padding: 0 24px;
+    font-size: 16px;
+    font-weight: 500;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* --- Action Buttons (Add to Cart / Buy Now) --- */
+.product-detail-page-wrapper .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.product-detail-page-wrapper .action-buttons .btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    border: 2px solid #000;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.product-detail-page-wrapper .action-buttons .btn-outline {
+    background-color: #fff;
+    color: #000;
+}
+
+.product-detail-page-wrapper .action-buttons .btn-outline:hover {
+    background-color: #f1f1f1;
+}
+
+.product-detail-page-wrapper .action-buttons .btn-solid {
+    background-color: #000;
+    color: #fff;
+}
+
+.product-detail-page-wrapper .action-buttons .btn-solid:hover {
+    background-color: #333;
+    border-color: #333;
+}
+
+/* --- Secondary Actions (Wishlist / Share) --- */
+.product-detail-page-wrapper .secondary-actions {
+    display: flex;
+    gap: 30px;
+}
+
+.product-detail-page-wrapper .secondary-actions .action-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.product-detail-page-wrapper .secondary-actions .action-link:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+.product-detail-page-wrapper .secondary-actions .action-link i {
+    font-size: 20px;
+}
+
+/* --- Image Zoom --- */
+.product-detail-page-wrapper .gallery-main:hover #main-product-image {
+    transform: scale(2);
+}
+
+.product-detail-page-wrapper #main-product-image {
+    transition: transform 0.3s ease;
+    width: 100%;
+    height: auto;
+}
+
+/* --- Product Offer Tag --- */
+.product-detail-page-wrapper .product-offer-tag {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10;
+    background-color: #000;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+/* --- Customer Reviews, Related Products, Modal --- */
+.product-detail-page-wrapper .customer-reviews-container {
+    padding: 60px 0;
+    border-top: 1px solid #eaeaea;
+}
+
+.product-detail-page-wrapper .customer-reviews-container h2 {
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.product-detail-page-wrapper .reviews-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 30px;
+    background-color: #fdfdfd;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+}
+
+.product-detail-page-wrapper .average-rating {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.product-detail-page-wrapper .average-rating .rating-value {
+    font-size: 48px;
+    font-weight: 600;
+}
+
+.product-detail-page-wrapper .average-rating .stars {
+    font-size: 22px;
+    color: #f5a623;
+}
+
+.product-detail-page-wrapper .average-rating .total-reviews {
+    font-size: 16px;
+    color: #777;
+    padding-top: 8px;
+}
+
+.product-detail-page-wrapper #btn-write-review {
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.product-detail-page-wrapper .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.product-detail-page-wrapper .review-item {
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 30px;
+}
+
+.product-detail-page-wrapper .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.product-detail-page-wrapper .review-author {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.product-detail-page-wrapper .review-rating.stars {
+    font-size: 16px;
+    color: #f5a623;
+}
+
+.product-detail-page-wrapper .review-rating.stars .bx-star {
+    color: #ccc;
+}
+
+.product-detail-page-wrapper .review-date {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.product-detail-page-wrapper .review-text {
+    font-size: 16px;
+    color: #333;
+    line-height: 1.7;
+}
+
+.product-detail-page-wrapper .related-products-container {
+    padding: 60px 0;
+}
+
+.product-detail-page-wrapper .related-products-container h2 {
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.product-detail-page-wrapper .related-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.product-detail-page-wrapper .product-card {
+    text-decoration: none;
+    color: #000;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.product-detail-page-wrapper .product-card:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-5px);
+}
+
+.product-detail-page-wrapper .product-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #f8f8f8;
+}
+
+.product-detail-page-wrapper .product-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-detail-page-wrapper .product-card-info {
+    padding: 20px;
+}
+
+.product-detail-page-wrapper .product-card-name {
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-detail-page-wrapper .product-card-price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.product-detail-page-wrapper .product-card-price-container del {
+    font-size: 18px;
+    color: #888;
+}
+
+.product-detail-page-wrapper .product-card-price-container .offer-price {
+    font-size: 24px;
+    font-weight: 600;
+    color: #000;
+}
+
+.product-detail-page-wrapper .image-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 80px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.product-detail-page-wrapper .image-modal .close-modal {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.product-detail-page-wrapper .image-modal .close-modal:hover {
+    color: #ff4444;
+}
+
+.product-detail-page-wrapper .image-modal .modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 85vh;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    animation: zoomIn 0.3s ease;
+}
+
+/* =================================================================== */
+/* NEW COMPACT COUPON FORM STYLES                                      */
+/* =================================================================== */
+
+.product-detail-page-wrapper .apply-coupon-form-compact {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+.product-detail-page-wrapper .apply-coupon-input-compact {
+    /* Make it fill the space */
+    flex-grow: 1;
+
+    /* Basic styling */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 12px 18px;
+    font-size: 15px;
+
+    /* CRITICAL: Add padding on the right to make space for the button */
+    padding-right: 85px;
+    /* Adjust this width based on button text */
+
+    /* Remove default outline */
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.product-detail-page-wrapper .apply-coupon-input-compact:focus {
+    border-color: #000;
+}
+
+.product-detail-page-wrapper .apply-coupon-btn-compact {
+    /* Position it inside the form container */
+    position: absolute;
+    right: 5px;
+    /* Small gap from the edge */
+    top: 50%;
+    transform: translateY(-50%);
+    /* Center vertically */
+
+    /* Make it look like a simple link/text button */
+    background: none;
+    border: none;
+    color: #337ab7;
+    /* Blue link color */
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+
+    /* Add padding for an easier click target */
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.product-detail-page-wrapper .apply-coupon-btn-compact:hover {
+    background-color: #f4f4f4;
+    text-decoration: none;
+    /* Remove underline, just use bg hover */
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* --- Responsive Design (Also Scoped) --- */
+@media (max-width: 768px) {
+    .product-detail-page-wrapper .product-detail-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding-top: 20px;
+        padding-bottom: 30px;
+    }
+
+    .product-detail-page-wrapper .product-info h1 {
+        font-size: 26px;
+    }
+
+    .product-detail-page-wrapper .product-price-container .offer-price {
+        font-size: 24px;
+    }
+
+    .product-detail-page-wrapper .product-price-container del {
+        font-size: 18px;
+    }
+
+    .product-detail-page-wrapper .gallery-thumbnails {
+        gap: 10px;
+    }
+
+    .product-detail-page-wrapper .customer-reviews-container h2,
+    .product-detail-page-wrapper .related-products-container h2 {
+        font-size: 22px;
+        margin-bottom: 30px;
+    }
+
+    .product-detail-page-wrapper .reviews-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 25px;
+        padding: 20px;
+    }
+
+    .product-detail-page-wrapper .average-rating .rating-value {
+        font-size: 40px;
+    }
+
+    .product-detail-page-wrapper .average-rating .stars {
+        font-size: 18px;
+    }
+
+    .product-detail-page-wrapper #btn-write-review {
+        width: 100%;
+        text-align: center;
+    }
+
+    .product-detail-page-wrapper .related-products-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .product-detail-page-wrapper .product-card-info {
+        padding: 15px;
+    }
+
+    .product-detail-page-wrapper .product-card-name {
+        font-size: 15px;
+    }
+
+    .product-detail-page-wrapper .image-modal {
+        padding-top: 40px;
+    }
+
+    .product-detail-page-wrapper .image-modal .close-modal {
+        top: 15px;
+        right: 20px;
+        font-size: 35px;
+    }
+
+    .product-detail-page-wrapper .product-offer-tag {
+        top: 10px;
+        left: 10px;
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+}
+
+@media (max-width: 375px) {
+    .product-detail-page-wrapper .product-info h1 {
+        font-size: 22px;
+    }
+
+    .product-detail-page-wrapper .quantity-selector .btn-quantity {
+        padding: 10px 12px;
+    }
+
+    .product-detail-page-wrapper .quantity-selector #quantity-display {
+        padding: 0 15px;
+    }
+
+    .product-detail-page-wrapper .image-modal {
+        padding-top: 0;
+        background-color: rgba(0, 0, 0, 0.95);
+    }
+
+    .product-detail-page-wrapper .image-modal .modal-content {
+        max-width: 100%;
+        max-height: 100vh;
+        height: 100%;
+        object-fit: contain;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .product-detail-page-wrapper .image-modal .close-modal {
+        z-index: 40;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        color: #fff;
+        font-size: 38px;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    .product-detail-page-wrapper .product-offer-tag {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    .product-detail-page-wrapper .apply-coupon-form {
+        flex-direction: column;
+    }
+
+    .product-detail-page-wrapper .apply-coupon-btn {
+        width: 100%;
+    }
+
+    .product-detail-page-wrapper .offer-item {
+        align-items: flex-start;
+    }
+
+    .product-detail-page-wrapper .offer-tag {
+        flex-shrink: 0;
+    }
+}

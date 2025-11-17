@@ -1,0 +1,480 @@
+/* --- General Page Header --- */
+.page-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  color: #1a202c;
+}
+
+.page-header p {
+  margin: 4px 0 0;
+  font-size: 16px;
+  color: #718096;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+  background-color: #000000;
+  /* Purple */
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  /* Ensures button font matches */
+  font-size: 14px;
+  /* Ensures button font matches */
+}
+
+.btn-primary:hover {
+  background-color: #553c9a;
+}
+
+
+/* --- Main Content Card --- */
+.data-table-card {
+  /* Generic name for User card, Product card, etc. */
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  padding: 24px;
+  overflow: hidden;
+}
+
+/* --- Toolbar (Search + Filters) --- */
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.search-bar {
+  position: relative;
+  flex-grow: 1;
+  min-width: 250px;
+}
+
+.search-bar input[type="text"] {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+}
+
+.search-bar input[type="text"]::placeholder {
+  color: #a0aec0;
+}
+
+.search-bar .fa-search {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  font-size: 14px;
+}
+
+/* Style for the search input */
+.search-bar input[type="text"] {
+  width: 100%;
+  height: 40px;
+  /* Example height */
+
+  /* Add padding on BOTH sides for the icons */
+  padding-left: 35px;
+  padding-right: 35px;
+
+  /* Your other styles (border, border-radius, etc.) */
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  box-sizing: border-box;
+  /* Ensures padding is included in the width */
+}
+
+/* Base styles for both icons */
+.search-bar .search-icon,
+.search-bar .clear-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+/* Position the search icon on the left */
+.search-bar .search-icon {
+  left: 12px;
+}
+
+/* Position the clear icon on the right */
+.search-bar .clear-icon {
+  right: 12px;
+  cursor: pointer;
+  display: none;
+  /* Hide it by default */
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+}
+
+.filter-dropdown {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #4a5568;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+}
+
+/* --- Data Table --- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table thead tr {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table thead th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.data-table tbody td {
+  padding: 16px;
+  vertical-align: middle;
+  color: #2d3748;
+}
+
+/* --- Product Table Image (NEW) --- */
+.product-table-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+
+/* --- Status Pills --- */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-badge.status-active {
+  background-color: #e6f7f0;
+  /* Light green */
+  color: #0a875a;
+  /* Dark green */
+}
+
+.status-badge.status-blocked {
+  background-color: #fdeeee;
+  /* Light red */
+  color: #e53e3e;
+  /* Dark red (Used for 'Out of Stock') */
+}
+
+.status-badge.status-low {
+  background-color: #fefcbf;
+  /* Light yellow */
+  color: #b7791f;
+  /* Dark yellow */
+}
+
+/* --- Action Buttons --- */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-action {
+  font-size: 16px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.btn-action.btn-edit {
+  color: #000000;
+  /* Purple */
+}
+
+.btn-action.btn-edit:hover {
+  color: #553c9a;
+}
+
+.btn-action.btn-block {
+  color: #ec2828;
+  /* Gold/Yellow */
+}
+
+.btn-action.btn-block:hover {
+  color: #b40000;
+}
+
+
+.btn-action.btn-unblock {
+  color: #00b21e;
+  /* Gold/Yellow */
+}
+
+.btn-action.btn-unblock:hover {
+  color: #41c703;
+}
+
+/* ==================== BUTTON-BASED PAGINATION ==================== */
+
+.pagination-container {
+  margin-top: 48px;
+  width: 100%;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  /* This creates the space between the buttons */
+}
+
+/* This is the base style for ALL buttons:
+  - Clickable links (<a>)
+  - The current page (<span>.current)
+  - Disabled arrows (<span>.disabled)
+*/
+.pagination a,
+.pagination .current,
+.pagination .disabled {
+  display: inline-flex;
+  /* Helps center the text/arrow perfectly */
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  /* Makes the button square */
+  height: 40px;
+  /* Makes the button square */
+
+  border: 1px solid #ddd;
+  /* The light grey border */
+  border-radius: 6px;
+  /* The rounded corners */
+
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Style for the clickable links (<a>) on HOVER */
+.pagination a:hover {
+  background-color: #f5f5ff;
+  /* Light grey background on hover */
+  border-color: #bbb;
+}
+
+/* Style for the CURRENT page button */
+.pagination .current {
+  color: #000000;
+  /* The blue text color from your image */
+  border-color: #000000;
+  /* A matching blue border */
+  font-weight: 600;
+  cursor: default;
+  /* It's not clickable */
+}
+
+/* Style for the DISABLED arrow buttons */
+.pagination .disabled {
+  color: #aaa;
+  /* Faded grey text */
+  border-color: #eee;
+  /* Faded grey border */
+  cursor: default;
+}
+
+.products-sidebar .filter-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.products-sidebar .filter-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* space between radio and label */
+  margin-bottom: 10px;
+  /* vertical space between each item */
+  line-height: 1.2;
+}
+
+.products-sidebar .filter-list input[type="radio"] {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.products-sidebar .filter-list label {
+  margin: 0;
+}
+
+/* ==================== DELETE MODAL ==================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Semi-transparent black */
+  display: flex;
+  /* Uses flexbox to center the modal */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 450px;
+  animation: modal-fade-in 0.3s ease-out;
+}
+
+/* Simple fade-in and slide-up animation */
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.modal-close {
+  font-size: 28px;
+  font-weight: 300;
+  color: #718096;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #1a202c;
+}
+
+.modal-body p {
+  font-size: 16px;
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Re-usable button styles for the modal */
+.btn-secondary,
+.btn-danger {
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.btn-secondary {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-secondary:hover {
+  background-color: #cbd5e0;
+}
+
+.btn-danger {
+  background-color: #e53e3e;
+  /* Red */
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #c53030;
+}

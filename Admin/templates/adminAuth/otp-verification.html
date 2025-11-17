@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification | SecondStrap Admin Portal</title>
+    
+    <link rel="stylesheet" href="{% static 'css/adminAuth/otp-verification.css' %}">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Small style additions for message boxes */
+        .messages {
+            width: 100%;
+            max-width: 400px; /* Match form width */
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem 0;
+        }
+        .messages li {
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .messages li.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .messages li.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .form-errors p {
+            color: #721c24;
+            font-size: 0.9rem;
+            margin-top: -1rem; /* Pull up error */
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="brand-panel">
+        <div class="brand-content">
+            <h2>SecondStrap</h2>
+            <p>Admin Portal</p>
+        </div>
+    </aside>
+
+    <main class="form-panel">
+        
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="form-container">
+            <h1>Verify OTP</h1>
+            <p class="subheading">
+                We've sent a 4-digit code to 
+                <strong>{{ email|default:"your email" }}</strong>
+            </p>
+
+            <form method="POST" action="">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="form-errors">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                {% if form.otp.errors %}
+                    <div class="form-errors">
+                        {% for error in form.otp.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="otp-1">VERIFICATION CODE</label>
+                    <div class="otp-inputs">
+                        <input type="text" id="otp-1" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                        <input type="text" id="otp-2" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                        <input type="text" id="otp-3" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                        <input type="text" id="otp-4" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                        <input type="text" id="otp-3" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                        <input type="text" id="otp-4" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                    </div>
+                    <input type="hidden" name="otp" id="id_otp" required>
+                </div>
+                
+                <div class="resend-timer">
+                    Resend code in <span>60</span>s
+                </div>
+
+                <button type="submit" class="btn-submit">Verify & Continue</button>
+            </form>
+
+            <div class="support-link">
+                Need help? <a href="#">Contact Support</a>
+            </div>
+        </div>
+
+        <footer class="form-footer">
+            © 2024 SecondStrap Admin Panel
+        </footer>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll('.otp-input');
+            const hiddenInput = document.getElementById('id_otp');
+
+            inputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    // Move to next input if current is full
+                    if (e.target.value.length === 1 && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                    updateHiddenInput();
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    // Move to previous input on backspace if current is empty
+                    if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                    updateHiddenInput(); // Update on backspace too
+                });
+
+                // Handle pasting
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pasteData = e.clipboardData.getData('text');
+                    const digits = pasteData.replace(/\D/g, ''); // Remove non-digits
+                    if (digits.length === 6) {
+                        inputs.forEach((inp, i) => {
+                            inp.value = digits[i] || '';
+                        });
+                        updateHiddenInput();
+                        inputs[inputs.length - 1].focus(); // Focus last input
+                    }
+                });
+            });
+
+            function updateHiddenInput() {
+                let combinedValue = '';
+                inputs.forEach(input => {
+                    combinedValue += input.value;
+                });
+                hiddenInput.value = combinedValue;
+            }
+        });
+    </script>
+</body>
+</html>

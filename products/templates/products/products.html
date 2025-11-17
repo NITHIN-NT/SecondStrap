@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Products{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'css/products/products.css' %}">
+{% endblock extra_styles %}
+
+{% block content %}
+
+    <div id="overlay"></div>
+    <div class="products-page-header">
+        <h2>Products</h2>
+    </div>
+
+    <div class="mobile-filter-header">
+        <button type="button" class="mobile-nav-btn" id="mobile-sort-btn">
+            <i class='bx bx-sort-down'></i> Sort
+        </button>
+        <span class="mobile-nav-divider"></span>
+        <button type="button" class="mobile-nav-btn" id="mobile-filter-btn">
+            <i class='bx bx-filter-alt'></i> Filter
+        </button>
+    </div>
+    <form id="filter-form" method="GET">
+        <div class="products-page-container">
+            
+            <aside class="products-sidebar">
+                
+                <div class="sidebar-mobile-header">
+                    <h4>Filters</h4>
+                    <button type="button" class="btn-close-modal" id="close-filter-btn">&times;</button>
+                </div>
+                <h3 class="sidebar-desktop-header">Filters</h3>
+                
+                <div class="filter-group category-dropdown">
+                    <h4 id="category-toggle">
+                        Category 
+                        <span class="arrow" id="category-arrow">&#9662;</span> </h4>
+                    <ul class="filter-list" id="category-list">
+                        <li>
+                            <input type="radio" id="cat-all" name="category" value="all"
+                            {% if not selected_category_id or selected_category_id == 'all' %}checked{% endif %}> 
+                            <label for="cat-all">All Products</label>
+                        </li>
+
+                        {% for category in categories %}
+                        <li>
+                            <input type="radio" id="cat-{{ category.id }}" name="category" value="{{category.id}}"
+                            {% if selected_category_id == category.id|stringformat:"s" %}checked{% endif %}>
+                            <label for="cat-{{ category.id }}">{{ category.name }}</label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <hr>
+                <br>
+                <div class="filter-group">
+                    <h4>Price Range</h4>
+                    <div class="price-range-labels">    
+                        <span>₹{{min_amount}}</span>
+                        <span id='price_value'>₹{{request.GET.price_range|default:max_amount}}</span>
+                    </div>
+                    <input 
+                        type="range" 
+                        name = 'price_range'
+                        id="price_range"
+                        class="price-slider-placeholder" 
+                        min="{{min_amount|default:"0"}}" 
+                        max="{{max_amount|default:"10000"}}" 
+                        value="{{request.GET.price_range|default:max_amount}}"
+                        >
+                </div>
+                <hr>
+                <br>
+                <div class="filter-group desktop-sort-group">
+                    <h4>Sort by</h4>
+                    <select name="sort" id="sort-by" class="sort-select" onchange="this.form.submit();" value='{{request.GET.sort}}'>
+                        <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>New arrivals</option>
+                        <option value="price-low-high" {% if selected_sort == 'price-low-high' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price-high-low" {% if selected_sort == 'price-high-low' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="name-asc" {% if selected_sort == 'name-asc' %}selected{% endif %}>Name: aA - zZ</option>
+                        <option value="name-desc" {% if selected_sort == 'name-desc' %}selected{% endif %}>Name: zZ - aA</option>
+                        <option value="popularity" {% if selected_sort == 'popularity' %}selected{% endif %}>Popularity</option>
+                        <option value="rating" {% if selected_sort == 'rating' %}selected{% endif %}>Average ratings</option>
+                        <option value="featured" {% if selected_sort == 'featured' %}selected{% endif %}>Featured</option>
+                    </select>
+                </div>
+                <div class="filter-buttons">
+                    <a href="{% url "products_page_user" %}" class="btn-filter-reset">Reset</a>
+                </div>
+            </aside>
+            
+            <section class="products-grid-container">
+
+                <div class="products-grid-header">
+                    <div class="search-input-container">
+                        <input type="search" 
+                               name="search" 
+                               id="search-box" 
+                               placeholder="Search products..." 
+                               value="{{ request.GET.search|default:'' }}">
+                        
+                        <button type="button" class="clear-search-btn" id="clear-search-btn">
+                            &times; </button>
+                    </div>
+                </div>
+                <div class="products-grid"> 
+                    {% for product in page_obj %}
+                        <div class="product-card">
+                            <a href="{% url 'Product_card_view' product.slug %}">
+                                <div class="product-image-placeholder" style="background-image: url({{product.image.url}}); background-size: cover;"></div>
+                            </a>
+                            <div class="product-info-container">
+                                <div class="product-details">
+                                    <h5>{{product.name}}</h5>
+                                    {% comment %} <del><p class="product-price">₹{{product.base_price}}</p></del> {% endcomment %}
+                                    <p class="product-price">₹{{product.offer_price}}</p>
+                                </div>
+                                <div class="product-actions">
+                                    <i class='bx bx-heart'></i>
+                                    <i class='bx bx-shopping-bag'></i>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                     <div class="product-empty">
+                        <p>No Products</p>
+                     </div>
+                    {% endfor %}
+                </div>
+
+                <section class='pagination-container'>
+                    <div class="pagination">
+                    
+                        {% if page_obj.has_previous %}
+                            <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">&lt;</a>
+                        {% else %}
+                            <span class="disabled">&lt;</span>
+                        {% endif %}
+
+                        {% for i in custom_page_range %}
+                            {% if page_obj.number == i %}
+                                <span class="current">{{ i }}</span>
+                            {% else %}
+                                <a href="?{{ request.GET.urlencode }}&page={{ i }}">{{ i }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">&gt;</a>
+                        {% else %}
+                            <span class="disabled">&gt;</span>
+                        {% endif %}
+                            
+                    </div>
+                </section>
+            
+            </section>
+        </div>
+        
+        <div id="sort-modal-mobile">
+            <div class="sidebar-mobile-header">
+                <h4>Sort By</h4>
+                <button type="button" class="btn-close-modal" id="close-sort-btn">&times;</button>
+            </div>
+            <ul class="filter-list">
+                <li>
+                    <input type="radio" id="sort-newest" name="sort" value="newest" onchange="this.form.submit();" {% if selected_sort == 'newest' %}checked{% endif %}>
+                    <label for="sort-newest">New arrivals</label>
+                </li>
+                <li>
+                    <input type="radio" id="sort-low-high" name="sort" value="price-low-high" onchange="this.form.submit();" {% if selected_sort == 'price-low-high' %}checked{% endif %}>
+                    <label for="sort-low-high">Price: Low to High</label>
+                </li>
+                <li>
+                    <input type="radio" id="sort-high-low" name="sort" value="price-high-low" onchange="this.form.submit();" {% if selected_sort == 'price-high-low' %}checked{% endif %}>
+                    <label for="sort-high-low">Price: High to Low</label>
+                </li>
+                <li>
+                    <input type="radio" id="sort-name-asc" name="sort" value="name-asc" onchange="this.form.submit();" {% if selected_sort == 'name-asc' %}checked{% endif %}>
+                    <label for="sort-name-asc">Name: aA - zZ</label>
+                </li>
+                <li>
+                    <input type="radio" id="sort-name-desc" name="sort" value="name-desc" onchange="this.form.submit();" {% if selected_sort == 'name-desc' %}checked{% endif %}>
+                    <label for="sort-name-desc">Name: zZ - aA</label>
+                </li>
+                </ul>
+        </div>
+        </form> 
+{% endblock content %}
+
+
+{% block extra_script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const filterForm = document.getElementById('filter-form');
+            
+            // === Auto-submit for radio/checkboxes ===
+            const filterInputs = filterForm.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+            filterInputs.forEach(function (input) {
+                // We add a check to NOT auto-submit the mobile sort buttons,
+                // as they already have an onchange attribute.
+                if (input.name !== 'sort') {
+                    input.addEventListener('change', function () {
+                        filterForm.submit();
+                    });
+                }
+            });
+
+            // === Auto-submit for price range ===
+            const priceRange = document.getElementById('price_range');
+            const priceValue = document.getElementById('price_value');
+            if (priceRange && priceValue) {
+                priceRange.addEventListener('input', function() {
+                    priceValue.textContent = '₹' + this.value;
+                });
+
+                priceRange.addEventListener('change', function() {
+                    filterForm.submit();
+                });
+            }
+
+            // === SEARCH BOX LOGIC (Unchanged) ===
+            const searchBox = document.getElementById('search-box');
+            const clearBtn = document.getElementById('clear-search-btn');
+
+            function toggleClearButton() {
+                if (searchBox.value.length > 0) {
+                    clearBtn.style.display = 'block';
+                } else {
+                    clearBtn.style.display = 'none';
+                }
+            }
+            toggleClearButton();
+            searchBox.addEventListener('input', toggleClearButton);
+            clearBtn.addEventListener('click', function() {
+                searchBox.value = '';
+                toggleClearButton();
+                filterForm.submit();
+            });
+
+            // === CATEGORY DROPDOWN TOGGLE (Unchanged) ===
+            const categoryToggle = document.getElementById('category-toggle');
+            const categoryList = document.getElementById('category-list');
+            const categoryArrow = document.getElementById('category-arrow');
+            let categoryOpen = true;
+
+            categoryToggle.addEventListener('click', () => {
+                categoryOpen = !categoryOpen;
+                categoryList.style.display = categoryOpen ? 'flex' : 'none';
+                categoryArrow.innerHTML = categoryOpen ? '&#9652;' : '&#9662;'; // ▲ / ▼
+            });
+
+
+            // ===================================================
+            // ============ NEW RESPONSIVE JS LOGIC ==============
+            // ===================================================
+
+            const overlay = document.getElementById('overlay');
+            const body = document.body;
+
+            // --- Filter Sidebar Modal ---
+            const filterSidebar = document.querySelector('.products-sidebar');
+            const openFilterBtn = document.getElementById('mobile-filter-btn');
+            const closeFilterBtn = document.getElementById('close-filter-btn');
+
+            // --- Sort Bottom-Sheet Modal ---
+            const sortModal = document.getElementById('sort-modal-mobile');
+            const openSortBtn = document.getElementById('mobile-sort-btn');
+            const closeSortBtn = document.getElementById('close-sort-btn');
+
+            function openFilter() {
+                filterSidebar.classList.add('is-open');
+                overlay.classList.add('is-open');
+                body.style.overflow = 'hidden'; // Prevents scrolling background
+            }
+
+            function openSort() {
+                sortModal.classList.add('is-open');
+                overlay.classList.add('is-open');
+                body.style.overflow = 'hidden';
+            }
+
+            function closeAllModals() {
+                filterSidebar.classList.remove('is-open');
+                sortModal.classList.remove('is-open');
+                overlay.classList.remove('is-open');
+                body.style.overflow = ''; // Re-enables scrolling
+            }
+
+            // Event Listeners
+            if (openFilterBtn) {
+                openFilterBtn.addEventListener('click', openFilter);
+            }
+            if (closeFilterBtn) {
+                closeFilterBtn.addEventListener('click', closeAllModals);
+            }
+            
+            if (openSortBtn) {
+                openSortBtn.addEventListener('click', openSort);
+            }
+            if (closeSortBtn) {
+                closeSortBtn.addEventListener('click', closeAllModals);
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', closeAllModals);
+            }
+            
+        });
+    </script>
+{% endblock extra_script %}

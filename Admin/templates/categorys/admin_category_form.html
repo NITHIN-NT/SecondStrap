@@ -1,0 +1,43 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/category/admin_form.css' %}">
+{% endblock extra_css %}
+{% block content %}
+<div class="form-container">
+    
+    <h2>{% if category.id %}Edit Category{% else %}Add New Category{% endif %}</h2>
+    
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div>
+            <label for="{{ form.name.id_for_label }}">Name</label>
+            {{ form.name }}
+            {% for err in form.name.errors %}
+                <div class="field-error">{{ err }}</div>
+            {% endfor %}
+        </div>
+
+        <div>
+            <label for="{{ form.description.id_for_label }}">Description</label>
+            {{ form.description }}
+            {% for err in form.description.errors %}
+                <div class="field-error">{{ err }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url "admin_category" %}" class="btn btn-secondary">Back</a>
+<button type="submit" class="btn btn-primary">{% if category.id %}Update Category{% else %}Save Category{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock content %}

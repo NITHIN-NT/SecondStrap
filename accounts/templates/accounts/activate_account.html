@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify Code{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'css/accounts/otp_form.css' %}">
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="otp-container">
+    <h2>Verification Code</h2>
+    <p>Enter the 6-digit code sent to you.</p>
+
+    <form method="POST" class="otp-form" id="otp-form">
+        {% csrf_token %}
+        
+        <input type="hidden" name="otp" id="hidden-otp-input">
+
+        <div class="otp-input-boxes">
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+        </div>
+        
+        <button type="submit" class="btn-submit">Verify & Continue</button>
+    </form>
+
+    <div class="resend-timer-container">
+        <div id="timer-container">
+            Resend code in <span id="timer">60</span>s
+        </div>
+        <div id="resend-container" style="display:none;">
+            Didn't receive the code? 
+            <a href="{% url "resent_otp" %}" id="resend-link">Resend code</a>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const otpBoxes = document.querySelectorAll('.otp-box');
+        const hiddenInput = document.getElementById('hidden-otp-input');
+        const otpForm = document.getElementById('otp-form');
+
+        otpBoxes.forEach((box, index) => {
+            box.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value.length === 1 && index < otpBoxes.length - 1) {
+                    // Move to the next box
+                    otpBoxes[index + 1].focus();
+                }
+                combineInputs();
+            });
+
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    // Move to the previous box on backspace if current is empty
+                    otpBoxes[index - 1].focus();
+                }
+            });
+
+            // Handle pasting
+            box.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                const pasteDigits = pasteData.replace(/\D/g, ''); // Remove non-digits
+                
+                if (pasteDigits.length === otpBoxes.length) {
+                    otpBoxes.forEach((b, i) => {
+                        b.value = pasteDigits[i];
+                    });
+                    combineInputs();
+                    otpBoxes[otpBoxes.length - 1].focus();
+                }
+            });
+        });
+
+        function combineInputs() {
+            let combinedValue = '';
+            otpBoxes.forEach(box => {
+                combinedValue += box.value;
+            });
+            hiddenInput.value = combinedValue;
+        }
+
+        // Combine inputs before form submission
+        otpForm.addEventListener('submit', () => {
+            combineInputs();
+        });
+
+        // --- Timer Logic (from previous answer) ---
+        let timeLeft = 60; // 60 seconds timer
+        const timerElement = document.getElementById('timer');
+        const timerContainer = document.getElementById('timer-container');
+        const resendContainer = document.getElementById('resend-container');
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            timerElement.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                timerContainer.style.display = 'none';
+                resendContainer.style.display = 'block';
+            }
+        }, 1000);
+    });
+</script>
+{% endblock extra_script %}

@@ -1,0 +1,320 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>SecondStrap - {% block title %}Home{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.jpg' %}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/breadcrumbs.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_styles %}{% endblock extra_styles %}
+
+    <style>
+        /* --- This sets the DEFAULT font for your whole site --- */
+        body {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 400; /* 400 is 'regular' */
+            font-style: normal;
+        }
+
+        /* --- This makes sure other elements use the new font --- */
+        input, button, a {
+            font-family: inherit; /* 'inherit' tells them to use the body's font */
+        }
+
+        /* All the classes you provided are defined below.
+           You can now add these to any element if you want
+           a different style (e.g., class="barlow-condensed-bold")
+        */
+
+        .vt323-regular {
+            font-family: "VT323", monospace;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .barlow-condensed-thin {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 100;
+            font-style: normal;
+        }
+
+        .barlow-condensed-extralight {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 200;
+            font-style: normal;
+        }
+
+        .barlow-condensed-light {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 300;
+            font-style: normal;
+        }
+
+        .barlow-condensed-regular {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .barlow-condensed-medium {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 500;
+            font-style: normal;
+        }
+
+        .barlow-condensed-semibold {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        .barlow-condensed-bold {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        .barlow-condensed-extrabold {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 800;
+            font-style: normal;
+        }
+
+        .barlow-condensed-black {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 900;
+            font-style: normal;
+        }
+
+        .barlow-condensed-thin-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 100;
+            font-style: italic;
+        }
+
+        .barlow-condensed-extralight-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 200;
+            font-style: italic;
+        }
+
+        .barlow-condensed-light-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        .barlow-condensed-regular-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .barlow-condensed-medium-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        .barlow-condensed-semibold-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 600;
+            font-style: italic;
+        }
+
+        .barlow-condensed-bold-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 700;
+            font-style: italic;
+        }
+
+        .barlow-condensed-extrabold-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 800;
+            font-style: italic;
+        }
+
+        .barlow-condensed-black-italic {
+            font-family: "Barlow Condensed", sans-serif;
+            font-weight: 900;
+            font-style: italic;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+</head>
+<body>
+    <div class="offer-carousel">
+        <div class="offer-track">
+            <div class="offer-item">🔥 Flat 50% OFF on Premium Shirts!</div>
+            <div class="offer-item">🚚 Free Shipping on Orders Above ₹999!</div>
+            <div class="offer-item">💳 Extra 10% OFF with SBI Credit Cards!</div>
+            <div class="offer-item">🕒 Limited Time Offer — Grab Yours Now!</div>
+            <div class="offer-item">🎁 Buy 2 Get 1 Free on Casual Wear!</div>
+            <div class="offer-item">🧥 Up to 40% OFF on Winter Collection!</div>
+            <div class="offer-item">🕶️ Stylish Sunglasses Starting at ₹499!</div>
+            <div class="offer-item">👟 Footwear Sale — Flat 30% OFF!</div>
+            <div class="offer-item">💼 Free Returns Within 7 Days!</div>
+            <div class="offer-item">🎉 New Arrivals Every Week — Check Now!</div>
+        </div>
+    </div>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="/" class="logo">SecondStrap</a>
+
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/products">Products</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+
+            <div class="nav-icons">
+                {% if user.is_authenticated %}
+                    <a href="{% url "profile_view_user" %}" aria-label="User Account"><i class='bx bx-user'></i></a>
+                {% else %}
+                    <a href="{% url "login" %}">Login</a>
+                {% endif %}
+                <a href="{% url "wishlist" %}" aria-label="Wishlist"><i class='bx bx-heart'></i></a>
+                <a href="{% url "cart" %}" aria-label="Cart"><i class='bx bx-shopping-bag'></i></a>
+            </div>
+
+            <input type="checkbox" id="menu-toggle" class="menu-toggle">
+            <label for="menu-toggle" class="menu-icon"><i class='bx bx-menu'></i></label>
+
+            <div class="mobile-menu">
+                <div class="mobile-menu-header">
+                    {% if user.is_authenticated %}
+                        <a href="{% url "profile_view_user" %}" class="mobile-menu-user">
+                            <i class='bx bxs-user-circle'></i>
+                            {% if user.first_name %}
+                                <span>{{User.first_name}}</span>
+                            {% else %}
+                                <span>Account</span>
+                            {% endif %}
+
+                        </a>
+                    {% else %}
+                        <a href="{% url "login" %}" class="mobile-menu-login">
+                            <i class='bx bx-log-in'></i>
+                            <span>Login / Sign Up</span>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <ul class="mobile-menu-links">
+                    <li><a href="/"><i class='bx bx-home-alt'></i><span>Home</span></a></li>
+                    <li><a href="/products"><i class='bx bx-store'></i><span>Products</span></a></li>
+                    <li><a href="/about"><i class='bx bx-info-circle'></i><span>About</span></a></li>
+                </ul>
+                
+                <hr class="mobile-menu-divider">
+
+                <ul class="mobile-menu-links">
+                    <li><a href="{% url "wishlist" %}"><i class='bx bx-heart'></i><span>Wishlist</span></a></li>
+                    <li><a href="{% url "cart" %}"><i class='bx bx-shopping-bag'></i><span>Cart</span></a></li>
+                </ul>
+            </div>
+            
+            <label for="menu-toggle" class="mobile-menu-overlay"></label>
+
+        </nav>
+    </header>
+    <br>
+    {% if breadcrumbs %}
+        <div class="container breadcrumbs-container">
+            {% include "dynamic_breadcrumbs/breadcrumbs.html" with breadcrumbs=breadcrumbs %}
+        </div>
+    {% endif %}
+    <main class="main-content container">
+        {% block content %}
+        {% endblock content %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container container">
+            
+            <div class="footer-column">
+                <h4>Contact & Service</h4>
+                <ul>
+                    <li>+1 123 456 7890</li>
+                    <li>info@SecondStrap.in.com</li>
+                    <li>FAQs</li>
+                    <li>Returns</li>
+                    <li>Shipping</li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/products">Products</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="/terms">Terms</a></li>
+                    <li><a href="/privacy">Privacy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Newsletter</h4>
+                <p>Sign up to our newsletter to stay informed</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Your email address" required>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+
+        </div>
+
+        <hr class="footer-divider">
+        <div class="footer-bottom container">
+            <p>© 2023 SecondStrap.in All rights reserved.</p>
+            <p>Designed by SecondStrap.in</p>
+        </div>
+    </footer>
+
+</body>
+{% block extra_script %}{% endblock extra_script %}
+ <script>
+        // Set toastr options (optional)
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+        };
+    
+        // 4. Loop through the Django messages and show them
+        {% if messages %}
+            {% for message in messages %}
+                // Use the message 'tags' to determine the toast type
+                // (e.g., 'success', 'error', 'warning', 'info')
+                
+                var toastType = '{{ message.tags }}';
+                var messageText = '{{ message|safe }}'; // '|safe' is important if your messages have HTML
+
+                if (toastType.includes('success')) {
+                    toastr.success(messageText);
+                } else if (toastType.includes('error')) {
+                    toastr.error(messageText);
+                } else if (toastType.includes('warning')) {
+                    toastr.warning(messageText);
+                } else if (toastType.includes('info')) {
+                    toastr.info(messageText);
+                } else {
+                    // Default to 'info' if tag is something else
+                    toastr.info(messageText);
+                }
+            {% endfor %}
+        {% endif %}
+    </script>
+</html>

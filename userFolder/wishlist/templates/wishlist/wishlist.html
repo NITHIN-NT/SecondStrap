@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Wishlist{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'css/wishlist/wishlist.css' %}">
+{% endblock extra_styles %}
+
+
+{% block content %}
+<div class="wishlist-empty-container">
+    <h2 class="barlow-condensed-semibold">Your Wishlist</h2>
+    <p>Your wishlist is currently empty.</p>
+    
+    {% if user.is_authenticated %}
+        <a href="{% url "products_page_user" %}" class="btn-dark">Continue Shopping</a>
+    {% else %}
+        <a href="{% url "login" %}" class="btn-dark">Login Continue</a>   
+    {% endif %}
+    
+</div>
+{% endblock content %}

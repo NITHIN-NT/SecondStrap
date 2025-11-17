@@ -1,0 +1,160 @@
+/* --- Wallet Balance Card --- */
+.wallet-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.wallet-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem;
+}
+
+.wallet-info h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.wallet-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #777;
+    font-weight: 500;
+}
+
+.wallet-info .balance {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #000;
+    margin-top: 0.25rem;
+}
+
+.add-money-btn {
+    display: inline-flex;
+    align-items: center;
+    background-color: #0d6efd;
+    color: #ffffff;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background-color 0.3s ease;
+}
+
+.add-money-btn i {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.add-money-btn:hover {
+    background-color: #0b5ed7;
+}
+
+/* --- Transaction History Table --- */
+.profile-card-body {
+    /* We reset padding here so the table can be flush */
+    padding: 0;
+}
+
+.table-responsive-wrapper {
+    overflow-x: auto;
+    /* Ensures table is scrollable on small screens */
+}
+
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+    /* Prevents squishing on mobile */
+}
+
+.transaction-table th,
+.transaction-table td {
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.transaction-table tr:last-child th,
+.transaction-table tr:last-child td {
+    border-bottom: none;
+}
+
+.transaction-table thead th {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: #fcfcfc;
+}
+
+.transaction-table tbody td {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.transaction-table tbody td:first-child {
+    color: #555;
+    font-weight: 500;
+}
+
+.amount,
+.status {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.amount i,
+.status i {
+    font-size: 1.2rem;
+    margin-right: 0.4rem;
+}
+
+.amount-credit {
+    color: #28a745;
+    /* Green */
+}
+
+.amount-debit {
+    color: #dc3545;
+    /* Red */
+}
+
+.status-completed {
+    color: #28a745;
+    /* Green */
+}
+
+/* --- Mobile Adjustments --- */
+@media (max-width: 576px) {
+    .wallet-card-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .add-money-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .wallet-info .balance {
+        font-size: 1.75rem;
+    }
+
+    .transaction-table th,
+    .transaction-table td {
+        padding: 1rem;
+    }
+}

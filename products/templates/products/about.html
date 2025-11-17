@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'css/products/about.css' %}">
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="about-container">
+    <h1>About SecondStrap</h1>
+    
+    <div class="about-section">
+        <h2>Our Story</h2>
+        <p>
+            SecondStrap kicked off in 2023 when three school buddies Zinan, Vinayak, and Roshan turned their 10th-standard hustle into an Instagram sensation for thrifted men's shirts, pants, and now killer accessories. With over 13,000 followers hooked on our handpicked gems, we've built a vibe that's all about scoring unique, sustainable style that feels like it was made just for you. Join the crew that's redefining cool one thrift find at a time, and soon...
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2>Our Mission</h2>
+        <p>
+            We at SecondStrap are on a mission to make thrifting your go-to for effortless, eco-smart men's fashion that saves cash and the planet. Starting with those perfect shirts and pants, we're expanding to accessories that add that personal edge, all while dreaming big to launch our original line. It's not just shopping; it's owning pieces with stories that boost your confidence and keep things fresh for everyone in our growing community.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2>Our Process</h2>
+        <p>
+            Every SecondStrap treasure starts with us three scouting the best thrifted spots, handpicking shirts, pants, and accessories that pop with quality and character for your wardrobe. We clean, style, and snap them just right for Instagram, making it easy to snag that "must-have" vibe instantly. As we gear up to craft our own sustainable line, expect the same passion curated, conscious, and ready to make your style game unbeatable.
+        </p>
+    </div>
+</div>
+{% endblock content %}

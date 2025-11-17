@@ -1,0 +1,40 @@
+/*
+ * STYLES FOR ABOUT.HTML
+ */
+
+.about-container {
+    /* Sets a max-width for readability and centers it */
+    max-width: 800px;
+    margin: 0 auto;
+    
+    /* Adds spacing from header and footer */
+    padding: 40px 0 60px 0; 
+
+    /* Centers all text as shown in the image */
+    text-align: center;
+}
+
+.about-container h1 {
+    font-size: 2.5rem; /* 40px */
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: #1a1a1a;
+}
+
+.about-section {
+    /* Adds space between the "Story", "Mission", and "Process" sections */
+    margin-bottom: 35px; 
+}
+
+.about-section h2 {
+    font-size: 1.75rem; /* 28px */
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #222;
+}
+
+.about-section p {
+    font-size: 1rem;  /* 16px */
+    line-height: 1.6; /* Improves readability of the paragraph */
+    color: #555;      /* Softer than pure black */
+}

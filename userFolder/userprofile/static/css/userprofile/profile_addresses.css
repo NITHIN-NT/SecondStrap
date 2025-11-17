@@ -1,0 +1,91 @@
+/* ================================================= */
+/* --- STYLES FOR PROFILE ADDRESSES PAGE --- */
+/* ================================================= */
+
+/* --- "Add New Address" Link --- */
+.add-new-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #007bff; /* Standard blue link color */
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.add-new-link:hover {
+    color: #0056b3;
+}
+
+.add-new-link i {
+    margin-right: 0.25rem;
+    font-size: 1.2rem;
+}
+
+/* --- Address List Container --- */
+.address-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Space between address cards */
+}
+
+/* --- Individual Address Card --- */
+.address-card {
+    border: 1px solid #e9ecef; /* Light border for each card */
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: box-shadow 0.3s ease;
+}
+
+.address-card:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.address-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align icon to the top */
+}
+
+.address-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Space between title and badge */
+}
+
+.address-card-title h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* --- Default Badge --- */
+.default-badge {
+    background-color: #e7f3ff;
+    color: #007bff;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* --- Edit Pencil Icon --- */
+.edit-address-link {
+    text-decoration: none;
+    color: #6c757d; /* Muted grey */
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.edit-address-link:hover {
+    color: #000;
+}
+
+/* --- Address Text Body --- */
+.address-card-body p {
+    margin: 0.75rem 0 0 0; /* Space it from the header */
+    color: #555;
+    line-height: 1.6;
+}

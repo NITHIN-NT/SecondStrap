@@ -1,0 +1,92 @@
+/* ================================================= */
+/* --- STYLES FOR PROFILE ORDERS PAGE --- */
+/* ================================================= */
+
+/* Note: .profile-card, .profile-card-header, 
+   and .profile-card-body are already styled 
+   in your main 'profile_base.css'.
+*/
+
+/* Container for the list of order links */
+.order-list {
+    /* We're not using the default .profile-card-body padding 
+      so that the borders of the items can go edge-to-edge.
+      If your .profile-card-body has padding,
+      you might need to adjust this.
+    */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Individual order item link */
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    /* Light line between items */
+    transition: background-color 0.3s ease;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.order-item:hover {
+    background-color: #f8f9fa;
+    /* Light hover effect */
+}
+
+/* Left side details */
+.order-item-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.order-item-id {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #222;
+}
+
+.order-item-meta {
+    font-size: 0.9rem;
+    color: #777;
+    margin: 0.25rem 0 0 0;
+}
+
+/* Right side chevron icon */
+.order-item i {
+    font-size: 1.5rem;
+    color: #adb5bd;
+    /* Light grey for the icon */
+    transition: transform 0.3s ease;
+}
+
+.order-item:hover i {
+    transform: translateX(5px);
+    /*Slight move on hover */
+}
+
+
+/* "View All Orders" Link */
+.view-all-container {
+    padding: 1.5rem;
+    padding-top: 1rem;
+    text-align: center;
+}
+
+.view-all-link {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.view-all-link:hover {
+    color: #0056b3;
+}

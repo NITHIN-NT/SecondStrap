@@ -1,0 +1,56 @@
+{% extends "./profile_base.html" %}
+{% load static %}
+
+{% block title %}Order History - Profile{% endblock %}
+
+{% block profile_extra_style %}
+    <link rel="stylesheet" href="{% static 'css/userprofile/profile_orders.css' %}">
+{% endblock profile_extra_style %}
+
+
+{% block profile_content %}
+
+<div class="profile-card">
+    
+    <div class="profile-card-header">
+        <h2>Recent Orders</h2>
+        </div>
+
+    <div classs="profile-card-body">
+        
+        <div class="order-list">
+            
+            <a href="#" class="order-item">
+                <div class="order-item-details">
+                    <span class="order-item-id">Order # 644818</span>
+                    <p class="order-item-meta">3 items • $149.99</p>
+                </div>
+                <i class='bx bx-chevron-right'></i>
+            </a>
+
+            <a href="#" class="order-item">
+                <div class="order-item-details">
+                    <span class="order-item-id">Order # 628917</span>
+                    <p class="order-item-meta">3 items • $149.99</p>
+                </div>
+                <i class='bx bx-chevron-right'></i>
+            </a>
+
+            <a href="#" class="order-item">
+                <div class="order-item-details">
+                    <span class="order-item-id">Order # 314505</span>
+                    <p class="order-item-meta">3 items • $149.99</p>
+                </div>
+                <i class='bx bx-chevron-right'></i>
+            </a>
+
+        </div>
+
+        <div class="view-all-container">
+            <a href="#" class="view-all-link">View All Orders</a>
+        </div>
+
+    </div>
+
+</div>
+{% endblock profile_content %}

@@ -1,0 +1,266 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/products/admin_products.css' %}">
+{% endblock extra_css %}
+
+
+{% block content %}
+    
+    <div class="page-header-container">
+        <div class="page-header">
+            <h1>Products</h1>
+            <p>Manage your store products</p>
+        </div>
+        <a href="{% url "admin_product_add" %}" class="btn btn-primary"> <i class="fa-solid fa-plus"></i> Add Product
+        </a>
+    </div>
+
+    <div class="data-table-card">
+        
+        <form action="" method="GET">
+            <div class="table-toolbar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id='search-input' name="search" placeholder="Search products..." value="{{ search_query }}">
+                    <i class="fa-solid fa-xmark clear-icon" id="clear-search-btn"></i>  
+                </div>
+
+                <div class="filters">
+                    <select name="category" class="filter-dropdown">
+                        <option value="">All Categories</option>
+                        {% for category in categorys %}
+                        <option value="{{category.name}}" {% if category.name == category_filter %}Selected{% endif %}>{{category.name}}</option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit" class="btn btn-primary">Filter</button>
+
+                    <!-- NEW CLEAR FILTER BUTTON -->
+                    <a href="{% url 'admin_products' %}" class="btn btn-secondary" style="margin-left: 8px;">
+                        Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Base Price</th>
+                    <th>Offer Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>
+                            {% if product.image %}
+                                <img src="{{product.image.url}}" alt="Product" class="product-table-image">
+                            {% endif %}
+                        </td>
+                        <td>{{product.name}}</td>
+                        <td>{{product.category}}</td>
+                        <td>₹{{product.base_price}}</td>
+                        <td>₹{{product.offer_price}}</td>
+                        <td>
+                            {% if product.is_active %}
+                                <span class="status-badge status-active">Listed</span>
+                            {% else %}
+                                <span class="status-badge status-inactive">Unlisted</span>
+                            {% endif %}
+                        </td>
+                        <td class="action-buttons">
+                            <a href="{% url 'admin_product_edit' product.id %}" 
+                            class="btn-action btn-edit" 
+                            title="Edit" 
+                            onclick="event.stopPropagation();">
+                                <i class="fa-solid fa-pen-to-square"></i> edit
+                            </a>
+
+                            {% if product.is_active %}
+                                <form action="{% url 'admin_product_block' product.id %}" method="POST" style="display:inline;" id="block-form-{{ product.id }}">
+                                    {% csrf_token %}
+                                    <button type="button" 
+                                            class="btn-action btn-block modal-trigger" 
+                                            title="Unlist"  data-form-id="block-form-{{ product.id }}">
+                                        <i class="fas fa-ban"></i> Unlist
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form action="{% url 'admin_product_block' product.id %}" method="POST" style="display:inline;" id="unblock-form-{{ product.id }}">
+                                    {% csrf_token %}
+                                    <button type="button" 
+                                            class="btn-action btn-unblock modal-trigger" 
+                                            title="List"  data-form-id="unblock-form-{{ product.id }}">
+                                        <i class="fas fa-check-circle"></i> List
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">No Data Found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <section class='pagination-container'>
+        <div class="pagination">
+            
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}">&lt;</a>
+            {% else %}
+                <span class="disabled">&lt;</span>
+            {% endif %}
+
+            {% for i in custom_page_range %} {% if page_obj.number == i %}
+                    <span class="current">{{ i }}</span>
+                {% else %}
+                    <a href="?page={{ i }}&{{ query_params }}">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}">&gt;</a>
+            {% else %}
+                <span class="disabled">&gt;</span>
+            {% endif %}
+                
+        </div>
+    </section>
+
+<div id="confirmation-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Confirm Action</h3>
+            <span class="modal-close" id="modal-close-btn">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p id="modal-message">Are you sure?</p>
+        </div>
+        <div class="modal-footer">
+            <button id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+            <button type="button" id="modal-confirm-btn" class="btn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block extraJs %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- Clear Search Button Logic ---
+    const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-search-btn');
+
+    function toggleClearButton() {
+        if (searchInput && searchInput.value.length > 0) {
+            clearBtn.style.display = 'block';
+        } else if (clearBtn) {
+            clearBtn.style.display = 'none';
+        }
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', toggleClearButton);
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            window.location.href = "{% url 'admin_products' %}";
+        });
+    }
+
+    toggleClearButton(); // Check on page load
+    
+    // --- Generic Confirmation Modal Logic ---
+    const modal = document.getElementById('confirmation-modal');
+    if (modal) {
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        
+        const triggerButtons = document.querySelectorAll('.modal-trigger');
+
+        function openModal(e) {
+            e.preventDefault();
+            e.stopPropagation(); 
+            
+            const button = e.currentTarget;
+            const action = button.title; // "List" or "Unlist"
+            const formId = button.dataset.formId;
+            
+            if (!formId) return;
+
+            // 1. Update modal text
+            modalTitle.textContent = `Confirm ${action}`;
+            modalMessage.textContent = `Are you sure you want to ${action.toLowerCase()} this product?`;
+            
+            // 2. Store formId on confirm button
+            modalConfirmBtn.dataset.formId = formId;
+
+            // 3. Update confirm button text and style
+            modalConfirmBtn.textContent = action;
+            
+            modalConfirmBtn.classList.remove('btn-danger', 'btn-success', 'btn-warning');
+            
+            if (action === 'Unlist') {
+                modalConfirmBtn.classList.add('btn-danger'); 
+            } else if (action === 'List') {
+                modalConfirmBtn.classList.add('btn-success');
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            modalConfirmBtn.dataset.formId = '';
+        }
+
+        triggerButtons.forEach(button => {
+            button.addEventListener('click', openModal);
+        });
+        
+        modalConfirmBtn.addEventListener('click', function() {
+            const formId = this.dataset.formId;
+            if (formId) {
+                const formToSubmit = document.getElementById(formId);
+                if (formToSubmit) {
+                    formToSubmit.submit();
+                }
+            }
+        });
+
+        modalCloseBtn.addEventListener('click', closeModal);
+        modalCancelBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                closeModal();
+            }
+        });
+    }
+});
+</script>
+{% endblock extraJs %}

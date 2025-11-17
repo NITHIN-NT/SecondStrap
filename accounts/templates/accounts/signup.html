@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Signup{% endblock %}
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static "css/accounts/auth.css" %}">
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="auth-form-container">
+    <h2>Create your account</h2>
+    <p class="subtitle">Sign up to get started</p>
+    
+    <form method="POST" novalidate> 
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-group">
+                <div class="non-field-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.first_name.id_for_label }}">First name</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                    <div class="error-list">
+                        {{ form.first_name.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.last_name.id_for_label }}">Last name</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                    <div class="error-list">
+                        {{ form.last_name.errors }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email address</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="error-list">
+                    {{ form.email.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password.id_for_label }}">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                <div class="error-list">
+                    {{ form.password.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password_confirm.id_for_label }}">Confirm password</label>
+            {{ form.password_confirm }}
+            {% if form.password_confirm.errors %}
+                <div class="error-list">
+                    {{ form.password_confirm.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group-checkbox">
+            <input type="checkbox" id="terms" name="terms">
+            <label for="terms">I agree to the <a href="/terms">Terms and Conditions</a></label>
+        </div>
+
+        <button type="submit" class="btn-primary">Sign up</button>
+    </form>
+    
+    <p class="auth-switch">
+        Already have an account? <a href="{% url "login" %}">Sign in</a>
+    </p>
+</div>
+{% endblock content %}

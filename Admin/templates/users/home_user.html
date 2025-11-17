@@ -1,0 +1,264 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/user/user.css' %}">
+{% endblock extra_css %}
+
+
+{% block content %}
+    
+    <div class="page-header-container">
+        <div class="page-header">
+            <h1>User Management</h1>
+        </div>
+    </div>
+
+    <div class="card users-table-card">
+        <form action="" method='get'>
+            
+            <div class="table-toolbar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" name='search_input' placeholder="Search users..." value="{{ search_input }}">
+                </div>
+                <div class="filters">
+                    <select class="userStatus" name="userStatus">
+                        <option value="" {% if user_status == "" %}selected{% endif %}>
+                            All Status
+                        </option>
+                        <option value="active" {% if user_status == "active" %}selected{% endif %}>
+                            Active
+                        </option>
+                        <option value="blocked" {% if user_status == "blocked" %}selected{% endif %}>
+                            Blocked
+                        </option>
+                    </select>
+                </div>
+                <button type="clear" class="btn btn-primary"><a href="{% url "admin_user" %}">clear</a></button>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </form>
+
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>user ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Staff</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in Users %}
+                <tr>
+                    <td>{{user.id}}</td>
+                    <td>{{user.first_name}}</td>
+                    <td>{{user.email}}</td>
+                    <td>{{user.phone}}</td>
+                    <td>{{user.is_staff}}</td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="status-badge status-active">Active</span>
+                        {% else %}
+                            <span class="status-badge status-blocked">Blocked</span>
+                        {% endif %}
+                    </td>
+                    <td>{{user.last_login}}</td>
+                    <td class="action-buttons">
+                    {% if user.is_active %}
+                        <form action="{% url 'admin_user_block' user.id %}" method="POST" style="display:inline;" id="block-form-{{ user.id }}">
+                            {% csrf_token %}
+                            <button
+                                type="button"
+                                class="btn-action btn-block modal-trigger"
+                                title="Block"
+                                data-username="{{ user.first_name }}"
+                                data-form-id="block-form-{{ user.id }}"
+                                data-type="block">
+                                <i class="fa-solid fa-ban" aria-hidden="true"></i> Block
+                                <span class="sr-only">Block {{ user.first_name }}</span>
+                            </button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'admin_user_block' user.id %}" method="POST" style="display:inline;" id="unblock-form-{{ user.id }}">
+                            {% csrf_token %}
+                            <button
+                                type="button"
+                                class="btn-action btn-unblock modal-trigger"
+                                title="Unblock"
+                                data-username="{{ user.first_name }}"
+                                data-form-id="unblock-form-{{ user.id }}"
+                                data-type="unblock"> 
+                                <i class="fa-solid fa-check" aria-hidden="true"></i>  Unblock
+                                <span class="sr-only">Unblock {{ user.first_name }}</span>
+                            </button>
+                        </form>
+                    {% endif %}
+                </td>
+
+
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+<section class='pagination-container'>
+    <div class="pagination">
+
+        {% comment %} Previous Page Link {% endcomment %}
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}">&lt;</a>
+        {% else %}
+            <span class="disabled">&lt;</span>
+        {% endif %}
+
+        {% comment %} Page Number Links {% endcomment %}
+        {% for i in custom_page_range %}
+            {% if i == paginator.ELLIPSIS %}
+                <span class="ellipsis">{{ i }}</span>
+            {% elif page_obj.number == i %}
+                <span class="current">{{ i }}</span>
+            {% else %}
+                <a href="?page={{ i }}&{{ query_params }}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% comment %} Next Page Link {% endcomment %}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}">&gt;</a>
+        {% else %}
+            <span class="disabled">&gt;</span>
+        {% endif %}
+            
+    </div>
+</section>
+    </div> <div id="confirmation-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div id="modal-icon-container" class="modal-icon-container">
+                    <i id="modal-icon" class="fa-solid"></i>
+                </div>
+                <div class="modal-text-content">
+                    <h3 id="modal-title" class="modal-title">Modal Title</h3>
+                    <p id="modal-message">Modal message goes here.</p>
+                </div>
+                <button id="modal-close-btn" class="modal-close-btn" aria-label="Close modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-footer">
+                <button id="modal-cancel-btn" class="btn-modal btn-cancel">Cancel</button>
+                <button id="modal-confirm-btn" class="btn-modal btn-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block extraJs %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('confirmation-modal');
+    if (!modal) return;
+
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalIcon = document.getElementById('modal-icon');
+    const confirmBtn = document.getElementById('modal-confirm-btn');
+    const cancelBtn = document.getElementById('modal-cancel-btn');
+    const closeBtn = document.getElementById('modal-close-btn');
+
+    const triggerButtons = document.querySelectorAll('.modal-trigger');
+
+    const modalConfig = {
+        block: {
+            iconClass: 'fa-solid fa-ban',
+            modalClass: 'modal-type-block',
+            confirmText: 'Block',
+            title: 'Block user?',
+            message: (name) => `Are you sure you want to block ${name}? They will not be able to sign in until unblocked.`
+        },
+        unblock: {
+            iconClass: 'fa-solid fa-check',
+            modalClass: 'modal-type-unblock',
+            confirmText: 'Unblock',
+            title: 'Unblock user?',
+            message: (name) => `Are you sure you want to unblock ${name}? They will be able to sign in again.`
+        }
+    };
+
+    function openModal(type, username, formId) {
+        const cfg = modalConfig[type];
+        if (!cfg) return;
+
+        // reset modal classes and add type-specific class
+        modal.className = 'modal-backdrop';
+        modal.classList.add(cfg.modalClass);
+
+        // set icon and text
+        modalIcon.className = cfg.iconClass;
+        modalTitle.textContent = cfg.title;
+        modalMessage.textContent = cfg.message(username);
+        confirmBtn.textContent = cfg.confirmText;
+
+        // store form id for confirm handler
+        confirmBtn.dataset.formId = formId || '';
+
+        // show modal
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        confirmBtn.dataset.formId = '';
+    }
+
+    // attach click handlers to trigger buttons
+    triggerButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const username = btn.dataset.username || 'this user';
+            const formId = btn.dataset.formId;
+            // prefer explicit data-type, fallback to classes
+            let type = btn.dataset.type;
+            if (!type) {
+                if (btn.classList.contains('btn-block')) type = 'block';
+                else if (btn.classList.contains('btn-unblock')) type = 'unblock';
+            }
+
+            if (type && formId) {
+                openModal(type, username, formId);
+            }
+        });
+    });
+
+    // confirm -> submit the stored form
+    confirmBtn.addEventListener('click', () => {
+        const formId = confirmBtn.dataset.formId;
+        if (!formId) {
+            closeModal();
+            return;
+        }
+        const form = document.getElementById(formId);
+        if (form) form.submit();
+        else closeModal();
+    });
+
+    // close modal handlers
+    cancelBtn.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
+});
+</script>
+
+
+{% endblock extraJs %}

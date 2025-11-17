@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Admin</title>
+    {% block title %}{% endblock title %}
+    
+    <link rel="stylesheet" href="{% static 'css/admin_base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/breadcrumbs_admin.css' %}">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- base.html -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    {% block extra_css %}{% endblock extra_css %}
+</head>
+<body>
+
+    <div class="admin-container">
+       <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3>E-Commerce Admin</h3>
+            </div>
+            
+          <ul class="sidebar-nav">
+                <li>
+                    <a href="{% url 'admin_home' %}" class="{% if request.resolver_match.url_name == 'admin_home' %}active{% endif %}">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_user' %}" class="{% if request.resolver_match.url_name == 'admin_user' or request.resolver_match.url_name == 'admin_user_edit' or request.resolver_match.url_name == 'admin_user_add' %}active{% endif %}">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>Users</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_category' %}" class="{% if request.resolver_match.url_name == 'admin_category' or request.resolver_match.url_name == 'admin_category_edit' or request.resolver_match.url_name == 'admin_category_add' %}active{% endif %}">
+                        <i class="fa-solid fa-grip"></i>
+                        <span>Categories</span>
+                    </a>
+                </li>
+                <li>
+                     <a href="{% url 'admin_products' %}" class="{% if request.resolver_match.url_name == 'admin_products' or request.resolver_match.url_name == 'admin_products_edit' or request.resolver_match.url_name == 'admin_products_add' %}active{% endif %}">
+                        <i class="fa-solid fa-tag"></i> 
+                        <span>Products</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="{% url 'stock_mangement' %}"> <i class="fa-solid fa-boxes-stacked"></i>
+                        <span>Stock</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-percent"></i>
+                        <span>Offers</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        <span>Orders</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <span>Payments</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-headset"></i>
+                        <span>Support</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <a href="{% url 'admin_logout' %}">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+        
+        <div class="main-wrapper">
+            
+            <header class="topbar">
+                <div class="topbar-search">
+                    {% comment %} <i class="fa-solid fa-magnifying-glass"></i> {% endcomment %}
+                    {% comment %} <input  type="search" placeholder="Search users, products, orders..."> {% endcomment %}
+                </div>
+                
+                <div class="topbar-right">
+                    <button class="icon-btn">
+                        <i class="fa-regular fa-bell"></i>
+                    </button>
+                    <div class="user-profile">
+                        <div class="user-avatar">A</div>
+                        <span>{{user.email}}</span>
+                    </div>
+                </div>
+            </header>
+            
+            
+            <main class="content-area">
+                <div>
+                    {% if breadcrumbs %}
+                    <div class="container breadcrumbs-container">
+                        {% include "dynamic_breadcrumbs/breadcrumbs.html" with breadcrumbs=breadcrumbs|slice:"1:" %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% block content %}
+                {% endblock content %}
+            </main>
+        </div>
+        
+    </div>
+
+    {% block extraJs %}{% endblock extraJs %}
+
+</body>
+</html>
+
+<script>
+    // Set toastr options (optional)
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+    };
+    
+
+    // 4. Loop through the Django messages and show them
+    {% if messages %}
+        {% for message in messages %}
+            // Use the message 'tags' to determine the toast type
+            // (e.g., 'success', 'error', 'warning', 'info')
+            
+            var toastType = '{{ message.tags }}';
+            var messageText = '{{ message|safe }}'; // '|safe' is important if your messages have HTML
+
+            console.log("Message Tags: '" + toastType + "'");
+            switch (toastType) {
+                case 'admin success':
+                    toastr.success(messageText);
+                    break;
+                case 'admin error':
+                    toastr.error(messageText);
+                    break;
+                case 'admin warning':
+                    toastr.warning(messageText);
+                    break;
+                case 'admin info':
+                    toastr.info(messageText);
+                    break;
+                default:
+                // Default to 'info' if tag is something else
+                    toastr.info(messageText);
+                    break;
+            }
+        {% endfor %}
+    {% endif %}
+</script>

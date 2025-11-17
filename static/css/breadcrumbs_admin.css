@@ -1,0 +1,61 @@
+/* ==================================
+   NEW ADMIN BREADCRUMBS STYLE
+   (Replaces your old CSS)
+   ================================== */
+
+/* The main container positioning */
+.breadcrumbs-container {
+    padding-bottom: 15px; /* A little space below */
+    margin-bottom: 25px; /* More space before the content */
+    border-bottom: 1px solid #e9ecef; /* A light, clean separator line */
+}
+
+/* The <ol> list */
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none; /* Removes default list bullets */
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem; /* A clean, modern font size */
+}
+
+/* Each <li> item */
+.breadcrumb-item {
+    display: flex;
+    align-items: center; /* Vertically centers text and icons */
+}
+
+/* --- The Separator --- */
+/* This adds the icon *before* every item, *except* the first one */
+.breadcrumb-item + .breadcrumb-item::before {
+    /* Font Awesome chevron-right icon */
+    content: '\f054'; 
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900; /* Use the 'solid' icon style */
+    
+    color: #adb5bd; /* A muted gray for the icon */
+    font-size: 0.75rem; /* Make the icon slightly smaller */
+    margin: 0 10px; /* Space around the icon */
+}
+
+/* Links for *previous* pages */
+.breadcrumb-item a {
+    color: #495057; /* A readable dark-gray */
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+/* Hover effect for links */
+.breadcrumb-item a:hover {
+    color: #007bff; /* A standard blue hover effect */
+    text-decoration: none;
+}
+
+/* The *CURRENT* page (which is not a link) */
+/* This targets the last item, which is rendered as text, not <a> */
+.breadcrumb-item:last-child {
+    color: #212529; /* Darkest text for the active page */
+    font-weight: 600; /* Make it bold */
+}

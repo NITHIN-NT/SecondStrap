@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'css/userprofile/profile_base.css' %}">
+    {% block profile_extra_style %}
+    
+    {% endblock profile_extra_style %}
+
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="profile-container">
+
+    <aside class="profile-sidebar">
+        
+        <div class="profile-user-card">
+            
+            <div class="avatar-wrapper">
+                {% if user.profile %}
+                    <img src="{{ user.profile }}" alt="User Avatar" class="avatar">
+                {% else %}
+                    <div class="avatar-initials">
+                        <span>{{ user.first_name|slice:":2"|upper }}</span>
+                    </div>
+                {% endif %}
+                
+                <a href="#" class="avatar-edit-link">
+                    <i class='bx bxs-pencil'></i>
+                </a>
+            </div>
+            
+            <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+            <p>{{ user.email }}</p>
+        </div>
+
+      <nav class="profile-nav">
+            <ul>
+                <li>
+                    <a href="{% url "profile_view_user" %}" class="{% if request.resolver_match.url_name == 'profile_view_user' %}active{% endif %}">
+                        <i class='bx bx-user'></i>
+                        <span>Personal Information</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "profile_adress" %}" class="{% if request.resolver_match.url_name == 'profile_adress' %}active{% endif %}">
+                        <i class='bx bx-map'></i>
+                        <span>Addresses</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "profile_payment" %}" class="{% if request.resolver_match.url_name == 'profile_payment' %}active{% endif %}">
+                        <i class='bx bx-credit-card'></i>
+                        <span>Payment Methods</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url "profile_order" %}" class="{% if request.resolver_match.url_name == 'profile_order' %}active{% endif %}">
+                        <i class='bx bx-receipt'></i>
+                        <span>Order History</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="{% url "profile_wallet" %}" class="{% if request.resolver_match.url_name == 'profile_wallet' %}active{% endif %}">
+                        <i class='bx bx-wallet'></i>
+                        <span>Wallet</span>
+                    </a>
+                </li>
+                <li class="desktop-logout-li">
+                    <a href="{% url "logout" %}" class="logout-link">
+                        <i class='bx bx-log-out'></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <section class="profile-content">
+        
+       {% block profile_content %}
+       
+       {% endblock profile_content %}
+
+
+        <a href="{% url "logout" %}" class="mobile-logout-link">
+            <i class='bx bx-log-out'></i>
+            <span>Logout</span>
+        </a>
+
+    </section>
+
+</div>
+{% endblock content %}
+
+{% block profile_extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Find the active link inside your mobile navigation
+        const activeLink = document.querySelector('.profile-nav a.active');
+        
+        // 2. Check if we found one
+        if (activeLink) {
+            
+            // 3. Tell the browser to scroll it into the horizontal view
+            // This works inside the '.profile-nav ul' container
+            activeLink.scrollIntoView({
+                behavior: 'auto', // Use 'smooth' for a sliding effect, or 'auto' for an instant snap
+                block: 'nearest',   // Keeps it vertically aligned
+                inline: 'center'    // This is the magic part: it centers the item horizontally
+            });
+        }
+    });
+</script>
+{% endblock profile_extra_scripts %}

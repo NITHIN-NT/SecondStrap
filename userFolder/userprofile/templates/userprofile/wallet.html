@@ -1,0 +1,103 @@
+{% extends "./profile_base.html" %}
+{% load static %}
+
+{% block title %}My Wallet{% endblock %}
+
+{% block profile_extra_style %}
+    <link rel="stylesheet" href="{% static 'css/userprofile/wallet.css' %}">
+{% endblock profile_extra_style %}
+
+{% block profile_content %}
+
+<div class="profile-card wallet-card">
+    <div class="wallet-card-header">
+        <div class="wallet-info">
+            <h2>Wallet</h2>
+            <p>Available Balance</p>
+            <span class="balance">₹ 200.00</span>
+        </div>
+        <a href="#" class="add-money-btn">
+            <i class='bx bx-plus'></i> Add Money
+        </a>
+    </div>
+</div>
+
+<div class="profile-card">
+    <div class="profile-card-header">
+        <h2>Transaction History</h2>
+    </div>
+    <div class="profile-card-body">
+        <div class="table-responsive-wrapper">
+            <table class="transaction-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2023-10-15</td>
+                        <td>Added money to wallet</td>
+                        <td>
+                            <span class="amount amount-credit">
+                                <i class='bx bx-up-arrow-alt'></i> ₹ 500.00
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status status-completed">
+                                <i class='bx bx-check-circle'></i> Completed
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2023-10-14</td>
+                        <td>Purchase: Order #12345</td>
+                        <td>
+                            <span class="amount amount-debit">
+                                <i class='bx bx-down-arrow-alt'></i> ₹ 150.00
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status status-completed">
+                                <i class='bx bx-check-circle'></i> Completed
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2023-10-10</td>
+                        <td>Refund: Order #12300</td>
+                        <td>
+                            <span class="amount amount-credit">
+                                <i class='bx bx-up-arrow-alt'></i> ₹ 100.00
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status status-completed">
+                                <i class='bx bx-check-circle'></i> Completed
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2023-10-05</td>
+                        <td>Purchase: Order #12280</td>
+                        <td>
+                            <span class="amount amount-debit">
+                                <i class='bx bx-down-arrow-alt'></i> ₹ 250.00
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status status-completed">
+                                <i class='bx bx-check-circle'></i> Completed
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock profile_content %}
