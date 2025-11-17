@@ -27,3 +27,5 @@ for the next first it add **"shirt-1"** like this .
 now i find the issue in this it hit database many times means it have N + 1 problem 
 so to solve that i used **django-autoslug**
 '''
+
+**pendings cleard 10:16 PM**
