@@ -1,31 +1,54 @@
-i think everything works
+# Development Log & Status Update
 
-16/11/2025 - 11:31PM
-“Everything is working as expected. Session handling, update, and add issues have been resolved.”
+**Date Range:** November 16, 2025 – November 17, 2025  
+**Status:** All Week 1 Pendings Cleared
 
-17/11/2025 - 2:58PM
-"commit backup before major updates for develop"
+---
 
-17/11/2025 - 3:03PM
-Week - 1 Pendings
-- Sorting ( high to low )  // fixed - 8:16 PM
-- remove <p> from description // fixed - 8 : 23 PM
-- use list instead of cards in category listing // fixed - 8 : 43 PM
-- minimum 3 image validation  // fixed - 9 : 07 PM
-- session issue in user side
-'''
-> Added new SecureUserMixin in the Profile Page to reduce the reduntant use of the never_cache and LoginRequiredMixin
-> In Project URLs changed from allauth.urls to allauth.socialaccount.providers.google.urls beacuse currently i only use the google .
-> In Settings changed the Login_url to accounts/login and added ACCOUNT_AUTHNTICATED_LOGIN_REDIRECTS . 
-> In accounts View Google_callback_safe view is added . If a user is logedin using google , the user can't see the login related pages again it redirect the user to the home_page
-'''
-- while loop in product post code 
-'''
-The while loop i used make a unique slug . means
-if a **"shirt"** exist for one product
-for the next first it add **"shirt-1"** like this . 
-now i find the issue in this it hit database many times means it have N + 1 problem 
-so to solve that i used **django-autoslug**
-'''
+## 📅 November 16, 2025
 
-**pendings cleard 10:16 PM**
+### 23:31 (11:31 PM)
+> "Everything is working as expected. Session handling, update, and add issues have been resolved."
+
+---
+
+## 📅 November 17, 2025
+
+### 14:58 (2:58 PM)
+* **Git Update:** Created a backup commit before initiating major updates for the `develop` branch.
+
+### 15:03 (3:03 PM) - Week 1 Pending Tasks
+*Below is the status of tasks identified for Week 1 cleanup.*
+
+- [x] **Sorting:** Implemented High-to-Low sorting logic. *(Fixed - 8:16 PM)*
+- [x] **Description Formatting:** Removed raw `<p>` tags from the description output. *(Fixed - 8:23 PM)*
+- [x] **UI Update:** Switched from Card view to List view for category listing. *(Fixed - 8:43 PM)*
+- [x] **Validation:** Enforced minimum 3-image validation for uploads. *(Fixed - 9:07 PM)*
+- [x] **User Session Issues:** Resolved session handling bugs on the user side. *(Details below)*
+- [x] **Database Optimization:** Refactored Product Post slug generation. *(Details below)*
+
+---
+
+### 🛠 Technical Resolutions
+
+#### 1. User Session Handling
+**Issue:** Issues regarding session persistence and redundant code.
+**Fixes:**
+* **Refactoring:** Created a new `SecureUserMixin` in the Profile Page to reduce the redundant use of `@never_cache` decorators and `LoginRequiredMixin`.
+* **URL Routing:** Updated Project URLs to use `allauth.socialaccount.providers.google.urls` instead of the generic `allauth.urls` (optimized for Google-only auth).
+* **Settings:** Updated `LOGIN_URL` to `accounts/login` and added `ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS`.
+* **Views:** Implemented `Google_callback_safe` in the Accounts View.
+    * *Logic:* If a user is already logged in via Google, they are prevented from accessing login-related pages and are redirected immediately to the Home page.
+
+#### 2. Slug Generation (N+1 Problem)
+**Issue:** The previous `while` loop implementation for unique slugs caused performance issues.
+* *Old Logic:* If "shirt" existed, it looped to try "shirt-1", checking the database every time. This resulted in an **N+1 problem** (multiple database hits for a single save).
+**Fix:**
+* Removed the manual `while` loop.
+* Implemented **`django-autoslug`** to handle unique slug generation efficiently without excessive database queries.
+
+---
+
+### ✅ Summary
+**Status:** All pending tasks cleared.
+**Timestamp:** November 17, 2025 - 10:16 PM
