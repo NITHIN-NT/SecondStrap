@@ -13,4 +13,11 @@ Week - 1 Pendings
 - use list instead of cards in category listing // fixed - 8 : 43 PM
 - minimum 3 image validation  // fixed - 9 : 07 PM
 - session issue in user side
-- while loop in product post code
+- while loop in product post code 
+'''
+The while loop i used make a unique slug . means
+if a **"shirt"** exist for one product
+for the next first it add **"shirt-1"** like this . 
+now i find the issue in this it hit database many times means it have N + 1 problem 
+so to solve that i used **django-autoslug**
+'''

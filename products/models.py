@@ -1,9 +1,9 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
-
+from autoslug import AutoSlugField
 def product_image_upload_to(instance, filename):
-    return f"products/{instance.product.slug}/{filename}"
+    return f"products/{instance.slug}/{filename}"
 
 class Category(models.Model):
     name = models.CharField(max_length=1024, unique=True)
@@ -18,12 +18,12 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=1024)
-    slug = models.SlugField(max_length=1024, unique=True)
+    slug = AutoSlugField(populate_from='name', unique=True, max_length=1024)
     description = models.TextField()
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     offer_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
-    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    image = models.ImageField(upload_to=product_image_upload_to, blank=True, null=True)
     alt_text = models.CharField(max_length=255, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products') 
 
@@ -47,15 +47,6 @@ class Product(models.Model):
         if self.offer_price is not None and self.offer_price >= self.base_price:
             raise ValidationError("Offer price must be less than base price.")
     def save(self, *args, **kwargs):
-        if not self.slug and self.name:
-            base_slug = slugify(self.name)
-            slug = base_slug
-            counter = 1
-            # Ensure unique slug by appending number if slug exists
-            while Product.objects.filter(slug=slug).exclude(pk=self.pk).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-            self.slug = slug
         super().save(*args, **kwargs)
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
