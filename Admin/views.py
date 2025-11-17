@@ -309,6 +309,8 @@ def manage_product(request,id=None):
         Product, ProductImage,
         form=ImageForm,
         extra=extra_forms,
+        min_num=3,
+        validate_min=True,
         can_delete=True,
         can_delete_extra=True
     )

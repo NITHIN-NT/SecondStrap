@@ -11,6 +11,6 @@ Week - 1 Pendings
 - Sorting ( high to low )  // fixed - 8:16 PM
 - remove <p> from description // fixed - 8 : 23 PM
 - use list instead of cards in category listing // fixed - 8 : 43 PM
-- minimum 3 image validation 
+- minimum 3 image validation  // fixed - 9 : 07 PM
 - session issue in user side
 - while loop in product post code

@@ -21,13 +21,13 @@
         </div>
     </div>
 
-    {% if product_form.non_field_errors or formset.non_field_errors or formset_images.non_field_errors %}
+    {% comment %} {% if product_form.non_field_errors or formset.non_field_errors or formset_images.non_field_errors %}
         <div class="form-errors alert alert-danger">
             {{ product_form.non_field_errors }}
             {{ formset.non_field_errors }}
             {{ formset_images.non_field_errors }}
         </div>
-    {% endif %}
+    {% endif %} {% endcomment %}
 
     <form action="" method="POST" enctype="multipart/form-data" class="product-form" id="product-form">
         {% csrf_token %}

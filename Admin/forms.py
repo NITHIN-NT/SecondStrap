@@ -141,6 +141,8 @@ ImageFormSet = inlineformset_factory(
     Product, ProductImage,
     form=ImageForm,
     extra=1,
+    min_num=3,
+    validate_min=True,  
     can_delete=True,
     can_delete_extra=True
 )

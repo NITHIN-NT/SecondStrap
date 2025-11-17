@@ -84,11 +84,36 @@
 .form-errors {
     margin: 0 30px 20px 30px;
     padding: 16px;
-    background-color: var(--color-danger-bg);
-    border: 1px solid var(--color-danger);
+    background-color: #fee2e2;
+    border: 1px solid #B91C1C;
     border-radius: 8px;
-    color: #b91c1c;
+    color: #B91C1C;
     font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.errorlist {
+    margin: 5px 0 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.errorlist li {
+    color: #B91C1C;
+    /* Applies your red color to field errors too */
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Optional: Add a small icon before field errors for better UI */
+.errorlist li::before {
+    content: "•";
+    /* or use a font-awesome icon unicode like '\f071' */
+    font-size: 1.2em;
+    line-height: 1;
 }
 
 .form-main {
