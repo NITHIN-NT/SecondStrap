@@ -63,10 +63,11 @@ INSTALLED_APPS = [
 ]
 
 # ============================ AUTHENTICATION SETTINGS ============================
-LOGIN_URL = 'login'
+LOGIN_URL = 'accounts/login'
 LOGOUT_REDIRECT_URL = 'Home_page_user'
 LOGIN_REDIRECT_URL = 'Home_page_user'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'Home_page_user'
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_LOGIN_METHODS = {'email'}

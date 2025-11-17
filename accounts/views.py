@@ -12,6 +12,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.db import transaction
 from .decorators import login_redirect
+from allauth.socialaccount.providers.google.views import oauth2_callback
 
 # Create your views here.
 
@@ -352,5 +353,12 @@ class NewPasswordView(LoggedInRedirectMixin, View):
 
         return render(request, 'accounts/new-password.html', {'form': form})
     
+
+@never_cache
+def google_callback_safe(request, *args, **kwargs):
+    if request.user.is_authenticated:
+        return redirect('Home_page_user') 
+    
+    return oauth2_callback(request, *args, **kwargs)
 
 # Final fixed
