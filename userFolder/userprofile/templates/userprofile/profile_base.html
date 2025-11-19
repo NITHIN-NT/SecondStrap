@@ -97,7 +97,7 @@
 </div>
 {% endblock content %}
 
-{% block profile_extra_scripts %}
+{% block extra_script %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // 1. Find the active link inside your mobile navigation
@@ -116,4 +116,5 @@
         }
     });
 </script>
-{% endblock profile_extra_scripts %}
+{% block profile_script %}{% endblock profile_script %}
+{% endblock extra_script %}

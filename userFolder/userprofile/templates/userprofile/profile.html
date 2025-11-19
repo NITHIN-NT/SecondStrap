@@ -18,7 +18,7 @@
                 <dl>
                     <div>
                         <dt>Full Name</dt>
-                        <dd>{{ user.first_name }} {{ user.last_name }}</dd>
+                        <dd id="display_fullname">{{ user.first_name }} {{ user.last_name }}</dd>
                     </div>
                     <div>
                         <dt>Email Address</dt>
@@ -26,15 +26,12 @@
                     </div>
                     <div>
                         <dt>Phone Number</dt>
-                        <dd>{% if user.phone %}+91 {{ user.phone }}{% else %}Not provided{% endif %}</dd>
-                    </div>
-                    <div>
-                        <dt>Member Since</dt>
-                        <dd>{{ user.created_at|date:"F d, Y" }}</dd>
+                        <dd id="display_phone">
+                            {% if user.phone %}+91 {{ user.phone }}{% else %}Not provided{% endif %}
+                        </dd>
                     </div>
                 </dl>
             </div>
-        </div>
 
         <div class="profile-stats-row">
             
@@ -66,46 +63,41 @@
             </div>
 
         </div>  
+
+<div id="editProfileModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Personal Details</h3>
+            <button class="close-modal-btn" id="closeModalBtn">&times;</button>
+        </div>
+        
+        <form id="editProfileForm" action='{% url "update_info_axios" %}'>
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" name="first_name" value="{{ user.first_name }}">
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" name="last_name" value="{{ user.last_name }}">
+            </div>
+
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number</label>
+                <input type="text" id="phoneNumber" name="phone" value="{% if user.phone %}{{ user.phone }}{% endif %}">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="cancel-btn" id="cancelBtn">Cancel</button>
+                <button type="submit" class="save-btn" id="saveBtn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock profile_content %}
-{% block profile_extra_scripts %}
-<script>
-// Wait for the DOM to be fully loaded
-document.addEventListener("DOMContentLoaded", () => {
-    
-    // Get references to the elements
-    const copyButton = document.getElementById("copyBtn");
-    const referralInput = document.getElementById("referralLink");
-    const copyText = document.getElementById("copyText");
-    const copyIcon = document.getElementById("copyIcon");
+{% block profile_script %}
 
-    if (copyButton) {
-        copyButton.addEventListener("click", () => {
-            // 1. Select the text in the input field
-            referralInput.select();
-            referralInput.setSelectionRange(0, 99999); // For mobile devices
-
-            try {
-                // 2. Use the modern 'navigator.clipboard' API to copy
-                navigator.clipboard.writeText(referralInput.value);
-
-                // 3. Provide visual feedback to the user
-                copyText.textContent = "Copied!";
-                copyIcon.className = 'bx bx-check'; // Change icon to a checkmark
-                copyButton.classList.add("copied");  // Add 'copied' class for green background
-
-                // 4. Revert the button back to its original state after 2 seconds
-                setTimeout(() => {
-                    copyText.textContent = "Copy";
-                    copyIcon.className = 'bx bx-copy';
-                    copyButton.classList.remove("copied");
-                }, 2000);
-
-            } catch (err) {
-                console.error("Failed to copy text: ", err);
-                // You could show an error message to the user here
-            }
-        });
-    }
-});
-</script>
-{% endblock profile_extra_scripts %}
+<script src='{% static "js/profile/axios.js" %}'></script>
+{% endblock profile_script %}

@@ -58,3 +58,20 @@
 
 I updated my static files to the Cloudinary database.  
 **Time:** 10:17 AM
+
+
+# ✏️ Edit Profile Information — Update Implemented
+
+The **"Edit Profile Information"** functionality has been successfully implemented.  
+Users can now update their personal details directly from the profile page.
+
+---
+
+## 🛠 Implementation Details
+
+The following fields are now fully editable and state-managed:
+
+- **First Name** (`fname`)
+- **Last Name** (`lname`)
+- **Phone Number** (`phonenumber`)
+**Time:** 12:57 PM
