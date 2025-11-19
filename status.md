@@ -75,3 +75,7 @@ The following fields are now fully editable and state-managed:
 - **Last Name** (`lname`)
 - **Phone Number** (`phonenumber`)
 **Time:** 12:57 PM
+
+- **Email** (`email`) 
+
+(`New column is added to accounts.models (`is_varified`)`)
