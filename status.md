@@ -79,3 +79,8 @@ The following fields are now fully editable and state-managed:
 - **Email** (`email`) 
 
 (`New column is added to accounts.models (`is_varified`)`)
+
+## 🛠 Implementation Details
+---
+**Email templates change from old normal design to a new look design**  
+**Time:** 9:26 PM

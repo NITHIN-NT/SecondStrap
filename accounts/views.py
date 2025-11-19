@@ -62,7 +62,7 @@ def signup_view(request):
                     EmailOTP.objects.create(user=user, otp=otp_code)
 
                     plain_message = f"Your OTP code is {otp_code}"
-                    html_message = render_to_string('accounts/email/otp_email.html', {'otp_code': otp_code})
+                    html_message = render_to_string('accounts/email/otp_email.html', {'otp_code': otp_code,'first_name':user.first_name})
                     msg = EmailMultiAlternatives(
                         body=plain_message,
                         subject='Your OTP Verification Code',
@@ -250,7 +250,7 @@ class SendOTPView(LoggedInRedirectMixin, View):
             EmailOTP.objects.create(user=user, otp=otp)
 
             plain_message = f'Your OTP code for password reset is: {otp}'
-            html_message = render_to_string('accounts/email/otp_email_reset.html', {'otp_code': otp})
+            html_message = render_to_string('accounts/email/otp_email_reset.html', {'otp_code': otp,'first_name':user.first_name})
 
             try:
                 msg = EmailMultiAlternatives(

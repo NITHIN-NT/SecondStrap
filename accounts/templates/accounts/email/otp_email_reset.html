@@ -2,21 +2,105 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Your Password Reset OTP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your Password</title>
+    <style>
+        /* Reset styles for email clients */
+        body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+        table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        td { mso-line-height-rule: exactly; }
+    </style>
 </head>
-<body>
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <h2 style="color: #0056b3;">Password Reset Verification Code</h2>
-        <p>Hello,</p>
-        <p>We received a request to reset the password for your SecondStrap account. To continue with the password reset process, please use the One-Time Password (OTP) provided below:</p>
-        <p style="font-size: 24px; font-weight: bold; color: #04004bff; text-align: center; background-color: #f2f2f2; padding: 15px; border-radius: 5px;">
-            {{ otp_code }}
-        </p>
-        <p>This OTP is valid for a limited time. Please keep it confidential and do not share it with anyone.</p>
-        <p>If you did not request a password reset, please ignore this email.</p>
-        <p>Best regards,<br>The SecondStrap Team</p>
-        <hr style="border: 0; border-top: 1px solid #eee;">
-        <p style="font-size: 12px; color: #777;">This is an automated email, please do not reply.</p>
-    </div>
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: Helvetica, Arial, sans-serif;">
+
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
+        <tr>
+            <td align="center">
+                
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+                    
+                    <tr>
+                        <td align="center" bgcolor="#111111" style="padding: 40px 20px; background-color: #111111;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">
+                                SECONDSTRAP
+                            </h1>
+                            <p style="margin: 10px 0 0 0; color: #aaaaaa; font-size: 14px; text-transform: uppercase;">
+                                PREMIUM MEN'S WEAR
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 40px 30px; color: #333333; line-height: 1.6;">
+                            
+                            <h2 style="margin: 0 0 30px 0; color: #111111; font-size: 24px; font-weight: bold;">
+                                Reset Your Password
+                            </h2>
+
+                            <p style="font-size: 16px; margin: 0 0 20px 0;">
+                                Hello {{ first_name|default:"Customer" }} ,
+                            </p>
+
+                            <p style="font-size: 16px; margin: 0 0 30px 0; color: #555555;">
+                                We received a request to reset your password. Use the verification code below to set up a new password. If you didn't request this, you can ignore this email.
+                            </p>
+
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 30px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" 
+                                            style="background-color: #f3f4f6; 
+                                                    border-radius: 8px; /* Matched the image's rounded corners */
+                                                    border-left: 6px solid #111111; /* Solid black left border */
+                                                    box-shadow: 6px 6px 0px -1px rgba(0,0,0,0.1); /* Adjusted shadow for precise match */
+                                                    -webkit-box-shadow: 6px 6px 0px -1px rgba(0,0,0,0.1);
+                                                    -moz-box-shadow: 6px 6px 0px -1px rgba(0,0,0,0.1);">
+                                            <tr>
+                                                <td align="center" style="padding: 20px 40px; 
+                                                                        font-size: 32px; 
+                                                                        font-weight: bold; 
+                                                                        color: #111111; 
+                                                                        letter-spacing: 4px; 
+                                                                        mso-padding-alt: 20px 40px;">
+                                                    {{ otp_code }}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="font-size: 16px; margin: 0 0 20px 0; color: #555555;">
+                                This code will expire in <span style="color: #333333; font-weight: 500;">15 minutes</span> .
+                            </p>
+
+                            <p style="font-size: 16px; margin: 0 0 30px 0; color: #555555;">
+                                If you didn't request this code, please ignore this email or contact our support team if you have concerns.
+                            </p>
+
+                            <p style="font-size: 16px; margin: 0; color: #333333;">
+                                Thank you,<br>
+                                The SecondStrap Team
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" bgcolor="#f9fafb" style="padding: 30px; background-color: #f9fafb; border-top: 1px solid #eeeeee;">
+                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #777777;">
+                                &copy; 2025 &nbsp; SecondStrap. All rights reserved.
+                            </p>
+                            <p style="margin: 0; font-size: 14px; color: #999999;">
+                                This is an automated message, please do not reply.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+                </td>
+        </tr>
+    </table>
+
 </body>
 </html>

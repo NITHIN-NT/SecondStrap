@@ -12,7 +12,7 @@ def send_html_mail(subject,template_name,context,to_email,plain_text=None):
     msg = EmailMultiAlternatives(
             subject=subject,
             body=plain_text,
-            from_email ='SecondStrap@gmail.com',
+            from_email = settings.DEFAULT_FROM_EMAIL,
             to=[to_email],
         )
     msg.attach_alternative(html_message,"text/html")
