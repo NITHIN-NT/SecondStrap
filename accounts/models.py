@@ -29,6 +29,7 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
     phone = models.CharField(max_length=20,null=True,blank=True)
     profile = models.URLField(null=True,blank=True)
     is_active = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)

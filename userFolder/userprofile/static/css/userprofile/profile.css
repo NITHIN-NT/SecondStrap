@@ -248,6 +248,100 @@ body {
     margin: 0;
     text-align: right;
 }
+/* Base Container */
+.email-with-status {
+    display: flex;
+    /* alignment is handled by the specific layout classes below */
+}
+
+/* --- SCENARIO 1: VERIFIED (Horizontal Row) --- */
+/* Email and Tick sit side-by-side */
+.row-layout {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end; /* Aligned right for desktop */
+    gap: 8px; /* Space between email and tick */
+}
+
+/* Style for the lone Green Tick */
+.verified-tick {
+    color: #16a34a; /* Vibrant Green */
+    font-size: 1.2rem; /* Slightly larger than text */
+}
+
+/* --- SCENARIO 2: NOT VERIFIED (Vertical Stack) --- */
+/* Email on top, Pill on bottom */
+.col-layout {
+    flex-direction: column;
+    align-items: flex-end; /* Aligned right for desktop */
+    justify-content: center;
+    gap: 4px;
+}
+
+/* Base style for the pill (Only used for Not Verified now) */
+.verify-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: fit-content;
+}
+
+.verify-pill i {
+    font-size: 0.9rem; 
+}
+
+/* Not Verified Colors (Red) */
+.not-verified {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+.not-verified i { color: #dc2626; }
+
+
+/* --- MOBILE ADJUSTMENTS --- */
+@media (max-width: 576px) {
+    /* Left align the horizontal row */
+    .row-layout {
+        justify-content: flex-start; 
+    }
+    
+    /* Left align the vertical stack */
+    .col-layout {
+        align-items: flex-start;
+    }
+}
+#verifyNowBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem; /* space between icon and text */
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease,
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+/* Hover color + subtle lift */
+#verifyNowBtn:hover {
+    background-color: #1e90ff;   /* blue */
+    color: #ffffff;
+    border-color: #1e90ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Icon inherits hover color */
+#verifyNowBtn i {
+    color: inherit;
+    transition: inherit;
+}
 
 /* Stats Row */
 .profile-stats-row {

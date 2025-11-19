@@ -28,29 +28,59 @@ class ProfileView(SecureUserMixin, TemplateView):
 def edit_action(request):
     try :
         user = request.user
+        is_change = False
 
         data = json.loads(request.body)
         first_name = data.get('first_name')
         last_name = data.get('last_name')
-        phone_input = data.get('phone')
+        email = data.get('email')
+        phone = data.get('phone')
 
         if not first_name or not last_name :
-            return JsonResponse({'status': 'error', 'message': 'Name fields cannot be empty'})
-        
-        user.first_name = first_name
-        user.last_name = last_name
-        
-        if phone_input :
-            if len(phone_input) > 10 or len(phone_input) < 10:
-                return JsonResponse({'status' : 'error' , 'message' : 'Please Enter a Valid Number !!'})
-            user.phone = phone_input
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Name fields cannot be empty'
+            })  
+         
+        if  first_name != user.first_name:
+            user.first_name = first_name
+            is_change = True
 
-        user.save()
+        if last_name != user.last_name:
+            user.last_name = last_name
+            is_change = True
 
+        if email and  email != user.email:
+            user.email = email
+            user.is_verified = False
+            is_change = True
+
+        
+        if phone is not None:
+            phone_str = str(phone).strip()
+
+            if not phone_str.isdigit() or len(phone) != 10:
+                return JsonResponse({
+                    'status' : 'error',
+                    'message' : 'Please enter the correct Phone number'
+                })
+
+            if phone_str != getattr(user,'phone',''):
+                user.phone = phone_str
+                is_change = True
+
+
+        if is_change:
+            user.save()
+            return JsonResponse({
+                'status' : 'success',
+                'message' : 'Profile  updated successfully'
+            })
+        
         return JsonResponse({
-            'status' : 'success',
-            'message' : 'Profile updated successfully'
-        })
+                'status' : 'success',
+                'message' : 'No changes detected'
+            })
     except json.JSONDecodeError:
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'})
     except Exception as ex:

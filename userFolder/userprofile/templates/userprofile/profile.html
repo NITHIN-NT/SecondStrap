@@ -20,10 +20,29 @@
                         <dt>Full Name</dt>
                         <dd id="display_fullname">{{ user.first_name }} {{ user.last_name }}</dd>
                     </div>
-                    <div>
+                   <div class="email-row">
                         <dt>Email Address</dt>
-                        <dd>{{ user.email }}</dd>
+
+                        <dd class="email-with-status {% if user.is_verified %}row-layout{% else %}col-layout{% endif %}">
+                            <span id="display_email">{{ user.email }}</span>
+
+                            <!-- Verified icon (always in DOM) -->
+                            <i class="bx bxs-check-circle verified-tick"
+                            title="Verified"
+                            style="{% if not user.is_verified %}display:none{% endif %}">
+                            </i>
+
+                            <!-- Not verified pill (always in DOM) -->
+                            <a href="#"
+                            class="verify-pill not-verified"
+                            id="verifyNowBtn"
+                            style="{% if user.is_verified %}display:none{% endif %}">
+                                <i class="bx bxs-x-circle"></i> Not Verified
+                            </a>
+
+                        </dd>
                     </div>
+
                     <div>
                         <dt>Phone Number</dt>
                         <dd id="display_phone">
@@ -83,10 +102,15 @@
                 <label for="lastName">Last Name</label>
                 <input type="text" id="lastName" name="last_name" value="{{ user.last_name }}">
             </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" value="{% if user.email %}{{ user.email }}{% endif %}">
+            </div>
 
             <div class="form-group">
-                <label for="phoneNumber">Phone Number</label>
-                <input type="text" id="phoneNumber" name="phone" value="{% if user.phone %}{{ user.phone }}{% endif %}">
+                <label for="phone">Phone Number</label>
+                <input type="text" id="phone" name="phone" value="{% if user.phone %}{{ user.phone }}{% endif %}">
             </div>
 
             <div class="modal-actions">
@@ -98,6 +122,5 @@
 </div>
 {% endblock profile_content %}
 {% block profile_script %}
-
 <script src='{% static "js/profile/axios.js" %}'></script>
 {% endblock profile_script %}

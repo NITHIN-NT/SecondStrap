@@ -35,6 +35,49 @@ document.addEventListener("DOMContentLoaded", () => {
     const editForm = document.getElementById('editProfileForm');
     const saveBtn = document.getElementById('saveBtn');
 
+    // Email + verification elements
+    const emailWrapper = document.querySelector(".email-with-status");
+    const displayEmail = document.getElementById("display_email");
+    const verifiedIcon = document.querySelector(".verified-tick");
+    const notVerifiedPill = document.querySelector(".verify-pill");
+
+    // Capture initial email from page
+    const originalEmail = displayEmail ? displayEmail.textContent.trim() : null;
+
+    // Helper: toggle UI between verified / not verified
+    function setEmailVerifiedUI(isVerified) {
+        if (!emailWrapper) return;
+
+        if (isVerified) {
+            emailWrapper.classList.add("row-layout");
+            emailWrapper.classList.remove("col-layout");
+
+            if (verifiedIcon) verifiedIcon.style.display = "inline-flex";
+            if (notVerifiedPill) notVerifiedPill.style.display = "none";
+        } else {
+            emailWrapper.classList.remove("row-layout");
+            emailWrapper.classList.add("col-layout");
+
+            if (verifiedIcon) verifiedIcon.style.display = "none";
+            if (notVerifiedPill) notVerifiedPill.style.display = "inline-flex";
+        }
+    }
+
+    // Hover text change Verify
+    const verifBtn = document.getElementById('verifyNowBtn');
+
+    if (verifBtn) {
+        const originalHTML = verifBtn.innerHTML; // "<i ...> Not Verified"
+
+        verifBtn.addEventListener('mouseover', () => {
+            verifBtn.innerHTML = "<i class='bx bxs-check-circle'></i> Verify Now";
+        });
+
+        verifBtn.addEventListener('mouseleave', () => {
+            verifBtn.innerHTML = originalHTML;
+        });
+    }
+    
     // Open/Close Logic
     const openModal = (e) => {
         e.preventDefault();
@@ -60,28 +103,15 @@ document.addEventListener("DOMContentLoaded", () => {
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // 1. Get the rendered URL from the HTML form
-            // This will be "/profile/api/update-profile/", NOT "{% url ... %}"
             const url = editForm.action;
             const formDataObj = new FormData(editForm);
             const formData = Object.fromEntries(formDataObj.entries());
-            // const firstName = document.getElementById("firstName").value.trim();
-            // const lastName = document.getElementById("lastName").value.trim();
-            // const phoneNumber = document.getElementById("phoneNumber").value.trim();
-
-            // const formData = {
-            //     first_name: firstName,
-            //     last_name: lastName,
-            //     phone: phoneNumber
-            // };
 
             const originalBtnText = saveBtn.innerText;
             saveBtn.innerText = "Saving...";
             saveBtn.disabled = true;
 
-
             try {
-                // 2. Use the variable 'url' here
                 const response = await axios.post(url, formData, {
                     headers: {
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
@@ -93,26 +123,39 @@ document.addEventListener("DOMContentLoaded", () => {
                     const displayName = document.getElementById('display_fullname');
                     const displayPhone = document.getElementById('display_phone');
 
-                    displayName.textContent = `${formData.first_name} ${formData.last_name}`;
-
-                    if (formData.phone) {
-                        displayPhone.textContent = `+91 ${formData.phone}`;
-                    } else {
-                        displayPhone.textContent = "Not provided";
+                    if (displayName) {
+                        displayName.textContent = `${formData.first_name} ${formData.last_name}`;
                     }
+
+                    if (displayPhone) {
+                        if (formData.phone) {
+                            displayPhone.textContent = `+91 ${formData.phone}`;
+                        } else {
+                            displayPhone.textContent = "Not provided";
+                        }
+                    }
+
+                    // Update email on page
+                    if (displayEmail && formData.email) {
+                        displayEmail.textContent = formData.email;
+                    }
+
+                    // --- EMAIL VERIFICATION RULE ---
+                    // If email changed compared to what was originally loaded => force NOT VERIFIED
+                    const newEmail = (formData.email || "").trim();
+                    if (originalEmail && newEmail && newEmail !== originalEmail) {
+                        setEmailVerifiedUI(false);
+                    } else if (typeof response.data.is_verified !== "undefined") {
+                        setEmailVerifiedUI(!!response.data.is_verified);
+                    }
+
                     closeModal();
-                    // 2. TRIGGER THE TOAST (The new part)
                     toastr.success(response.data.message);
 
                 } else {
-                    // alert("Error updating profile: " + response.data.message);
                     Swal.fire({
-                        // icon: "error",
                         title: "Oops...",
                         text: "Error updating profile " + response.data.message,
-                        // The footer link will now automatically be black with Barlow font
-                        // footer: '<a href="#">Why do I have this issue?</a>',
-                        // Optional: If you want a black confirm button explicitly
                         confirmButtonText: "Close"
                     });
                 }

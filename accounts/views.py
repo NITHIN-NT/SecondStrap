@@ -113,6 +113,7 @@ def activate_account(request):
 
         if otp_record and otp_record.is_valid():
             user.is_active = True
+            user.is_verified = True
             user.save()
             otp_record.delete()
             request.session.pop('pending_user_id', None)
