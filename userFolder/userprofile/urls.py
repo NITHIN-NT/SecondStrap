@@ -9,5 +9,8 @@ urlpatterns = [
 
     # api endpoints
 
-    path('api/update-info',edit_action,name='update_info_axios')
+    path('api/update-info',edit_action,name='update_info_axios'),
+
+    path('info/email/send',verify_action,name='send_otp'),
+    path('info/email/verify',otp_verification,name='verify_otp_axios')
 ]

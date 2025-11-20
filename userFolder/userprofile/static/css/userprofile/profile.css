@@ -8,8 +8,9 @@ body {
     padding: 0;
 }
 
+/* ================================================== */
 /* --- DESKTOP LAYOUT --- */
-/* (This is the default, for screens > 992px) */
+/* ================================================== */
 
 .profile-container {
     display: flex;
@@ -248,37 +249,33 @@ body {
     margin: 0;
     text-align: right;
 }
+
 /* Base Container */
 .email-with-status {
     display: flex;
-    /* alignment is handled by the specific layout classes below */
 }
 
 /* --- SCENARIO 1: VERIFIED (Horizontal Row) --- */
-/* Email and Tick sit side-by-side */
 .row-layout {
     flex-direction: row;
     align-items: center;
-    justify-content: flex-end; /* Aligned right for desktop */
-    gap: 8px; /* Space between email and tick */
+    justify-content: flex-end;
+    gap: 8px;
 }
 
-/* Style for the lone Green Tick */
 .verified-tick {
-    color: #16a34a; /* Vibrant Green */
-    font-size: 1.2rem; /* Slightly larger than text */
+    color: #16a34a;
+    font-size: 1.2rem;
 }
 
 /* --- SCENARIO 2: NOT VERIFIED (Vertical Stack) --- */
-/* Email on top, Pill on bottom */
 .col-layout {
     flex-direction: column;
-    align-items: flex-end; /* Aligned right for desktop */
+    align-items: flex-end;
     justify-content: center;
     gap: 4px;
 }
 
-/* Base style for the pill (Only used for Not Verified now) */
 .verify-pill {
     display: inline-flex;
     align-items: center;
@@ -293,7 +290,7 @@ body {
 }
 
 .verify-pill i {
-    font-size: 0.9rem; 
+    font-size: 0.9rem;
 }
 
 /* Not Verified Colors (Red) */
@@ -302,42 +299,27 @@ body {
     color: #b91c1c;
     border: 1px solid #fecaca;
 }
-.not-verified i { color: #dc2626; }
 
-
-/* --- MOBILE ADJUSTMENTS --- */
-@media (max-width: 576px) {
-    /* Left align the horizontal row */
-    .row-layout {
-        justify-content: flex-start; 
-    }
-    
-    /* Left align the vertical stack */
-    .col-layout {
-        align-items: flex-start;
-    }
+.not-verified i {
+    color: #dc2626;
 }
+
+/* Verify Now Button */
 #verifyNowBtn {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem; /* space between icon and text */
-    transition:
-        background-color 0.25s ease,
-        color 0.25s ease,
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
+    gap: 0.35rem;
+    transition: background-color 0.25s ease, color 0.25s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Hover color + subtle lift */
 #verifyNowBtn:hover {
-    background-color: #1e90ff;   /* blue */
+    background-color: #1e90ff;
     color: #ffffff;
     border-color: #1e90ff;
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* Icon inherits hover color */
 #verifyNowBtn i {
     color: inherit;
     transition: inherit;
@@ -346,7 +328,6 @@ body {
 /* Stats Row */
 .profile-stats-row {
     display: grid;
-    /* This is set to two columns */
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
 }
@@ -418,26 +399,16 @@ body {
 }
 
 /* ================================================== */
-/* --- ADD-ON: REFERRAL CARD STYLES --- */
+/* --- REFERRAL CARD STYLES --- */
 /* ================================================== */
 
-/* This card borrows the base styles from .stat-card 
-  (background, radius, shadow, padding)
-  to ensure it matches perfectly.
-*/
 .referral-card {
-    /* --- 1. Copied from .stat-card for consistency --- */
     background-color: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     padding: 1.5rem;
-
-    /* --- 2. Internal layout for the card --- */
     display: flex;
     flex-direction: column;
-
-    /* --- 3. CSS CHANGE --- */
-    /* margin-top: 2rem; <-- This line was REMOVED */
 }
 
 .referral-card h4 {
@@ -452,7 +423,6 @@ body {
     font-size: 0.9rem;
     color: #777;
     flex-grow: 1;
-    /* Pushes input group down if card stretches */
 }
 
 .referral-input-group {
@@ -467,12 +437,10 @@ body {
     padding: 10px 12px;
     border: 1px solid #ddd;
     border-radius: 8px 0 0 8px;
-    /* Rounded on the left */
     background-color: #f9f9f9;
     color: #333;
     outline: none;
     border-right: none;
-    /* Ensure it doesn't overflow */
     min-width: 0;
 }
 
@@ -487,38 +455,38 @@ body {
     background-color: #000;
     border: 1px solid #000;
     border-radius: 0 8px 8px 0;
-    /* Rounded on the right */
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
-    /* Prevents "Copy" from wrapping */
 }
 
 .copy-link-btn:hover {
     background-color: #333;
 }
 
-/* This is the "Copied!" feedback state */
 .copy-link-btn.copied {
     background-color: #28a745;
     border-color: #28a745;
 }
 
+/* ================================================== */
+/* --- MODALS & OTP STYLES --- */
+/* ================================================== */
+
 /* Modal Overlay (Background) */
 .modal-overlay {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     justify-content: center;
     align-items: center;
 }
 
-/* Active state to show modal */
 .modal-overlay.active {
     display: flex;
 }
@@ -530,8 +498,12 @@ body {
     border-radius: 12px;
     width: 90%;
     max-width: 450px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     position: relative;
+    
+    /* UPDATED: Mobile Safety */
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 /* Header */
@@ -590,7 +562,7 @@ body {
 .save-btn {
     padding: 10px 20px;
     border: none;
-    background-color: #000000; /* Change to your brand color */
+    background-color: #000000;
     color: white;
     border-radius: 6px;
     cursor: pointer;
@@ -599,11 +571,121 @@ body {
 .save-btn:hover {
     background-color: #000000;
 }
-/* ================================================== */
-/* --- 📱 COMPLETE MOBILE REDESIGN (App-Style) --- */
-/* ================================================== */
-@media (max-width: 992px) {
 
+/* OTP Inputs */
+.otp-input-group {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 2rem 0;
+}
+
+.otp-letters {
+    width: 50px;
+    height: 55px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #111;
+    transition: all 0.2s ease;
+    -moz-appearance: textfield;
+}
+
+.otp-letters::-webkit-outer-spin-button,
+.otp-letters::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.otp-letters:focus {
+    border-color: #000;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.otp-letters:not(:placeholder-shown) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Resend Timer Styles */
+#resendOtpBtn {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+    display: inline-block;
+    margin-top: 1rem;
+}
+
+#resendOtpBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#resendOtpBtn strong {
+    color: #000;
+    font-weight: 600;
+}
+
+#resendOtpBtn:not(:disabled):hover strong {
+    text-decoration: underline;
+    color: #2563eb;
+}
+
+/* Ensure the Modal Header text looks good */
+.modal-content p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 0;
+    text-align: center;
+}
+
+/* ================================================== */
+/* --- NEW: ANIMATIONS & SWEETALERT OVERRIDES --- */
+/* ================================================== */
+
+/* 1. Error Shake Animation (For invalid OTP) */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+.shake-animation {
+    animation: shake 0.4s ease-in-out;
+    border-color: #dc2626 !important; /* Red Border */
+    background-color: #fef2f2;
+}
+
+/* 2. SweetAlert "Tick Only" Optimization */
+/* Removes box-shadow, border and background for a clean floating icon */
+div:where(.swal2-container) div:where(.swal2-popup) {
+    box-shadow: none !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Ensure success icon is visible and sized well */
+div:where(.swal2-icon).swal2-success {
+    font-size: 1.2rem;
+}
+
+
+/* ================================================== */
+/* --- MOBILE & RESPONSIVE STYLES --- */
+/* ================================================== */
+
+@media (max-width: 992px) {
     .profile-container {
         flex-direction: column;
         margin: 0;
@@ -656,7 +738,6 @@ body {
         margin-bottom: 0;
     }
 
-    /* --- HIDE DESKTOP LOGOUT ON MOBILE --- */
     .profile-nav li.desktop-logout-li {
         display: none;
     }
@@ -672,17 +753,6 @@ body {
         color: #ffffff;
     }
 
-    /* This rule no longer applies, but is harmless */
-    .logout-link {
-        background-color: #fdf0f0;
-        color: #d9534f;
-    }
-
-    .logout-link:hover {
-        background-color: #3b0000;
-    }
-
-    /* --- SHOW & STYLE MOBILE LOGOUT BUTTON --- */
     .mobile-logout-link {
         display: flex;
         align-items: center;
@@ -694,7 +764,6 @@ body {
         background-color: #fdf0f0;
         color: #d9534f;
         margin-top: 1rem;
-        /* Space from the referral card */
         transition: all 0.3s ease;
     }
 
@@ -712,20 +781,20 @@ body {
     }
 
     .profile-stats-row {
-        /* This switches the grid to 1 column on mobile */
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-
-    /* Mobile margin for referral card */
-    .referral-card {
-        /* margin-top: 1.5rem; <-- This line was REMOVED */
-    }
 }
 
-
-/* --- Smallest Phone Adjustments --- */
 @media (max-width: 576px) {
+    .row-layout {
+        justify-content: flex-start;
+    }
+
+    .col-layout {
+        align-items: flex-start;
+    }
+
     .profile-card-body dl div {
         flex-direction: column;
         align-items: flex-start;

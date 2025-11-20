@@ -84,3 +84,8 @@ The following fields are now fully editable and state-managed:
 ---
 **Email templates change from old normal design to a new look design**  
 **Time:** 9:26 PM
+
+## 🛠 Implementation Details
+---
+**Email Verification is add with a Modal**
+**Time:** 12:48 PM
