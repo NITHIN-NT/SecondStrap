@@ -63,7 +63,7 @@ def edit_action(request):
         if phone is not None:
             phone_str = str(phone).strip()
 
-            if not phone_str.isdigit() or len(phone) != 10:
+            if not phone_str.isdigit() or len(phone_str) != 10:
                 return JsonResponse({
                     'status' : 'error',
                     'message' : 'Please enter the correct Phone number'
@@ -106,7 +106,6 @@ def verify_action(request):
         )
         msg.attach_alternative(html_message,"text/html")
         msg.send()
-        request.session['otp_code'] = OTP
         request.session['email_to_verify'] = user.email
         return JsonResponse({
             'status' : 'success' ,
@@ -121,19 +120,19 @@ def verify_action(request):
 @login_required
 @require_POST
 def otp_verification(request):
-    user_id = request.session.get('email_to_verify')
-    if not user_id:
+    user_email = request.session.get('email_to_verify')
+    if not user_email:
         return JsonResponse({
             'status' :'error',
-            'message' : 'No Pending verfication Found'
+            'message' : 'No Pending verification Found'
         })
     
     try :
-        user = CustomUser.objects.get(email=user_id)
+        user = CustomUser.objects.get(email=user_email)
     except CustomUser.DoesNotExist:
         return JsonResponse({
             'status' : 'error',
-            'message' : 'User Not Found'
+            'message' : 'OTP Not found'
         })
 
     otp = request.POST.get('otp')
