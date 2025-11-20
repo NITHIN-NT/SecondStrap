@@ -89,3 +89,7 @@ The following fields are now fully editable and state-managed:
 ---
 **Email Verification is add with a Modal**
 **Time:** 12:48 PM
+
+## Profile Implementation Is Completed
+**Time:** 12 :50
+-----
