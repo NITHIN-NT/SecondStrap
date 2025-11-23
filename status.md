@@ -93,3 +93,8 @@ The following fields are now fully editable and state-managed:
 ## Profile Implementation Is Completed
 **Time:** 12 :50
 -----
+
+## 📇 Address Crud Operation is implemented
+---
+# Now user can add , edit, and delete their address
+**Time:** 3:33PM 23-11-2025

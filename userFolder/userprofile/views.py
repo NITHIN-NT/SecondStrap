@@ -1,18 +1,19 @@
 import json
 from django.shortcuts import redirect
-from django.views.generic import TemplateView,DetailView,View
+from django.views.generic import TemplateView,ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.contrib import messages
+from django.views.decorators.http import require_POST,require_http_methods
 from django.http import JsonResponse
 from accounts.models import EmailOTP,CustomUser
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .utils import generate_alphabetical_code
+from .forms import AddressForm
+from django.contrib import messages
+from .models import Address
 # Create your views here.
 
 class SecureUserMixin(LoginRequiredMixin):
@@ -165,10 +166,125 @@ def otp_verification(request):
             'message' : 'OTP is not Valid . Try again'
         })
 
-
-
-class ProfileAddressView(SecureUserMixin, TemplateView):
+class ProfileAddressView(SecureUserMixin, ListView):
+    model=Address
     template_name = "userprofile/profile_addresses.html"
+    context_object_name ='addresses'
+
+    def get_queryset(self):
+        queryset =  super().get_queryset()
+        return Address.objects.filter(user=self.request.user)
+
+@require_http_methods(["GET","POST"])
+@login_required
+def manage_address(request,address_id=None):
+    if request.method == "GET" and address_id is not None:
+        try:
+            address = Address.objects.get(id=address_id,user = request.user)
+            address_data = {
+                'id': address.id,
+                'full_name': address.full_name,
+                'address_line_1': address.address_line_1,
+                'address_line_2': address.address_line_2,
+                'city': address.city,
+                'state': address.state,
+                'postal_code': address.postal_code,
+                'phone_number': address.phone_number,
+                'country': address.country,
+                'is_default': address.is_default,
+                'address_type': address.address_type,
+            }
+            return JsonResponse({'status':'success','address':address_data})
+        except Address.DoesNotExist:
+            return JsonResponse({'status' : 'error','message' : 'Address Not Found'},status=404)
+        except Exception as e :
+            return JsonResponse({'status':'error','message': str(e) },status=500)
+        
+    if request.method == "POST" :
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "status": "error", 
+                "message": "Invalid JSON body"
+            },
+            status = 400,
+            )
+        
+        address_id = data.get("address_id")
+        
+        if address_id:
+            try:
+                address = Address.objects.get(id=address_id,user=request.user)
+            except Address.DoesNotExist :
+                return JsonResponse({
+                    'status' : 'error',
+                    'message' : 'Address Not Found'
+                },
+                status = 404
+                )
+            except (TypeError, ValueError):
+                return JsonResponse({
+                    'status' : 'error',
+                    'message' : 'Invalid address ID'
+                },
+                status = 400
+                )
+        else:
+            address = Address(user=request.user)
+
+        form = AddressForm(data,instance=address)
+
+        if form.is_valid():
+            if form.cleaned_data.get('is_default'):
+                request.user.address_set.filter(is_default=True).update(is_default=False)
+            address = form.save(commit=False)
+            if not request.user.address_set.exists():
+                address.is_default = True
+            address.save()
+            return JsonResponse({
+                'status' : 'success',
+                'message' : 'Address Saved'
+            },
+            status = 200
+            )
+        
+        return JsonResponse({
+            "status": "error",
+            "errors": form.errors,  
+        },
+        status=400
+        )
+
+@login_required
+def delete_address(request, address_id=None):
+    if not address_id:
+        messages.error(request,'Address ID is required')
+
+    try :
+        address = Address.objects.get(id=address_id,user=request.user)
+    except Address.DoesNotExist :
+        messages.error(request,'Address not found !')
+        return redirect('profile_address')
+
+    
+    other_address = request.user.address_set.exclude(id=address_id)
+    if not other_address.exists():
+        messages.error(request,'You must have at least one address')
+        return redirect('profile_address')
+
+    was_default = address.is_default
+    address.delete()
+    
+    if was_default:
+        new_default = other_address.order_by('id').first()
+        new_default.is_default = True
+        new_default.save(update_fields=['is_default'])
+
+    messages.success(request,'Address Deleted Successfully')
+    return redirect('profile_address')
+
+    
     
 class ProfilePaymentView(SecureUserMixin, TemplateView):
     template_name = "userprofile/profile_payment.html"

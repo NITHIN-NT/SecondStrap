@@ -11,57 +11,171 @@
 {% block profile_content %}
 
 <div class="profile-card">
-    
     <div class="profile-card-header">
         <h2>Saved Addresses</h2>
-        <a href="#" class="add-new-link"> <i class='bx bx-plus'></i>
+        <a href="#" class="add-new-link" id="addNewAddress">
+            <i class="bx bx-plus"></i>
             <span>Add New Address</span>
         </a>
     </div>
-
+    {% for add in addresses %}
     <div class="profile-card-body">
-        
         <div class="address-list">
-            
             <div class="address-card">
                 <div class="address-card-header">
                     <div class="address-card-title">
-                        <h4>Home</h4>
-                        <span class="default-badge">Default</span>
+                        <h4>{{add.address_type}}</h4>
+                        <span class="default-badge">{% if add.is_default %} Default {% else %}Normal{% endif %}</span>
                     </div>
-                    <a href="#" class="edit-address-link">
-                        <i class='bx bxs-pencil'></i>
-                    </a>
-                </div>
-                <div class="address-card-body">
-                    <p>
-                        123 Main Street<br>
-                        New York , NY 10001<br>
-                        United States
-                    </p>
-                </div>
-            </div>
 
-            <div class="address-card">
-                <div class="address-card-header">
-                    <div class="address-card-title">
-                        <h4>Work</h4>
+                    <div class="address-card-actions">  
+                        <a href="#" class="edit-address-link" data-address-id="{{ add.id }}">
+                            <i class="bx bxs-pencil"></i>
+                        </a>
+                        <a href="{% url "delete_address" add.id %}" class="delete-address-link" data-address-id="{{ add.id }}" data-address-label="{{ add.full_name }} - {{ add.address_line_1 }}">  
+                            <i class="bx bxs-trash"></i>
+                        </a>
                     </div>
-                    <a href="#" class="edit-address-link">
-                        <i class='bx bxs-pencil'></i>
-                    </a>
                 </div>
+
                 <div class="address-card-body">
                     <p>
-                        456 Office Park<br>
-                        San Francisco , CA 94105<br>
-                        United States
+                        {{add.full_name}}
+                        {{add.address_line_1}}<br>
+                        {{add.address_line_2}}<br>
+                        {{add.city}},{{add.state}}
+                        {{add.country}}
                     </p>
                 </div>
             </div>
-            
-            </div>
+        </div>
     </div>
-
+    {% empty %}
+    <p>No Data</p>
+    {% endfor %}
 </div>
+
+<div id="deleteConfirmModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Delete Address</h3>
+            <button class="close-modal-btn" id="closeDeleteModalBtn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <p>
+                Are you sure you want to delete this address?
+                <br>
+                <strong id="deleteAddressLabel"></strong>
+            </p>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="cancel-btn" id="cancelDeleteBtn">Cancel</button>
+
+            <form id="deleteAddressForm" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="save-btn danger-btn">Yes, delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+<span id="fetchUrlBase" data-url-base="{% url 'fetch_address' address_id=0 %}"></span>
+<div id="addressModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="addressModalTitle">Add New Address</h3> 
+            <button class="close-modal-btn" id="closeAddressModalBtn">&times;</button>
+        </div>
+        
+        <form id="addressForm" method="POST" action='{% url "add_address" %}'>
+            {% csrf_token %}
+            
+            <input type="hidden" name="address_id" id="address_id" value=""> 
+
+            <div class="form-group address-type-group">
+                <label class="input-label">Address Type</label>
+    
+                <div class="radio-icon-container">
+                    <input type="radio" id="type_home" name="address_type" value="HOME" required>
+                    <label for="type_home" class="radio-icon-label">
+                        <i class="bx bxs-home-alt"></i> 
+                        <span>Home</span>
+                    </label>
+
+                    <input type="radio" id="type_work" name="address_type" value="WORK" required>
+                    <label for="type_work" class="radio-icon-label">
+                        <i class="bx bxs-briefcase"></i> 
+                        <span>Work/Office</span>
+                    </label>
+                    
+                    <input type="radio" id="type_other" name="address_type" value="OTHER" required>
+                    <label for="type_other" class="radio-icon-label">
+                        <i class="bx bxs-map"></i> 
+                        <span>Other</span>
+                    </label>
+                </div>
+            </div>  
+
+            <div class="form-group">
+                <label for="full_name">Recipient Full Name</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address_line_1">Address Line 1 (House No., Street)</label>
+                <input type="text" id="address_line_1" name="address_line_1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="address_line_2">Address Line 2 (Apartment, Landmark - *Optional*)</label>
+                <input type="text" id="address_line_2" name="address_line_2">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City/Town</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="state">State/Province</label>
+                    <input type="text" id="state" name="state" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="postal_code">Postal/ZIP Code</label>
+                    <input type="text" id="postal_code" name="postal_code" pattern="\d{6}" maxlength="6" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" pattern="\d{10}" maxlength="10" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="country">Country</label>
+                <input type="text" id="country" name="country" value="India" required>
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="is_default" name="is_default">
+                <label for="is_default">Set as default shipping address</label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="cancel-btn" id="cancelAddressBtn">Cancel</button>
+                <button type="submit" class="save-btn" id="saveAddressBtn">Save Address</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock profile_content %}
+
+{% block profile_script %}
+    <script src="{% static 'js/profile/profile-address.js' %}"></script>
+{% endblock profile_script %}
