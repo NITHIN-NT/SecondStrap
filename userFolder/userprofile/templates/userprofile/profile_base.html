@@ -5,30 +5,29 @@
 
 {% block extra_styles %}
     <link rel="stylesheet" href="{% static 'css/userprofile/profile_base.css' %}">
-    {% block profile_extra_style %}
+    {% block profile_extra_style %}{% endblock profile_extra_style %}
     
-    {% endblock profile_extra_style %}
-
+    <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.1/dist/cropper.min.css"/>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="{% static "css/userprofile/cropper.css" %}">
 {% endblock extra_styles %}
 
 {% block content %}
 <div class="profile-container">
-
     <aside class="profile-sidebar">
-        
         <div class="profile-user-card">
-            
             <div class="avatar-wrapper">
+                {# NOTE: user.profile is correct here because your Python view saves the Cloudinary URL string directly #}
                 {% if user.profile %}
-                    <img src="{{ user.profile }}" alt="User Avatar" class="avatar">
+                    <img src="{{ user.profile }}" id="sidebar-avatar" alt="User Avatar" class="avatar">
                 {% else %}
-                    <div class="avatar-initials">
+                    <div class="avatar-initials" id="sidebar-initials">
                         <span>{{ user.first_name|slice:":2"|upper }}</span>
                     </div>
                 {% endif %}
                 
-                <a href="#" class="avatar-edit-link">
+                <a href="#" class="avatar-edit-link" id="avatar-edit-btn">
                     <i class='bx bxs-pencil'></i>
                 </a>
             </div>
@@ -37,91 +36,187 @@
             <p>{{ user.email }}</p>
         </div>
 
-      <nav class="profile-nav">
+        <nav class="profile-nav">
             <ul>
-                <li>
-                    <a href="{% url "profile_view_user" %}" class="{% if request.resolver_match.url_name == 'profile_view_user' %}active{% endif %}">
-                        <i class='bx bx-user'></i>
-                        <span>Personal Information</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url "profile_address" %}" class="{% if request.resolver_match.url_name == 'profile_adress' %}active{% endif %}">
-                        <i class='bx bx-map'></i>
-                        <span>Addresses</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url "profile_payment" %}" class="{% if request.resolver_match.url_name == 'profile_payment' %}active{% endif %}">
-                        <i class='bx bx-credit-card'></i>
-                        <span>Payment Methods</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url "profile_order" %}" class="{% if request.resolver_match.url_name == 'profile_order' %}active{% endif %}">
-                        <i class='bx bx-receipt'></i>
-                        <span>Order History</span>
-                    </a>
-                </li>
+                <li><a href="{% url "profile_view_user" %}" class="{% if request.resolver_match.url_name == 'profile_view_user' %}active{% endif %}"><i class='bx bx-user'></i><span>Personal Information</span></a></li>
                 
-                <li>
-                    <a href="{% url "profile_wallet" %}" class="{% if request.resolver_match.url_name == 'profile_wallet' %}active{% endif %}">
-                        <i class='bx bx-wallet'></i>
-                        <span>Wallet</span>
-                    </a>
-                </li>
+                {# FIXED: Typo 'adress' -> 'address' #}
+                <li><a href="{% url "profile_address" %}" class="{% if request.resolver_match.url_name == 'profile_address' %}active{% endif %}"><i class='bx bx-map'></i><span>Addresses</span></a></li>
+                
+                <li><a href="{% url "profile_payment" %}" class="{% if request.resolver_match.url_name == 'profile_payment' %}active{% endif %}"><i class='bx bx-credit-card'></i><span>Payment Methods</span></a></li>
+                <li><a href="{% url "profile_order" %}" class="{% if request.resolver_match.url_name == 'profile_order' %}active{% endif %}"><i class='bx bx-receipt'></i><span>Order History</span></a></li>
+                <li><a href="{% url "profile_wallet" %}" class="{% if request.resolver_match.url_name == 'profile_wallet' %}active{% endif %}"><i class='bx bx-wallet'></i><span>Wallet</span></a></li>
                 {% if request.user.password %}
-                <li class="desktop-password-change-li">
-                    <a href="{% url "change_password" %}" class="password-change-link">
-                        <i class='bx bx-lock'></i>
-                        <span>Password</span>
-                    </a>
-                </li>
+                <li class="desktop-password-change-li"><a href="{% url "change_password" %}" class="password-change-link"><i class='bx bx-lock'></i><span>Password</span></a></li>
                 {% endif %}
-                <li class="desktop-logout-li">
-                    <a href="{% url "logout" %}" class="logout-link">
-                        <i class='bx bx-log-out'></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
+                <li class="desktop-logout-li"><a href="{% url "logout" %}" class="logout-link"><i class='bx bx-log-out'></i><span>Logout</span></a></li>
             </ul>
         </nav>
     </aside>
 
     <section class="profile-content">
-        
-       {% block profile_content %}
-       
-       {% endblock profile_content %}
-
-
-        <a href="{% url "logout" %}" class="mobile-logout-link">
-            <i class='bx bx-log-out'></i>
-            <span>Logout</span>
-        </a>
-
+       {% block profile_content %}{% endblock profile_content %}
+        <a href="{% url "logout" %}" class="mobile-logout-link"><i class='bx bx-log-out'></i><span>Logout</span></a>
     </section>
-
 </div>
+
+<input type="file" id="avatar-input" accept="image/*" class="visually-hidden-input">
+
+<div id="cropper-modal" class="cropper-modal">
+    <div class="cropper-modal-content">
+        <h3>Crop Profile Photo</h3>
+        <div class="img-container">
+            <img id="image-to-crop" src="">
+        </div>
+        <div class="cropper-btn-container">
+            <button id="btn-cancel" class="btn-cancel">Cancel</button>
+            <button id="btn-crop" class="btn-crop">Update Photo</button>
+        </div>
+    </div>
+</div>
+
 {% endblock content %}
 
 {% block extra_script %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/cropperjs@1.6.1/dist/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 1. Find the active link inside your mobile navigation
-        const activeLink = document.querySelector('.profile-nav a.active');
         
-        // 2. Check if we found one
+        // Toastr Options
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+        };
+
+        // --- 1. Mobile Nav Scroll Logic ---
+        const activeLink = document.querySelector('.profile-nav a.active');
         if (activeLink) {
-            
-            // 3. Tell the browser to scroll it into the horizontal view
-            // This works inside the '.profile-nav ul' container
-            activeLink.scrollIntoView({
-                behavior: 'auto', // Use 'smooth' for a sliding effect, or 'auto' for an instant snap
-                block: 'nearest',   // Keeps it vertically aligned
-                inline: 'center'    // This is the magic part: it centers the item horizontally
-            });
+            activeLink.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
         }
+
+        // --- 2. Cropper & Axios Logic ---
+        const avatarEditBtn = document.getElementById('avatar-edit-btn');
+        const avatarInput = document.getElementById('avatar-input');
+        const modal = document.getElementById('cropper-modal');
+        const imageToCrop = document.getElementById('image-to-crop');
+        const btnCancel = document.getElementById('btn-cancel');
+        const btnCrop = document.getElementById('btn-crop');
+        
+        let cropper = null;
+
+        // Open File Input
+        avatarEditBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            avatarInput.click();
+        });
+
+        // Handle File Selection
+        avatarInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imageToCrop.src = e.target.result;
+                    modal.style.display = 'block';
+
+                    if(cropper) { cropper.destroy(); }
+                    
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1, 
+                        viewMode: 1,
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Close Modal
+        btnCancel.addEventListener('click', () => {
+            modal.style.display = 'none';
+            if (cropper) { cropper.destroy(); }
+            avatarInput.value = ''; 
+        });
+
+        // Crop & Upload using Axios
+        btnCrop.addEventListener('click', () => {
+            if (cropper) {
+                // --- START LOADING STATE ---
+                const originalText = btnCrop.textContent;
+                btnCrop.textContent = 'Updating...';
+                btnCrop.disabled = true; // Prevent double clicks
+                btnCrop.style.opacity = '0.7'; // Optional visual feedback
+
+                cropper.getCroppedCanvas({
+                    width: 300,
+                    height: 300,
+                }).toBlob((blob) => {
+                    
+                    const formData = new FormData();
+                    formData.append('profile_image', blob, 'avatar.jpg');
+                    
+                    const csrfToken = '{{ csrf_token }}'; 
+                    const uploadUrl = "{% url 'update_profile_picture' %}"; 
+
+                    axios.post(uploadUrl, formData, {
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    })
+                    .then(response => {
+                        const data = response.data;
+                        
+                        if (data.status === 'success' || data.success) {
+
+                            const sidebarAvatar = document.getElementById('sidebar-avatar');
+                            
+                            if (sidebarAvatar) {
+                                sidebarAvatar.src = data.image_url;
+                            } else {
+                                const wrapper = document.querySelector('.avatar-wrapper');
+                                const initialsDiv = document.getElementById('sidebar-initials');
+
+                                if (wrapper && initialsDiv) {
+                                    initialsDiv.remove();
+                                    const img = document.createElement('img');
+                                    img.id = 'sidebar-avatar';
+                                    img.className = 'avatar';
+                                    img.alt = 'User Avatar';
+                                    img.src = data.image_url;
+                                    wrapper.insertBefore(img, wrapper.firstChild);
+                                } else {
+                                    location.reload();
+                                }
+                            }
+
+                            modal.style.display = 'none';
+                            if (cropper) { cropper.destroy(); }
+                            avatarInput.value = '';
+
+                            toastr.success(data.message || "Profile updated successfully.");
+                        } else {
+                            toastr.error(data.message || "Something went wrong.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Axios Error:', error);
+                        toastr.error('Network error. Please try again.');
+                    })
+                    .finally(() => {
+                        // --- RESET BUTTON STATE ---
+                        // Runs on both success and error
+                        btnCrop.textContent = originalText;
+                        btnCrop.disabled = false;
+                        btnCrop.style.opacity = '1';
+                    });
+
+                }, 'image/jpeg');
+            }
+        });
     });
 </script>
 {% block profile_script %}{% endblock profile_script %}

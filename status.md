@@ -102,4 +102,9 @@ The following fields are now fully editable and state-managed:
 ## 🔐 Password Change 
 ---
 # User can now change the password and change password
-**Time :**  6:02 PM
+**Time :**  6:02 PM 23-11-2025
+
+## 📷 Profile update 
+---
+# User can now Update/ change their profile
+**Time :** 10:31PM 23-11-2025

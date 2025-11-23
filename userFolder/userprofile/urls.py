@@ -14,6 +14,7 @@ urlpatterns = [
 
     path('info/email/send',verify_action,name='send_otp'),
     path('info/email/verify',otp_verification,name='verify_otp_axios'),
+    path('profile/edit',update_profile_picture,name='update_profile_picture'),
 
     path('addresses/manage/',manage_address, name='add_address'),
     path('addresses/fetch/<int:address_id>/',manage_address, name='fetch_address'),

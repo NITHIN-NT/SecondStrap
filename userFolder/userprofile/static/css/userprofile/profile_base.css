@@ -9,8 +9,6 @@ body {
 }
 
 /* --- DESKTOP LAYOUT --- */
-/* (This is the default, for screens > 992px) */
-
 .profile-container {
     display: flex;
     max-width: 1200px;
@@ -59,6 +57,7 @@ body {
     transition: filter 0.3s ease;
 }
 
+/* --- EDIT BUTTON STYLES --- */
 .avatar-edit-link {
     position: absolute;
     bottom: 15px;
@@ -73,15 +72,19 @@ body {
     justify-content: center;
     text-decoration: none;
     box-shadow: 0 2px 6px rgba(80, 0, 0, 0.876);
+    
+    /* Default: Hidden on desktop until hover */
     opacity: 0;
     transform: scale(0.8);
     transition: all 0.3s ease;
+    z-index: 10;
 }
 
 .avatar-edit-link i {
     font-size: 1.2rem;
 }
 
+/* Desktop Hover Effect */
 .avatar-wrapper:hover .avatar-edit-link {
     opacity: 1;
     transform: scale(1);
@@ -323,7 +326,7 @@ body {
 }
 
 /* ================================================== */
-/* --- 📱 COMPLETE MOBILE REDESIGN (App-Style) --- */
+/* --- 📱 COMPLETE MOBILE REDESIGN --- */
 /* ================================================== */
 @media (max-width: 992px) {
 
@@ -333,6 +336,18 @@ body {
         padding: 0;
         gap: 0;
         background-color: #f4f7f6;
+    }
+
+    /* FIX: Force Avatar Edit Button to be visible on mobile */
+    .avatar-edit-link {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+        bottom: 0px; 
+        right: 0px;
+        width: 36px;
+        height: 36px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     .profile-sidebar {
@@ -395,16 +410,6 @@ body {
         color: #ffffff;
     }
 
-    /* This rule no longer applies, but is harmless */
-    .logout-link {
-        background-color: #fdf0f0;
-        color: #d9534f;
-    }
-
-    .logout-link:hover {
-        background-color: #3b0000;
-    }
-
     /* --- SHOW & STYLE MOBILE LOGOUT BUTTON --- */
     .mobile-logout-link {
         display: flex;
@@ -417,7 +422,6 @@ body {
         background-color: #fdf0f0;
         color: #d9534f;
         margin-top: 1rem;
-        /* Space from the referral card */
         transition: all 0.3s ease;
     }
 
@@ -440,8 +444,6 @@ body {
     }
 }
 
-
-/* --- Smallest Phone Adjustments --- */
 @media (max-width: 576px) {
     .profile-card-body dl div {
         flex-direction: column;

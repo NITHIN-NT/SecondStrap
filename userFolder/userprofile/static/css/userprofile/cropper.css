@@ -1,0 +1,93 @@
+/* Modal Overlay */
+.cropper-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    /* FIX: Use RGBA for transparency, NOT opacity property */
+    background-color: rgba(0, 0, 0, 0.75);
+    opacity: 1 !important;
+    /* Forces the container to be solid so children don't fade */
+    backdrop-filter: blur(2px);
+    padding-top: 50px;
+}
+
+/* Modal Content Box */
+.cropper-modal-content {
+    background-color: #ffffff;
+    /* This must be solid white */
+    opacity: 1 !important;
+    /* Ensures the white box is never transparent */
+    margin: auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 100000;
+}
+
+/* Image Container */
+.img-container {
+    width: 100%;
+    max-height: 450px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    /* distinctive background behind image */
+}
+
+.img-container img {
+    width: 100%;
+    display: block;
+    max-width: 100%;
+}
+
+/* Buttons */
+.cropper-btn-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-cancel {
+    padding: 10px 18px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+
+.btn-crop {
+    padding: 10px 18px;
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Add this to your css file or inside a <style> tag */
+.visually-hidden-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* OPTIONAL: Ensure your edit button is above everything else on mobile */
+.avatar-edit-link {
+    cursor: pointer;
+    z-index: 10;
+    /* Ensures it's clickable */
+}

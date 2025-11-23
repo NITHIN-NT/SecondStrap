@@ -1,5 +1,7 @@
 import json
 import logging
+import cloudinary
+import cloudinary.uploader
 logger = logging.getLogger(__name__)
 from django.shortcuts import redirect,render
 from django.views.generic import TemplateView,ListView
@@ -328,3 +330,26 @@ def change_password(request):
             })
     form = ChangePasswordForm()
     return render(request,'userprofile/change_password.html',{'form':form})
+
+@login_required
+@require_POST
+def update_profile_picture(request):
+    file = request.FILES.get('profile_image')
+    if file:
+        try :
+            upload_image =cloudinary.uploader.upload(
+                file,
+                folder = 'profile_avatars',
+                public_id = f'avator_{request.user.id}',
+                overwrite=True,
+                resource_type="image"
+            )
+            image_url = upload_image.get('secure_url')
+
+            user = request.user
+            user.profile = image_url
+            user.save()
+            return JsonResponse({'status':'success','message':'Profile updated succefully','image_url':image_url})
+        except Exception as e :
+            return JsonResponse({'status':'error','message':str(e)})
+    return JsonResponse({'status' : 'error','message':'No file found.'})
