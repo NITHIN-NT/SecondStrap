@@ -1,5 +1,7 @@
 import json
-from django.shortcuts import redirect
+import logging
+logger = logging.getLogger(__name__)
+from django.shortcuts import redirect,render
 from django.views.generic import TemplateView,ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
@@ -11,9 +13,11 @@ from accounts.models import EmailOTP,CustomUser
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .utils import generate_alphabetical_code
-from .forms import AddressForm
+from .forms import AddressForm,ChangePasswordForm
 from django.contrib import messages
 from .models import Address
+from django.db import IntegrityError
+from django.contrib.auth import update_session_auth_hash
 # Create your views here.
 
 class SecureUserMixin(LoginRequiredMixin):
@@ -177,6 +181,7 @@ class ProfileAddressView(SecureUserMixin, ListView):
 
 @require_http_methods(["GET","POST"])
 @login_required
+@never_cache
 def manage_address(request,address_id=None):
     if request.method == "GET" and address_id is not None:
         try:
@@ -256,6 +261,7 @@ def manage_address(request,address_id=None):
         status=400
         )
 
+@never_cache
 @login_required
 def delete_address(request, address_id=None):
     if not address_id:
@@ -282,10 +288,7 @@ def delete_address(request, address_id=None):
         new_default.save(update_fields=['is_default'])
 
     messages.success(request,'Address Deleted Successfully')
-    return redirect('profile_address')
-
-    
-    
+    return redirect('profile_address') 
 class ProfilePaymentView(SecureUserMixin, TemplateView):
     template_name = "userprofile/profile_payment.html"
 
@@ -294,3 +297,34 @@ class ProfileOrderView(SecureUserMixin, TemplateView):
 
 class ProfileWalletView(SecureUserMixin, TemplateView):
     template_name = "userprofile/wallet.html"
+
+@never_cache
+@login_required
+def change_password(request):
+    if request.method == 'POST' :
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            pass1 = form.cleaned_data['new_password']
+    
+            user = request.user
+            try :
+                user.set_password(pass1)
+                user.save()
+                # keep the user logged in after changing password
+                update_session_auth_hash(request, user)
+                return JsonResponse({
+                    'status' : 'success',
+                    'message' : 'Password Changed Successfuly. backend'
+                })
+            except (IntegrityError, ValueError) as e:
+                logger.error(f"Password change failed for user {user.id}: {str(e)}")
+                return JsonResponse({'status': 'error', 'message': 'Something went wrong while updating the password.'})
+        else:
+            errors = form.errors.as_json()
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid data submitted.',
+                'errors': errors,
+            })
+    form = ChangePasswordForm()
+    return render(request,'userprofile/change_password.html',{'form':form})

@@ -70,6 +70,14 @@
                         <span>Wallet</span>
                     </a>
                 </li>
+                {% if request.user.password %}
+                <li class="desktop-password-change-li">
+                    <a href="{% url "change_password" %}" class="password-change-link">
+                        <i class='bx bx-lock'></i>
+                        <span>Password</span>
+                    </a>
+                </li>
+                {% endif %}
                 <li class="desktop-logout-li">
                     <a href="{% url "logout" %}" class="logout-link">
                         <i class='bx bx-log-out'></i>

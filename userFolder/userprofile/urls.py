@@ -6,6 +6,7 @@ urlpatterns = [
     path('payment/',ProfilePaymentView.as_view(),name = 'profile_payment'),
     path('order/',ProfileOrderView.as_view(),name = 'profile_order'),
     path('Wallet/',ProfileWalletView.as_view(),name = 'profile_wallet'),
+    path('password/change/',change_password,name='change_password'),
 
     # api endpoints
 

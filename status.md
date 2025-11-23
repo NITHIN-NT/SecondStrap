@@ -98,3 +98,8 @@ The following fields are now fully editable and state-managed:
 ---
 # Now user can add , edit, and delete their address
 **Time:** 3:33PM 23-11-2025
+ 
+## 🔐 Password Change 
+---
+# User can now change the password and change password
+**Time :**  6:02 PM
