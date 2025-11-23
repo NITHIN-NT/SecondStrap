@@ -43,6 +43,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         user.first_name = sociallogin.account.extra_data.get('given_name', '')
         user.last_name = sociallogin.account.extra_data.get('family_name', '')
         user.is_active = True
+        user.is_verified = True
         sociallogin.user = user
         user.save()
 
