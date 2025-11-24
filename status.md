@@ -108,3 +108,8 @@ The following fields are now fully editable and state-managed:
 ---
 # User can now Update/ change their profile
 **Time :** 10:31PM 23-11-2025
+
+
+# Files added on the cart app
+--
+### cart.py and context_processors.py is added 
