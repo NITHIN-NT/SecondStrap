@@ -1,202 +1,196 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{{ product.name }}{% endblock title %}
-
+{% block title %}
+    {{ product.name }}
+{% endblock title %}
 {% block extra_styles %}
-<link rel="stylesheet" href="{% static 'css/products/product_detail.css' %}">
+    <link rel="stylesheet"
+          href="{% static 'css/products/product_detail.css' %}">
 {% endblock extra_styles %}
-
 {% block content %}
-
-<div class="product-detail-page-wrapper">
-    
-    <div class="product-detail-container">
-        
-        <div class="product-gallery">
-            <div class="gallery-main img-zoom-container">
-                <span class="product-offer-tag">30% OFF</span>
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" id="main-product-image">
-            </div>
-            <div class="gallery-thumbnails">
-                {% for image in images_list_limited %}
-                <img src="{{ image.image.url }}" alt="{{ product.name }}" class="thumbnail-img" data-image="{{ image.image.url }}">
-                {% endfor %}
-            </div>
-        </div>
-        
-        <div id="imageModal" class="image-modal">
-            <span class="close-modal">&times;</span>
-            <img class="modal-content" id="modalImage">
-        </div>
-        
-        <div class="product-info">
-            
-            <h1>{{ product.name }}</h1>
-            <input type="text" id="product-id" value="{{ product.id }}" hidden>
-
-            <div class="product-review-summary">
-                <div class="stars">
-                    <i class='bx bxs-star'></i>
-                    <i class='bx bxs-star'></i>
-                    <i class='bx bxs-star'></i>
-                    <i class='bx bxs-star'></i>
-                    <i class='bx bxs-star-half'></i>
+    <div class="product-detail-page-wrapper">
+        <div class="product-detail-container">
+            <div class="product-gallery">
+                <div class="gallery-main img-zoom-container">
+                    <span class="product-offer-tag">30% OFF</span>
+                    <img src="{{ product.image.url }}"
+                         alt="{{ product.name }}"
+                         id="main-product-image">
                 </div>
-                <span class="review-count">(128 reviews)</span>
+                <div class="gallery-thumbnails">
+                    {% for image in images_list_limited %}
+                        <img src="{{ image.image.url }}"
+                             alt="{{ product.name }}"
+                             class="thumbnail-img"
+                             data-image="{{ image.image.url }}">
+                    {% endfor %}
+                </div>
             </div>
-
-            <div class="product-price-container">
-                <del id="base-price-display">₹ {{ product.base_price }}</del>
-                <span class="offer-price" id="offer-price-display">₹ {{ product.offer_price }}</span>
+            <div id="imageModal" class="image-modal">
+                <span class="close-modal">&times;</span>
+                <img class="modal-content" id="modalImage">
             </div>
-
-            <div class="product-options">
-                <div class="option-group">
-                    <label class="option-label"><strong>Size:</strong> <span id="selected-size"></span></label>
-                    
-                    <div class="option-buttons size-buttons">
-                        {% for size in sizes %}
-                            <button class="btn-size {% if forloop.first %}active{% endif %}" 
-                                    data-size="{{ size.size }}" 
-                                    data-offer-price="{{ size.offer_price }}" 
-                                    data-base-price="{{ size.base_price }}">
-                                {{ size.size }}
+            <div class="product-info">
+                <h1>{{ product.name }}</h1>
+                <input type="text" id="product-id" value="{{ product.id }}" hidden>
+                <div class="product-review-summary">
+                    <div class="stars">
+                        <i class='bx bxs-star'></i>
+                        <i class='bx bxs-star'></i>
+                        <i class='bx bxs-star'></i>
+                        <i class='bx bxs-star'></i>
+                        <i class='bx bxs-star-half'></i>
+                    </div>
+                    <span class="review-count">(128 reviews)</span>
+                </div>
+                <div class="product-price-container">
+                    <del id="base-price-display">₹ {{ product.base_price }}</del>
+                    <span class="offer-price" id="offer-price-display">₹ {{ product.offer_price }}</span>
+                </div>
+                <div class="product-options">
+                    <div class="option-group">
+                        <label class="option-label">
+                            <strong>Size:</strong> <span id="selected-size"></span>
+                        </label>
+                        <div class="option-buttons size-buttons">
+                            {% for size in sizes %}
+                                <button class="btn-size {% if forloop.first %}active{% endif %}"
+                                        data-size="{{ size.size }}"
+                                        data-offer-price="{{ size.offer_price }}"
+                                        data-base-price="{{ size.base_price }}">{{ size.size }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <label for="quantity-display" class="quantity-label option-label">
+                            <strong>Quantity</strong>
+                        </label>
+                        <div class="quantity-selector">
+                            <button class="btn-quantity" id="btn-decrease">
+                                <i class='bx bx-minus'></i>
                             </button>
-                        {% endfor %}
+                            <span id="quantity-display">1 item</span>
+                            <button class="btn-quantity" id="btn-increase">
+                                <i class='bx bx-plus'></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-                <div class="option-group">
-                    <label for="quantity-display" class="quantity-label option-label"><strong>Quantity</strong></label>
-                    <div class="quantity-selector">
-                        <button class="btn-quantity" id="btn-decrease"><i class='bx bx-minus'></i></button>
-                        <span id="quantity-display">1 item</span>
-                        <button class="btn-quantity" id="btn-increase"><i class='bx bx-plus'></i></button>
+                <div class="action-buttons">
+                    <button class="btn btn-outline" id="addToCartBtn">Add to Cart</button>
+                    <button class="btn btn-solid">Buy Now</button>
+                </div>
+                <div class="secondary-actions">
+                    <a href="#" class="action-link"><i class='bx bx-heart'></i> <span>Add to Wishlist</span></a>
+                    <a href="#" class="action-link"><i class='bx bx-share'></i> <span>Share</span></a>
+                </div>
+                <br>
+                <details class="info-accordion description-accordion">
+                    <summary class="info-accordion-header">Description</summary>
+                    <div class="info-accordion-content">{{ product.description|linebreaks }}</div>
+                </details>
+                <details class="info-accordion">
+                    <summary class="info-accordion-header">Available Offers</summary>
+                    <div class="info-accordion-content">
+                        <ul class="offer-list">
+                            <li class="offer-item">
+                                <span class="offer-tag offer-tag-sale">SALE</span>
+                                <span>Get 30% off on all orders above ₹1500</span>
+                            </li>
+                            <li class="offer-item">
+                                <span class="offer-tag offer-tag-bogo">BOGO</span>
+                                <span>Buy 2 t-shirts and get 1 free</span>
+                            </li>
+                            <li class="offer-item">
+                                <span class="offer-tag offer-tag-ship">SHIP</span>
+                                <span>Free shipping on all orders above ₹999</span>
+                            </li>
+                        </ul>
                     </div>
-                </div>
-            </div>
-            <div class="action-buttons">
-                <button class="btn btn-outline" id="addToCartBtn"> Add to Cart</button>
-                <button class="btn btn-solid">Buy Now</button>
-            </div>
-
-            <div class="secondary-actions">
-                <a href="#" class="action-link"><i class='bx bx-heart'></i> <span>Add to Wishlist</span></a>
-                <a href="#" class="action-link"><i class='bx bx-share'></i> <span>Share</span></a>
-            </div>
-            
-            <br>
-
-            <details class="info-accordion description-accordion">
-                <summary class="info-accordion-header">Description</summary>
-                <div class="info-accordion-content">
-                    {{ product.description|linebreaks }}
-                </div>
-            </details>
-
-            <details class="info-accordion"> 
-                <summary class="info-accordion-header">Available Offers</summary>
-                <div class="info-accordion-content">
-                    <ul class="offer-list">
-                        <li class="offer-item">
-                            <span class="offer-tag offer-tag-sale">SALE</span>
-                            <span>Get 30% off on all orders above ₹1500</span>
-                        </li>
-                        <li class="offer-item">
-                            <span class="offer-tag offer-tag-bogo">BOGO</span>
-                            <span>Buy 2 t-shirts and get 1 free</span>
-                        </li>
-                        <li class="offer-item">
-                            <span class="offer-tag offer-tag-ship">SHIP</span>
-                            <span>Free shipping on all orders above ₹999</span>
-                        </li>
-                    </ul>
-                </div>
-            </details>
-                
-            <details class="info-accordion">
-                <summary class="info-accordion-header">Discount Coupons</summary>
-                <div class="info-accordion-content">
-                    <ul class="coupon-list">
-                        <li class="coupon-item">
-                            <div class="coupon-details">
-                                <span class="coupon-code">NEWUSER20</span>
-                                <span class="coupon-description">20% off for new users</span>
-                            </div>
-                            <a href="#" class="coupon-apply-link">Apply</a>
-                        </li>
-                        <li class="coupon-item">
-                            <div class="coupon-details">
-                                <span class="coupon-code">SUMMER10</span>
-                                <span class="coupon-description">10% off on summer collection</span>
-                            </div>
-                            <a href="#" class="coupon-apply-link">Apply</a>
-                        </li>
-                    </ul>
-                </div>
-            </details>
-        </div>
-    </div>
-
-    <div class="customer-reviews-container">
-        <h2>Customer Reviews</h2>
-        <div class="reviews-summary">
-            <div class="average-rating">
-            <span class="rating-value">4.5</span>
-            <div class="stars">
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star-half'></i>
-            </div>
-            <span class="total-reviews">(Based on 12 reviews)</span>
-            </div>
-            <button class="btn btn-outline" id="btn-write-review">Write a Review</button>
-        </div>
-        <div class="review-list">
-            <div class="review-item">
-            <div class="review-header">
-                <span class="review-author">Nithin S.</span>
-                <div class="review-rating stars">
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                </div>
-            </div>
-            <span class="review-date">October 28, 2025</span>
-            <p class="review-text">
-                Excellent quality shirt! The fit is perfect and the material feels very premium. Exactly as described. Highly recommend.
-            </p>
-            </div>
-            <div class="review-item">
-            <div class="review-header">
-                <span class="review-author">Arjun</span>
-                <div class="review-rating stars">
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bxs-star'></i>
-                <i class='bx bx-star'></i>
-                </div>
-            </div>
-            <span class="review-date">October 25, 2025</span>
-            <p class="review-text">
-                Good shirt, but the color was slightly different than the picture. Still, the quality is nice.
-            </p>
+                </details>
+                <details class="info-accordion">
+                    <summary class="info-accordion-header">Discount Coupons</summary>
+                    <div class="info-accordion-content">
+                        <ul class="coupon-list">
+                            <li class="coupon-item">
+                                <div class="coupon-details">
+                                    <span class="coupon-code">NEWUSER20</span>
+                                    <span class="coupon-description">20% off for new users</span>
+                                </div>
+                                <a href="#" class="coupon-apply-link">Apply</a>
+                            </li>
+                            <li class="coupon-item">
+                                <div class="coupon-details">
+                                    <span class="coupon-code">SUMMER10</span>
+                                    <span class="coupon-description">10% off on summer collection</span>
+                                </div>
+                                <a href="#" class="coupon-apply-link">Apply</a>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
             </div>
         </div>
-    </div>
-
-    <div class="related-products-container">
-        <h2>You Might Also Like</h2>
-        <div class="related-products-grid">
+        <div class="customer-reviews-container">
+            <h2>Customer Reviews</h2>
+            <div class="reviews-summary">
+                <div class="average-rating">
+                    <span class="rating-value">4.5</span>
+                    <div class="stars">
+                        <i class='bx bxs-star'></i>
+                        <i class='bx bxs-star'></i>
+                        <i class='bx bxs-star'></i>
+                        <i class='bx bxs-star'></i>
+                        <i class='bx bxs-star-half'></i>
+                    </div>
+                    <span class="total-reviews">(Based on 12 reviews)</span>
+                </div>
+                <button class="btn btn-outline" id="btn-write-review">Write a Review</button>
+            </div>
+            <div class="review-list">
+                <div class="review-item">
+                    <div class="review-header">
+                        <span class="review-author">Nithin S.</span>
+                        <div class="review-rating stars">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                        </div>
+                    </div>
+                    <span class="review-date">October 28, 2025</span>
+                    <p class="review-text">
+                        Excellent quality shirt! The fit is perfect and the material feels very premium. Exactly as described. Highly recommend.
+                    </p>
+                </div>
+                <div class="review-item">
+                    <div class="review-header">
+                        <span class="review-author">Arjun</span>
+                        <div class="review-rating stars">
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bxs-star'></i>
+                            <i class='bx bx-star'></i>
+                        </div>
+                    </div>
+                    <span class="review-date">October 25, 2025</span>
+                    <p class="review-text">
+                        Good shirt, but the color was slightly different than the picture. Still, the quality is nice.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="related-products-container">
+            <h2>You Might Also Like</h2>
+            <div class="related-products-grid">
                 {% for related_product in related_products %}
-                    <a href="{% url 'Product_card_view' related_product.slug %}" class="product-card">
+                    <a href="{% url 'Product_card_view' related_product.slug %}"
+                       class="product-card">
                         <div class="product-card-image">
-                            <img src="{{ related_product.image.url }}" alt="{{ related_product.name }}">
+                            <img src="{{ related_product.image.url }}"
+                                 alt="{{ related_product.name }}">
                         </div>
                         <div class="product-card-info">
                             <h3 class="product-card-name">{{ related_product.name }}</h3>
@@ -208,32 +202,30 @@
                     </a>
                 {% empty %}
                     {% for random_product in random_products %}
-                        <a href="{% url 'Product_card_view' random_product.slug %}" class="product-card">
+                        <a href="{% url 'Product_card_view' random_product.slug %}"
+                           class="product-card">
                             <div class="product-card-image">
                                 <img src="{{ random_product.image.url }}" alt="{{ random_product.name }}">
                             </div>
                             <div class="product-card-info">
                                 <h3 class="product-card-name">{{ random_product.name }}</h3>
                                 <div class="product-card-price-container">
-                                <del>₹ {{ random_product.base_price}}</del>
+                                    <del>₹ {{ random_product.base_price }}</del>
                                     <span class="offer-price">₹ {{ random_product.offer_price }}</span>
                                 </div>
                             </div>
                         </a>
                     {% endfor %}
                 {% endfor %}
+            </div>
         </div>
     </div>
-</div> 
 {% endblock content %}
-
 {% block extra_script %}
-<!-- Axios CDN (if not already included in base.html) -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-<script>
+    <!-- Axios CDN (if not already included in base.html) -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
     document.addEventListener('DOMContentLoaded', function() {
-        
         // --- Thumbnail Switcher ---
         const mainImage = document.getElementById('main-product-image');
         const thumbnails = document.querySelectorAll('.thumbnail-img');
@@ -246,7 +238,7 @@
             });
         });
 
-        // --- UPDATED: Size Selector with Price Change & Default Logic ---
+        // --- Size Selector with Price Change & Default Logic ---
         const sizeButtons = document.querySelectorAll('.btn-size');
         const selectedSize = document.getElementById('selected-size');
         const offerPriceDisplay = document.getElementById('offer-price-display');
@@ -254,15 +246,19 @@
 
         // 1. Set Default State (Runs once on page load)
         const defaultBtn = document.querySelector('.btn-size.active'); // Find the button marked active by Django
-        
+
         if (defaultBtn) {
             // Set initial label
             if (selectedSize) {
                 selectedSize.textContent = defaultBtn.dataset.size;
             }
             // Ensure prices match default button
-            if (defaultBtn.dataset.offerPrice) offerPriceDisplay.textContent = `₹ ${defaultBtn.dataset.offerPrice}`;
-            if (defaultBtn.dataset.basePrice) basePriceDisplay.textContent = `₹ ${defaultBtn.dataset.basePrice}`;
+            if (defaultBtn.dataset.offerPrice) {
+                offerPriceDisplay.textContent = `₹ ${defaultBtn.dataset.offerPrice}`;
+            }
+            if (defaultBtn.dataset.basePrice) {
+                basePriceDisplay.textContent = `₹ ${defaultBtn.dataset.basePrice}`;
+            }
         }
 
         // 2. Click Logic
@@ -270,9 +266,9 @@
             button.addEventListener('click', function() {
                 sizeButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
-                
+
                 // Update Size label
-                if (selectedSize) { 
+                if (selectedSize) {
                     selectedSize.textContent = this.dataset.size;
                 }
 
@@ -289,13 +285,13 @@
                 }
             });
         });
-        
+
         // --- Quantity Selector ---
         const decreaseBtn = document.getElementById('btn-decrease');
         const increaseBtn = document.getElementById('btn-increase');
         const quantityDisplay = document.getElementById('quantity-display');
         let quantity = 1;
-        const maxQuantity = 5; 
+        const maxQuantity = 5;
 
         function updateDisplay() {
             quantityDisplay.textContent = `${quantity} ${quantity === 1 ? 'item' : 'items'}`;
@@ -321,19 +317,19 @@
 
         // --- Image Zoom Logic ---
         const galleryMain = document.querySelector('.gallery-main');
-        
+
         if (galleryMain && mainImage) {
             galleryMain.addEventListener('mousemove', function(e) {
                 const rect = galleryMain.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-            
+
                 const xPercent = (x / rect.width) * 100;
                 const yPercent = (y / rect.height) * 100;
-            
+
                 mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
             });
-            
+
             // Reset the zoom origin when the mouse leaves
             galleryMain.addEventListener('mouseleave', function() {
                 mainImage.style.transformOrigin = 'center center';
@@ -362,7 +358,7 @@
         if (closeModal) {
             closeModal.addEventListener('click', () => modal.style.display = 'none');
         }
-        
+
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
@@ -408,15 +404,12 @@
                 const currentQuantity = quantity;
 
                 if (!size) {
-                    // alert('Please select a size.');
                     toastr.error("Please select a size.");
                     return;
                 }
-                console.log(productId)
-                console.log(size)
-                console.log(currentQuantity)
 
-                axios.post("{% url 'add_cart' %}", 
+                axios.post(
+                    "{% url 'add_cart' %}",
                     {
                         product_id: productId,
                         size: size,
@@ -429,18 +422,33 @@
                     }
                 )
                 .then(function(response) {
-                    console.log('Added to cart:', response.data);
-                    // You can customize this UX:
-                    // alert('Item added to cart!');
-                    toastr.success("Item added to the Cart");
+                    // success path
+                    toastr.success(response.data.message || "Item added to the Cart");
                 })
                 .catch(function(error) {
                     console.error('Error adding to cart:', error);
-                    // alert('');
-                    toastr.error("Something went wrong while adding to cart.");
+                    console.log('error.response:', error.response);
+
+                    if (error.response) {
+                        // If not logged in
+                        if (error.response.status === 401) {
+                            toastr.error(error.response.data.message || "Please log in to continue.");
+                            // optional redirect after showing toast
+                            setTimeout(function() {
+                                window.location.href = "{% url 'login' %}?next={{ request.path }}";
+                            }, 1500);
+                            return;
+                        }
+
+                        // Other backend errors with JSON
+                        toastr.error(error.response.data?.message || "Something Went Wrong !!");
+                    } else {
+                        // Network or unknown error
+                        toastr.error("Network error. Please try again.");
+                    }
                 });
             });
         }
     });
-</script>
+    </script>
 {% endblock extra_script %}
