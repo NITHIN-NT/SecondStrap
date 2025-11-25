@@ -108,3 +108,8 @@ The following fields are now fully editable and state-managed:
 ---
 # User can now Update/ change their profile
 **Time :** 10:31PM 23-11-2025
+
+# Product Price change
+---
+Price and offer price is changed to the variants now the price will change with the products size
+**Time:** 12:01PM 25/11/2025
