@@ -12,7 +12,7 @@
             <h1>Category Management</h1>
             <p>View and manage your product categories.</p>
         </div>
-        <a href="{% url "admin_category_add" %}" class="btn btn-primary">
+        <a href="{% url 'admin_category_add' %}" class="btn btn-primary">
             <i class="fa-solid fa-plus"></i>
             Add New Category
         </a>
@@ -23,7 +23,7 @@
             <div class="table-toolbar">
                 <div class="search-bar">
                     <i class="fa-solid fa-search"></i>
-                    <input type="text" name="search" placeholder="Search categories by name..." value="{{ search }}">
+                    <input type="text" name="search" placeholder="Search categories by name..." value="{{ search|default:'' }}">
                 </div>
                 <div class="filters">
                     <select name="category_status" class='filter-dropdown' onchange="this.form.submit()">
@@ -31,7 +31,7 @@
                         <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
                         <option value="blocked" {% if status == "blocked" %}selected{% endif %}>Blocked</option>
                     </select>
-                    <a href="{% url "admin_category" %}" class="btn btn-secondary" title="Reset Filters">
+                    <a href="{% url 'admin_category' %}" class="btn btn-secondary" title="Reset Filters">
                         <i class="fa-solid fa-rotate-right"></i>
                     </a>
                 </div>
@@ -54,9 +54,6 @@
                     <tr>
                         <td>
                             <div class="cat-name-wrapper">
-                                <div class="cat-icon-small">
-                                    <i class="fa-solid fa-shirt"></i>
-                                </div>
                                 <div style="display: flex; flex-direction: column;">
                                     <strong>{{ category.name }}</strong>
                                     <small style="color: #94a3b8;">ID: #{{ category.id }}</small>
@@ -82,7 +79,7 @@
                         </td>
                         <td class="text-end">
                             <div class="action-buttons">
-                                <a href="{% url "admin_category_edit" category.id %}" class="btn-icon btn-edit" title="Edit Category">
+                                <a href="{% url 'admin_category_edit' category.id %}" class="btn-icon btn-edit" title="Edit Category">
                                     <i class="fa-solid fa-pen"></i> Edit
                                 </a>
 
@@ -128,7 +125,7 @@
     <section class='pagination-container'>
         <div class="pagination">
             {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}"><i class="fa-solid fa-chevron-left"></i></a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}"><i class="fa-solid fa-chevron-left"></i></a>
             {% else %}
                 <span class="disabled"><i class="fa-solid fa-chevron-left"></i></span>
             {% endif %}
@@ -139,12 +136,12 @@
                 {% elif page_obj.number == i %}
                     <span class="current">{{ i }}</span>
                 {% else %}
-                    <a href="?page={{ i }}&{{ query_params }}">{{ i }}</a>
+                    <a href="?page={{ i }}{% if query_params %}&{{ query_params }}{% endif %}">{{ i }}</a>
                 {% endif %}
             {% endfor %}
 
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}"><i class="fa-solid fa-chevron-right"></i></a>
+                <a href="?page={{ page_obj.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}"><i class="fa-solid fa-chevron-right"></i></a>
             {% else %}
                 <span class="disabled"><i class="fa-solid fa-chevron-right"></i></span>
             {% endif %}
@@ -164,7 +161,7 @@
 
 {% endblock content %}
 
-{% block extra_script %}
+{% block extraJs %}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // === MODAL LOGIC ===
@@ -220,4 +217,4 @@
             });
         });
     </script>
-{% endblock extra_script %}
+{% endblock extraJs %}

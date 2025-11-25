@@ -25,6 +25,7 @@ from .utils import send_html_mail
 
 from accounts.models import CustomUser,EmailOTP
 from products.models import Product,Category,ProductVariant,ProductImage
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 @never_cache
@@ -411,30 +412,41 @@ class AdminCategoryView(ListView):
         context['status'] = self.request.GET.get('category_status','')
         return context
 
+@require_POST
 @login_required
-@user_passes_test(lambda user: user.is_superuser,login_url='admin_login')
+@user_passes_test(lambda user: user.is_superuser, login_url='admin_login')
 @transaction.atomic
-def toggle_category_block(request,id=None):
-    '''
-    This is used to block a Category and related Products
-    '''
-    if request.method == 'POST':
-        category = get_object_or_404(Category,id=id)
-        category.is_active = not category.is_active
-        category.save()
+def toggle_category_block(request, id):
+    """
+    Toggle a Category's active status and apply the same to its related Products.
+    """
+    category = get_object_or_404(Category, id=id)
 
-        new_status = category.is_active
-        products = category.products.all()
-        count = products.count()
-        print(count)
-        products.update(is_active = new_status)
-        status =  True if category.is_active  else False
-        if status:
-            messages.success(request,f"{category.name} & related <strong>{count}</strong> Products is Unblockd Successfuly",extra_tags='admin')
-        else:
-            messages.error(request,f"{category.name} & related <strong>{count}</strong> Products is Blocked Successfuly",extra_tags='admin')
+    # Toggle category active status
+    category.is_active = not category.is_active
+    category.save()
+
+    # Apply same status to related products
+    new_status = category.is_active
+    products = category.products.all()
+    count = products.count()
+    products.update(is_active=new_status)
+
+    if new_status:
+        # Category has been unblocked
+        messages.success(
+            request,
+            f"{category.name} & related <strong>{count}</strong> products were unblocked successfully.",
+            extra_tags='admin'
+        )
     else:
-        messages.error(request, 'Invalid request method.', extra_tags='admin')
+        # Category has been blocked
+        messages.success(
+            request,
+            f"{category.name} & related <strong>{count}</strong> products were blocked successfully.",
+            extra_tags='admin'
+        )
+
     return redirect('admin_category')
 
 @login_required
