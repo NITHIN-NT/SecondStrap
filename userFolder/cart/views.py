@@ -45,7 +45,7 @@ def cart_item_add(request):
         item,created = CartItems.objects.get_or_create(
             cart=cart,
             variant=variant,    
-            size__iexact=size.strip(),
+            size=size.strip(),
             defaults={"quantity":quantity}
         )
         if not created:

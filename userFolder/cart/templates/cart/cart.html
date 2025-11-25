@@ -63,7 +63,7 @@
         
         <!-- SUMMARY BELOW LEFT SECTION -->
         <div class="cart-summary-left">
-            <p><strong>Subtotal:</strong> ₹{{ item.subtotal }}</p>
+            <p><strong>Subtotal:</strong> ₹{{ total_price }}</p>
             <small>Shipping and taxes calculated at checkout</small>
             
             <div class="cart-buttons">
@@ -93,33 +93,28 @@
             <span>Subtotal</span>
             <span>₹{{ total_price }}</span>
         </div>
-        {% comment %} <div class="summary-item">
-            <span>Shipping</span>
-            <span>₹99</span>
-            </div> {% endcomment %}
             
-            <hr>
+        <hr>
             
-            <div class="summary-total">
-                <strong>Total</strong>
-                <strong>₹{{ total_price }}</strong>
-            </div>
+        <div class="summary-total">
+            <strong>Total</strong>
+            <strong>₹{{ total_price }}</strong>
         </div>
-        
     </div>
+        
 </div>
+
 {% else %}
 <div class="cart-empty-container">
     <h2 class="barlow-condensed-semibold">Your Cart</h2>
     <p>Your cart is currently empty.</p>
     
-   {% if user.is_authenticated %}
-        <a href="{% url "products_page_user" %}" class="btn-dark">Continue Shopping</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'products_page_user' %}" class="btn-dark">Continue Shopping</a>
     {% else %}
-        <a href="{% url "login" %}" class="btn-dark">Login Continue</a>   
+        <a href="{% url 'login' %}" class="btn-dark">Login Continue</a>   
     {% endif %}
 </div>
 {% endif %}
-
 
 {% endblock %}

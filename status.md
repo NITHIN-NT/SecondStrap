@@ -121,3 +121,4 @@ Price and offer price is changed to the variants now the price will change with 
 ## Cart Adding
 --- 
 A Loged user can add product to the cart
+Issue in the list in the cart is fixed 

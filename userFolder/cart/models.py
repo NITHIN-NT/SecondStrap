@@ -34,7 +34,7 @@ class CartItems(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     size = models.CharField(max_length=10, blank=True)
     from_wishlist = models.BooleanField(default=False)
-    item_added = models.DateTimeField(auto_now_add=True)
+    item_added = models.DateTimeField(auto_now_add=True,auto_created=True)
 
     def __str__(self):
         return f"{self.variant} x {self.quantity}"
