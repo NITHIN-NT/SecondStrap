@@ -4,11 +4,111 @@
 {% block title %}Your Cart{% endblock %}
 
 {% block extra_styles %}
-    <link rel="stylesheet" href="{% static 'css/cart/cart.css' %}">
-{% endblock extra_styles %}
-
+<link rel="stylesheet" href="{% static 'css/cart/cart.css' %}">
+{% endblock %}
 
 {% block content %}
+{% if total_quantity > 0 %}
+
+<div class="cart-container">
+    
+    <!-- LEFT: CART ITEMS -->
+    <div class="cart-left">
+        <h2>Your Cart</h2>
+        
+        <div class="cart-header">
+            <span>Product</span>
+            <span>Price</span>
+            <span>Quantity</span>
+            <span>Subtotal</span>
+        </div>
+        
+        {% for item in cartitems %}
+        <div class="cart-row">
+            
+            <!-- PRODUCT -->
+            <div class="cart-product">
+                <img src="{{ item.variant.product.image.url }}" alt="Product">
+                
+                <div class="cart-info">
+                    <h3>{{ item.variant.product.name }}</h3>
+                    <p class="size">Size: {{ item.size }}</p>
+                    
+                    <a href="#" class="remove">
+                        <span>🗑️</span> Remove
+                    </a>
+                </div>
+            </div>
+            
+            <!-- PRICE -->
+            <div class="cart-price">
+                ₹{{ item.variant.offer_price }}
+                {% if item.variant.base_price %}
+                <p><del>₹{{ item.variant.base_price }}</del></p>
+                {% endif %}
+            </div>
+            
+            <!-- QUANTITY -->
+            <div class="cart-qty">
+                {{ item.quantity }}
+            </div>
+            
+            <!-- SUBTOTAL -->
+            <div class="cart-subtotal">
+                ₹{{ item.subtotal }}
+            </div>
+            
+        </div>
+        {% endfor %}
+        
+        <!-- SUMMARY BELOW LEFT SECTION -->
+        <div class="cart-summary-left">
+            <p><strong>Subtotal:</strong> ₹{{ item.subtotal }}</p>
+            <small>Shipping and taxes calculated at checkout</small>
+            
+            <div class="cart-buttons">
+                <a href="#" class="btn-light">Continue Shopping</a>
+                <a href="#" class="btn-dark">Proceed to Checkout</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- RIGHT: ORDER SUMMARY -->
+    <div class="cart-right">
+        <h3>Order Summary</h3>
+        
+        {% for item in cartitems %}
+        <div class="summary-item">
+            <div>
+                <strong>{{ item.variant.product.name }}</strong>
+                <p class="summary-qty">Qty: {{ item.quantity }}</p>
+            </div>
+            <span>₹{{ item.subtotal }}</span>
+        </div>
+        {% endfor %}
+        
+        <hr>
+        
+        <div class="summary-item">
+            <span>Subtotal</span>
+            <span>₹{{ total_price }}</span>
+        </div>
+        {% comment %} <div class="summary-item">
+            <span>Shipping</span>
+            <span>₹99</span>
+            </div> {% endcomment %}
+            
+            <hr>
+            
+            <div class="summary-total">
+                <strong>Total</strong>
+                <strong>₹{{ total_price }}</strong>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% else %}
 <div class="cart-empty-container">
     <h2 class="barlow-condensed-semibold">Your Cart</h2>
     <p>Your cart is currently empty.</p>
@@ -19,4 +119,7 @@
         <a href="{% url "login" %}" class="btn-dark">Login Continue</a>   
     {% endif %}
 </div>
-{% endblock content %}
+{% endif %}
+
+
+{% endblock %}

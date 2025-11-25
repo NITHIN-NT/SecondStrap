@@ -9,7 +9,7 @@
 {% block content %}
 
 <div class="product-detail-page-wrapper">
-
+    
     <div class="product-detail-container">
         
         <div class="product-gallery">
@@ -23,15 +23,16 @@
                 {% endfor %}
             </div>
         </div>
-
+        
         <div id="imageModal" class="image-modal">
             <span class="close-modal">&times;</span>
             <img class="modal-content" id="modalImage">
         </div>
-
+        
         <div class="product-info">
             
             <h1>{{ product.name }}</h1>
+            <input type="text" id="product-id" value="{{ product.id }}" hidden>
 
             <div class="product-review-summary">
                 <div class="stars">
@@ -74,9 +75,8 @@
                     </div>
                 </div>
             </div>
-
             <div class="action-buttons">
-                <button class="btn btn-outline">Add to Cart</button>
+                <button class="btn btn-outline" id="addToCartBtn"> Add to Cart</button>
                 <button class="btn btn-solid">Buy Now</button>
             </div>
 
@@ -228,6 +228,9 @@
 {% endblock content %}
 
 {% block extra_script %}
+<!-- Axios CDN (if not already included in base.html) -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         
@@ -365,6 +368,79 @@
                 modal.style.display = 'none';
             }
         });
+
+        // ==========================
+        //   CSRF + AXIOS ADD TO CART
+        // ==========================
+
+        // ---- CSRF helper for Django ----
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // ---- Add to Cart logic ----
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        const productIdInput = document.getElementById('product-id');
+
+        if (addToCartBtn && productIdInput) {
+            addToCartBtn.addEventListener('click', function() {
+                // product.id
+                const productId = productIdInput.value;
+
+                // selected size from active button
+                const activeSizeBtn = document.querySelector('.btn-size.active');
+                const size = activeSizeBtn ? activeSizeBtn.dataset.size : null;
+
+                // current quantity (same variable used in quantity selector)
+                const currentQuantity = quantity;
+
+                if (!size) {
+                    // alert('Please select a size.');
+                    toastr.error("Please select a size.");
+                    return;
+                }
+                console.log(productId)
+                console.log(size)
+                console.log(currentQuantity)
+
+                axios.post("{% url 'add_cart' %}", 
+                    {
+                        product_id: productId,
+                        size: size,
+                        quantity: currentQuantity
+                    },
+                    {
+                        headers: {
+                            'X-CSRFToken': csrftoken
+                        }
+                    }
+                )
+                .then(function(response) {
+                    console.log('Added to cart:', response.data);
+                    // You can customize this UX:
+                    // alert('Item added to cart!');
+                    toastr.success("Item added to the Cart");
+                })
+                .catch(function(error) {
+                    console.error('Error adding to cart:', error);
+                    // alert('');
+                    toastr.error("Something went wrong while adding to cart.");
+                });
+            });
+        }
     });
 </script>
 {% endblock extra_script %}

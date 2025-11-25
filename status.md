@@ -113,3 +113,11 @@ The following fields are now fully editable and state-managed:
 ---
 Price and offer price is changed to the variants now the price will change with the products size
 **Time:** 12:01PM 25/11/2025
+
+
+# Cart 
+---
+
+## Cart Adding
+--- 
+A Loged user can add product to the cart
