@@ -7,6 +7,25 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/stock/stock_management.css' %}">
+<style>
+    /* Inline styles for specific table adjustments */
+    .hidden { display: none; }
+    .variant-row { background-color: #f9fafb; }
+    .variant-name { color: #6b7280; padding-left: 20px !important; }
+    .toggle-icon { cursor: pointer; transition: transform 0.2s; }
+    .toggle-icon.rotate { transform: rotate(90deg); }
+    
+    /* Price styling */
+    .price-display { display: flex; flex-direction: column; font-size: 0.9em; }
+    .price-display .offer { font-weight: 600; color: #111827; }
+    .price-display .base { font-size: 0.85em; color: #9ca3af; text-decoration: line-through; }
+    
+    /* Status Tags */
+    .status-tag { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 500; }
+    .status-in-stock { background-color: #d1fae5; color: #065f46; }
+    .status-low-stock { background-color: #fef3c7; color: #92400e; }
+    .status-out-of-stock { background-color: #fee2e2; color: #b91c1c; }
+</style>
 {% endblock extra_css %}
 
 {% block content %}
@@ -39,10 +58,10 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 2%;"></th> <th>Product Name</th>
+                <th style="width: 2%;"></th> 
+                <th>Product Name</th>
                 <th>Size</th>
-                <th>Price</th>
-                <th>Stock</th>
+                <th>Price (Offer / Base)</th> <th>Stock</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -53,26 +72,50 @@
         <td><i class="fa-solid fa-chevron-right toggle-icon"></i></td>
         <td>
             <div class="product-cell">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                <span>{{ product.name }}</span>
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% endif %}
+                <span style="font-weight: 600;">{{ product.name }}</span>
             </div>
         </td>
-        <td>{{ product.variant_count }} size{{ product.variant_count|pluralize }}</td>
+        <td>{{ product.variants.count }} Variant{{ product.variants.count|pluralize }}</td>
         
         <td>-</td>
         
         <td><strong>{{ product.total_stock|default:0 }} total</strong></td>
         
-        <td></td>
-        <td><button class="btn btn-details">View Details</button></td>
+        <td>
+            {% if product.is_active %}
+                <span style="color: green; font-size: 0.8em;">Active</span>
+            {% else %}
+                <span style="color: red; font-size: 0.8em;">Inactive</span>
+            {% endif %}
+        </td>
+        <td>
+            <a href="#" class="btn btn-details" style="text-decoration: none; font-size: 0.85rem;">View Details</a>
+        </td>
     </tr>
 
     {% for variant in product.variants.all %}
     <tr class="variant-row hidden" data-parent="product-{{ product.id }}">
         <td></td>
-        <td class="variant-name"><i class="bi bi-arrow-return-right"></i> {{ product.name }}</td>
-        <td>{{ variant.size.size }}</td>
-        <td>₹{{ variant.price }}</td>
+        <td class="variant-name">
+            <i class="fa-solid fa-turn-up fa-rotate-90" style="margin-right: 8px; color: #9ca3af;"></i> 
+            {{ product.name }} - {{ variant.size }}
+        </td>
+        <td>
+            <span style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 0.85em;">
+                {{ variant.size }}
+            </span>
+        </td>
+        
+        <td>
+            <div class="price-display">
+                <span class="offer">₹{{ variant.offer_price }}</span>
+                <span class="base">₹{{ variant.base_price }}</span>
+            </div>
+        </td>
+
         <td>{{ variant.stock }}</td>
         
         <td>
@@ -86,13 +129,17 @@
         </td>
         
         <td>
+            {% comment %} <button class="btn" style="padding: 4px 8px; border: 1px solid #d1d5db; background: white; border-radius: 4px;">
+                <i class="fa-solid fa-pen"></i> Edit
+            </button> {% endcomment %}
         </td>
     </tr>
     {% endfor %}
+    
     {% empty %}
     <tr>
-        <td colspan="7" style="text-align: center; padding: 20px;">
-            No products found.
+        <td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">
+            No products found in inventory.
         </td>
     </tr>
     {% endfor %}
@@ -102,5 +149,28 @@
 {% endblock content %}
 
 {% block extraJs %}
-<script src="{% static 'js/stock_management.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const expandables = document.querySelectorAll('.expandable');
+
+        expandables.forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Prevent triggering if clicking buttons/links inside the row
+                if (e.target.closest('a') || e.target.closest('button')) return;
+
+                const targetId = this.dataset.target;
+                const childRows = document.querySelectorAll(`tr[data-parent="${targetId}"]`);
+                const icon = this.querySelector('.toggle-icon');
+
+                // Toggle icon rotation
+                icon.classList.toggle('rotate');
+
+                // Toggle visibility of child rows
+                childRows.forEach(child => {
+                    child.classList.toggle('hidden');
+                });
+            });
+        });
+    });
+</script>
 {% endblock extraJs %}

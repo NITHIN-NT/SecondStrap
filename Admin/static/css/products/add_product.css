@@ -1,8 +1,9 @@
 /* =========================================
    1. Variables & Base Setup
    ========================================= */
-:root {
-    /* Fallbacks in case base variables aren't loaded */
+
+/* UPDATED: Changed from :root to .form-container so it doesn't affect the whole page */
+.form-container {
     --color-main-bg: #f3f4f6;
     --color-card-bg: #ffffff;
     --color-sidebar-bg: #111827;
@@ -13,7 +14,6 @@
     --color-danger-bg: #fee2e2;
 }
 
-/* Ensure padding doesn't expand width */
 * {
     box-sizing: border-box;
 }
@@ -24,13 +24,11 @@
 .form-container {
     background-color: var(--color-card-bg);
     border-radius: 12px;
-    /* Slightly softer corners */
     border: 1px solid var(--color-border);
     max-width: 1200px;
     margin: 20px auto;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     overflow: hidden;
-    /* Contains child margins */
 }
 
 .form-header {
@@ -80,16 +78,23 @@
     padding: 30px;
 }
 
-/* Error Message Styling */
+/* Error Handling Styling */
 .form-errors {
-    margin: 0 30px 20px 30px;
-    padding: 16px;
-    background-color: #fee2e2;
-    border: 1px solid #B91C1C;
+    margin: 0 0 20px 0;
+    padding: 15px;
+    background-color: var(--color-danger-bg);
+    border: 1px solid var(--color-danger);
     border-radius: 8px;
-    color: #B91C1C;
-    font-size: 0.9rem;
+    color: #b91c1c;
+}
+
+.form-errors .alert {
+    margin-bottom: 5px;
     font-weight: 500;
+}
+
+.form-errors .alert:last-child {
+    margin-bottom: 0;
 }
 
 .errorlist {
@@ -99,8 +104,7 @@
 }
 
 .errorlist li {
-    color: #B91C1C;
-    /* Applies your red color to field errors too */
+    color: #dc2626; 
     font-size: 0.85rem;
     font-weight: 500;
     display: flex;
@@ -108,18 +112,22 @@
     gap: 6px;
 }
 
-/* Optional: Add a small icon before field errors for better UI */
 .errorlist li::before {
     content: "•";
-    /* or use a font-awesome icon unicode like '\f071' */
-    font-size: 1.2em;
-    line-height: 1;
+    font-weight: bold;
 }
 
+.form-group input:invalid, 
+.form-group select:invalid {
+    border-color: #dc2626;
+}
+
+/* =========================================
+   4. Main Grid
+   ========================================= */
 .form-main {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    /* Main content vs Sidebar */
     gap: 30px;
     align-items: start;
 }
@@ -132,7 +140,7 @@
 }
 
 /* =========================================
-   4. Input Fields & Groups
+   5. Input Fields & Groups
    ========================================= */
 .form-group {
     display: flex;
@@ -146,7 +154,6 @@
     color: var(--color-text-primary);
 }
 
-/* Standard Inputs */
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group select,
@@ -172,18 +179,10 @@
     outline: none;
     border-color: var(--color-sidebar-bg);
     box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
-    /* Subtle ring */
-}
-
-/* Double input row (Price) */
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
 }
 
 /* =========================================
-   5. Sidebar Elements (Image & Flags)
+   6. Sidebar Elements (Image & Flags)
    ========================================= */
 .card-style {
     background-color: #fff;
@@ -193,12 +192,12 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* File Input Styling */
 .form-group input[type="file"] {
     padding: 10px;
     background-color: var(--color-main-bg);
     border: 1px dashed var(--color-border);
     cursor: pointer;
+    width: 100%;
 }
 
 .form-group input[type="file"]::file-selector-button {
@@ -210,14 +209,8 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.85rem;
-    transition: background 0.2s;
 }
 
-.form-group input[type="file"]::file-selector-button:hover {
-    background-color: #374151;
-}
-
-/* Checkbox Groups */
 .checkbox-group {
     display: flex;
     align-items: center;
@@ -240,7 +233,7 @@
 }
 
 /* =========================================
-   6. Dynamic Sections (Variants & Gallery)
+   7. Dynamic Sections (Variants & Gallery)
    ========================================= */
 .dynamic-section {
     margin-top: 40px;
@@ -266,14 +259,11 @@
     gap: 15px;
 }
 
-/* Grid layout for rows to align inputs perfectly */
 .dynamic-row {
     display: grid;
-    /* Grid setup: Adjusts based on content. The 'auto' is for the delete button */
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto; 
     gap: 20px;
     align-items: start;
-    /* Align top so labels match if errors appear */
     padding: 20px;
     background-color: var(--color-main-bg);
     border: 1px solid var(--color-border);
@@ -281,7 +271,6 @@
     position: relative;
 }
 
-/* Specific override for gallery to give image more space vs alt text */
 .gallery-section .dynamic-row {
     grid-template-columns: 1.5fr 2fr auto;
 }
@@ -290,10 +279,8 @@
     margin-bottom: 0;
 }
 
-/* Delete Button */
 .btn-remove-row {
     margin-top: 29px;
-    /* Push down to align with input box, not label */
     width: 38px;
     height: 38px;
     display: flex;
@@ -313,7 +300,6 @@
     border-color: var(--color-danger);
 }
 
-/* Add Buttons */
 #add-variant-btn,
 #add-image-btn {
     margin-top: 20px;
@@ -327,17 +313,15 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    transition: background 0.2s;
 }
 
 #add-variant-btn:hover,
 #add-image-btn:hover {
     background-color: var(--color-main-bg);
-    border-color: #d1d5db;
 }
 
 /* =========================================
-   7. Footer Actions
+   8. Footer Actions
    ========================================= */
 .form-footer {
     display: flex;
@@ -352,22 +336,15 @@
     padding: 12px 24px;
     border-radius: 8px;
     font-weight: 500;
-    font-size: 0.95rem;
     cursor: pointer;
     text-decoration: none;
     text-align: center;
-    transition: all 0.2s;
 }
 
 .btn-cancel {
     background-color: #fff;
     border: 1px solid var(--color-border);
     color: var(--color-text-primary);
-}
-
-.btn-cancel:hover {
-    background-color: var(--color-main-bg);
-    border-color: #d1d5db;
 }
 
 .btn-save {
@@ -377,15 +354,7 @@
     min-width: 140px;
 }
 
-.btn-save:hover {
-    background-color: #374151;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 /* --- CROP MODAL STYLES --- */
-
-/* The full-screen overlay, hidden by default */
 .crop-modal {
     visibility: hidden;
     opacity: 0;
@@ -395,59 +364,41 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    /* Dark overlay */
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1050;
-    /* High z-index to be on top */
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-/* The state when the modal is SHOWN */
 .crop-modal.active {
     visibility: visible;
     opacity: 1;
 }
 
-/* The white container box for the cropper */
 .crop-container {
     background-color: #fff;
     border-radius: 8px;
     padding: 2rem;
     width: 90%;
     max-width: 800px;
-    /* Adjust max-width as needed */
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     max-height: 90vh;
-    /* Prevent it from being too tall */
 }
 
-.crop-container h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-}
-
-/* The container holding the image to be cropped */
 .crop-image-container {
     width: 100%;
     height: 50vh;
-    /* Give it a fixed height */
     overflow: hidden;
-    /* Cropper.js will handle the image */
     background-color: #f0f0f0;
-    /* BG for while image loads */
 }
 
-/* Make the cropper image fill its container */
 .crop-image-container img {
     max-width: 100%;
 }
 
-/* The action buttons at the bottom (Apply, Cancel) */
 .crop-actions {
     display: flex;
     justify-content: flex-end;
@@ -457,42 +408,29 @@
     border-top: 1px solid #eee;
 }
 
-/* Simple button styling (you can use your own btn classes) */
 .crop-actions .btn {
     padding: 0.6rem 1.2rem;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-weight: 500;
 }
 
-.crop-actions .btn-primary {
-    background-color: #007bff;
-    color: white;
-}
-
-.crop-actions .btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
+.crop-actions .btn-primary { background-color: #007bff; color: white; }
+.crop-actions .btn-secondary { background-color: #6c757d; color: white; }
 
 /* =========================================
-   8. Responsive Design
+   9. Responsive Design
    ========================================= */
 @media (max-width: 992px) {
     .form-main {
         grid-template-columns: 1fr;
-        /* Stack Sidebar below main content */
     }
-
     .form-right {
         flex-direction: row;
         flex-wrap: wrap;
     }
-
     .form-right>* {
         flex: 1 1 300px;
-        /* Cards take at least 300px */
     }
 }
 
@@ -502,20 +440,12 @@
         align-items: flex-start;
     }
 
-    .form-row {
-        grid-template-columns: 1fr;
-        /* Stack Base Price & Offer Price */
-    }
-
-    /* Dynamic Rows Mobile Stack */
     .dynamic-row,
     .gallery-section .dynamic-row {
         grid-template-columns: 1fr;
-        /* Stack inputs vertically */
         gap: 15px;
         position: relative;
         padding-right: 50px;
-        /* Make room for delete button */
     }
 
     .btn-remove-row {

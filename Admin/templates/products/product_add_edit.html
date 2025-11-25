@@ -21,15 +21,21 @@
         </div>
     </div>
 
-    {% comment %} {% if product_form.non_field_errors or formset.non_field_errors or formset_images.non_field_errors %}
-        <div class="form-errors alert alert-danger">
-            {{ product_form.non_field_errors }}
-            {{ formset.non_field_errors }}
-            {{ formset_images.non_field_errors }}
+    {% if product_form.non_field_errors or formset.non_field_errors or formset_images.non_field_errors %}
+        <div class="form-errors">
+            {% if product_form.non_field_errors %}
+                <div class="alert">{{ product_form.non_field_errors }}</div>
+            {% endif %}
+            {% if formset.non_field_errors %}
+                <div class="alert">{{ formset.non_field_errors }}</div>
+            {% endif %}
+            {% if formset_images.non_field_errors %}
+                <div class="alert">{{ formset_images.non_field_errors }}</div>
+            {% endif %}
         </div>
-    {% endif %} {% endcomment %}
+    {% endif %}
 
-    <form action="" method="POST" enctype="multipart/form-data" class="product-form" id="product-form">
+    <form action="" method="POST" enctype="multipart/form-data" class="product-form" id="product-form" novalidate>
         {% csrf_token %}
 
         <div class="form-main">
@@ -44,19 +50,6 @@
                     <label for="{{ product_form.category.id_for_label }}">Category</label>
                     {{ product_form.category }}
                     {{ product_form.category.errors }}
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ product_form.base_price.id_for_label }}">Base Price (₹)</label>
-                        {{ product_form.base_price }}
-                        {{ product_form.base_price.errors }}
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ product_form.offer_price.id_for_label }}">Offer Price (₹)</label>
-                        {{ product_form.offer_price }}
-                        {{ product_form.offer_price.errors }}
-                    </div>
                 </div>
 
                 <div class="form-group">
@@ -105,7 +98,7 @@
 
         <div class="dynamic-section variants-section">
             <h3>Product Variants</h3>
-            <p>Add sizes and stock for each variant.</p>
+            <p>Add sizes, prices, and stock for each variant.</p>
 
             {{ formset.management_form }}
 
@@ -116,16 +109,31 @@
                         {{ form.id }}
                         {{ form.DELETE }}
                     </div>
+                    
                     <div class="form-group">
                         <label>Size</label>
                         {{ form.size }}
                         {{ form.size.errors }}
                     </div>
+                    
+                    <div class="form-group">
+                        <label>Base Price (₹)</label>
+                        {{ form.base_price }}
+                        {{ form.base_price.errors }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Offer Price (₹)</label>
+                        {{ form.offer_price }}
+                        {{ form.offer_price.errors }}
+                    </div>
+
                     <div class="form-group">
                         <label>Stock</label>
                         {{ form.stock }}
                         {{ form.stock.errors }}
                     </div>
+                    
                     <button type="button" class="btn-remove-row" title="Remove variant">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -187,13 +195,43 @@
     </form>
 </div>
 
-{# TEMPLATES FOR DYNAMIC ROWS #}
+{# --- TEMPLATES FOR DYNAMIC ROWS --- #}
 <template id="variant-empty-form">
-    {{ formset.empty_form }}
+    <div style="display: none;">
+        {{ formset.empty_form.id }}
+        {{ formset.empty_form.DELETE }}
+    </div>
+    <div class="form-group">
+        <label>Size</label>
+        {{ formset.empty_form.size }}
+    </div>
+    <div class="form-group">
+        <label>Base Price (₹)</label>
+        {{ formset.empty_form.base_price }}
+    </div>
+    <div class="form-group">
+        <label>Offer Price (₹)</label>
+        {{ formset.empty_form.offer_price }}
+    </div>
+    <div class="form-group">
+        <label>Stock</label>
+        {{ formset.empty_form.stock }}
+    </div>
 </template>
 
 <template id="image-empty-form">
-    {{ formset_images.empty_form }}
+    <div style="display: none;">
+        {{ formset_images.empty_form.id }}
+        {{ formset_images.empty_form.DELETE }}
+    </div>
+    <div class="form-group" style="flex: 2;">
+        <label>Image File</label>
+        {{ formset_images.empty_form.image }}
+    </div>
+    <div class="form-group" style="flex: 3;">
+        <label>Alt Text (Optional)</label>
+        {{ formset_images.empty_form.alt_text }}
+    </div>
 </template>
 
 <div class="crop-modal" id="cropModal">
@@ -208,8 +246,8 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
+
 {% block extraJs %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -222,15 +260,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const formIdx = parseInt(totalForms.value, 10);
 
         let newFormHtml = templateHtml.replace(/__prefix__/g, formIdx);
-        newFormHtml = newFormHtml.replace(/<label[^>]*>.*?<\/label>/g, ''); // optional
-
+        
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = newFormHtml;
         
         const rowWrapper = document.createElement('div');
         rowWrapper.className = 'dynamic-row';
         
-        // Add all child nodes from the template's content
         while (tempDiv.firstChild) {
             rowWrapper.appendChild(tempDiv.firstChild);
         }
@@ -242,10 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
         removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
         rowWrapper.appendChild(removeBtn);
 
-        // Find the DELETE checkbox that's already in the empty_form template
         const deleteCheckbox = rowWrapper.querySelector('input[type="checkbox"][name$="-DELETE"]');
         if (deleteCheckbox) {
-            // Hide it, as it's part of the template
             deleteCheckbox.parentElement.style.display = 'none';
         }
 
@@ -261,7 +295,6 @@ document.addEventListener('DOMContentLoaded', function() {
         addFormRow('gallery-container', imageTemplate, 'images');
     });
 
-    // Remove row (existing or new)
     document.getElementById('product-form').addEventListener('click', function(e) {
         const btn = e.target.closest('.btn-remove-row');
         if (!btn) return;
@@ -269,37 +302,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const row = btn.closest('.dynamic-row');
         const container = row.closest('.dynamic-rows-container');
 
-        // --- FIX #2: Check for minimum variant (for "one variant is must") ---
         if (container && container.id === 'variants-container') {
-            // Count how many rows are *not* already hidden
             const visibleRows = container.querySelectorAll('.dynamic-row:not([style*="display: none"])').length;
-            
             if (visibleRows <= 1) {
-                // We are trying to remove the last visible row
                 alert('You must have at least one product variant.');
-                return; // Stop the function
+                return;
             }
         }
-        // --- END FIX #2 ---
 
         const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
-
         if (deleteCheckbox) {
-            // This is an existing form. Hide it, check the box, and disable inputs.
             deleteCheckbox.checked = true;
             row.style.display = 'none';
-            
-            // --- FIX #1: for 'not focusable' error ---
             const inputs = row.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
                 if (input !== deleteCheckbox) {
                     input.disabled = true;
                 }
             });
-            // --- END FIX #1 ---
-
         } else {
-            // This is a new, unsaved form. Just remove it from the DOM.
             row.remove();
         }
     });
@@ -351,20 +372,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getOrCreatePreviewForInput(inputEl) {
-        // Find the existing preview for the main image
         if (inputEl.id === '{{ product_form.image.id_for_label }}') {
              let existingPreview = document.querySelector('.current-image-preview img');
              if (existingPreview) return existingPreview;
         }
 
-        // Find preview for gallery images
         let fg = inputEl.closest('.form-group') || inputEl.parentElement;
-        
-        // Check for existing gallery preview (the `form.instance.image` one)
         let galleryImg = fg.querySelector('img[height="50"]');
         if (galleryImg) return galleryImg;
 
-        // Create a new preview element if one doesn't exist
         let preview = fg.querySelector('.image-preview img');
         if (!preview) {
             let previewContainer = fg.querySelector('.image-preview');
@@ -372,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 previewContainer = document.createElement('div');
                 previewContainer.className = 'image-preview';
                 previewContainer.style.marginTop = '8px';
-                previewContainer.innerHTML = '<img style="border-radius:6px;">'; // Removed fixed size
+                previewContainer.innerHTML = '<img style="border-radius:6px;">';
                 inputEl.insertAdjacentElement('afterend', previewContainer);
             }
             preview = previewContainer.querySelector('img');
@@ -380,7 +396,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return preview;
     }
     
-    // Event delegation for ANY file input inside the form
     document.getElementById('product-form').addEventListener('change', async function(e) {
         const target = e.target;
         if (!target || target.tagName.toLowerCase() !== 'input' || target.type !== 'file') return;
@@ -394,20 +409,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (previewImg) {
             previewImg.src = dataURL;
             previewImg.style.display = 'block';
-            previewImg.style.height = 'auto'; // Unset any fixed height
-
-            // *** NEW: Check if this is the MAIN image input or a GALLERY input ***
+            previewImg.style.height = 'auto';
             if (target.id === '{{ product_form.image.id_for_label }}') {
-                previewImg.style.maxWidth = '100%'; // Main image
+                previewImg.style.maxWidth = '100%';
             } else {
-                previewImg.style.maxWidth = '100px'; // Gallery images
+                previewImg.style.maxWidth = '100px';
             }
         }
-        
         openCropperForInput(target, previewImg, dataURL);
     });
 
-    // Save cropped image back to input
     cropSaveBtn.addEventListener('click', function() {
         if (!cropper || !currentFileInput) return;
 
@@ -416,7 +427,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Cropper produced no blob');
                 return;
             }
-
             const originalFile = (currentFileInput.files && currentFileInput.files[0]) || null;
             const filename = originalFile ? originalFile.name : `cropped_${Date.now()}.jpg`;
 
@@ -426,20 +436,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const url = URL.createObjectURL(blob);
                 currentPreviewImg.src = url;
                 currentPreviewImg.style.display = 'block';
-                currentPreviewImg.style.height = 'auto'; // Unset any fixed height
-
-                // *** NEW: Check if this was the MAIN image input or a GALLERY input ***
+                currentPreviewImg.style.height = 'auto';
                 if (currentFileInput && currentFileInput.id === '{{ product_form.image.id_for_label }}') {
-                    currentPreviewImg.style.maxWidth = '100%'; // Main image
+                    currentPreviewImg.style.maxWidth = '100%';
                 } else {
-                    currentPreviewImg.style.maxWidth = '100px'; // Gallery images
+                    currentPreviewImg.style.maxWidth = '100px';
                 }
             }
-
             cropper.destroy();
             cropper = null;
             cropModal.classList.remove('active');
-
         }, 'image/jpeg', 0.9);
     });
 
@@ -456,7 +462,6 @@ document.addEventListener('DOMContentLoaded', function() {
             cropModal.classList.remove('active');
         }
     });
-    // ---- end cropper integration ----
 });
 </script>
 {% endblock %}
