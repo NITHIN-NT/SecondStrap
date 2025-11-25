@@ -18,11 +18,9 @@
             <span>Add New Address</span>
         </a>
     </div>
-
+    {% for add in addresses %}
     <div class="profile-card-body">
         <div class="address-list">
-            
-            {% for add in addresses %}
             <div class="address-card">
                 <div class="address-card-header">
                     <div class="address-card-title">
@@ -42,24 +40,19 @@
 
                 <div class="address-card-body">
                     <p>
-                        <strong>{{add.full_name}}</strong><br> {{add.address_line_1}}<br>
-                        {% if add.address_line_2 %}{{add.address_line_2}}<br>{% endif %}
-                        {{add.city}}, {{add.state}} - {{add.postal_code}}<br>
-                        {{add.country}}<br>
-                        Ph: {{add.phone_number}}
+                        {{add.full_name}}
+                        {{add.address_line_1}}<br>
+                        {{add.address_line_2}}<br>
+                        {{add.city}},{{add.state}}
+                        {{add.country}}
                     </p>
                 </div>
             </div>
-            
-            {% empty %}
-            <div class="no-address-message">
-                <i class='bx bx-map-pin'></i>
-                No saved addresses found.
-            </div>
-            {% endfor %}
-            
         </div>
     </div>
+    {% empty %}
+    <p>No Data</p>
+    {% endfor %}
 </div>
 
 <div id="deleteConfirmModal" class="modal-overlay">
