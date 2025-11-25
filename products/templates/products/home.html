@@ -9,57 +9,12 @@
 
 {% block content %}
 
-{% comment %} 
-  ▼▼▼ THIS IS THE UPDATED HERO SECTION ▼▼▼ 
-{% endcomment %}
 <section class="hero-section">
     <div class="hero-content">
         <h1>Effortless Style, Arrived.</h1>
         <p>Discover our new Spring collection.</p>
-        {% comment %} <a href="/products" class="btn-primary">Shop Now</a> {% endcomment %}
     </div>
 </section>
-{% comment %} 
-  ▲▲▲ END OF UPDATED HERO SECTION ▲▲▲ 
-{% endcomment %}
-{% comment %} 
-
-{% if new_arrivals %}
-<section class="home-section">
-    <h2 class="section-title">New Arrivals</h2>
-    <div class="product-grid">
-        {% for new_arrival in new_arrivals %}
-        <div class="product-card">
-            <div class="product-image-container">
-                {% if new_arrival.slug %}
-                <a href="{% url 'Product_card_view' new_arrival.slug %}">
-                    {% if new_arrival.image_url %}
-                        <img src="{{ new_arrival.image_url }}" alt="{{ new_arrival.name }}">
-                    {% else %}
-                        <img src="{{ new_arrival.image }}" alt="{{ new_arrival.name }}">                    
-                    {% endif %}
-                </a>
-                {% else %}
-                    {% if new_arrival.image_url %}
-                        <img src="{{ new_arrival.image_url }}" alt="{{ new_arrival.name }}">
-                    {% else %}
-                        <img src="{{ new_arrival.image }}" alt="{{ new_arrival.name }}">                    
-                    {% endif %}
-                {% endif %}
-                <div class="product-card-icons">
-                    <button aria-label="Add to wishlist"><i class='bx bx-heart'></i></button>
-                    <button aria-label="Quick view"><i class='bx bx-search'></i></button>
-                </div>
-            </div>
-            <div class="product-info">
-                <h3 class="product-name"><a href="#">{{ new_arrival.name }}</a></h3>
-                <p class="product-price">{{ new_arrival.price }}</p>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</section>
-{% endif %} {% endcomment %}
 
 <section class="home-section">
     <h2 class="section-title">Shop By Category</h2>
@@ -96,7 +51,7 @@
                 </div>
                 <div class="product-info">
                     <h3 class="product-name"><a href="#">{{ featured_product.name }}</a></h3>
-                    <p class="product-price">{{ featured_product.price }}</p>
+                    <p class="product-price">{{ featured_product.offer_price }}</p>
                 </div>
             </div>
         {% endfor %}
@@ -125,7 +80,7 @@
             </div>
             <div class="product-info">
                 <h3 class="product-name"><a href="#">{{ most_demand.name }}</a></h3>
-                <p class="product-price">{{ most_demand.price }}</p>
+                <p class="product-price">{{ most_demand.offer_price }}</p>
             </div>
         </div>
         {% endfor %}

@@ -5,7 +5,7 @@ from datetime import date,timedelta
 from django.core.paginator import Paginator
 from django.db.models import Max,Min
 from django.views.generic import TemplateView,DetailView,ListView
-
+from django.db.models import Min,Max
 # Create your views here.
 '''
 def home_page_view(request):
@@ -28,11 +28,11 @@ class HomePageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        products = Product.objects.select_related('category').filter(is_active=True).order_by('?')[:4]
-        featured_products = Product.objects.filter(is_featured=True,is_active=True).order_by('?')[:4]
-        most_demanded = Product.objects.filter(is_most_demanded=True,is_active=True).order_by('?')[:4]
+        products = Product.objects.select_related('category').prefetch_related('variants').filter(is_active=True).annotate(offer_price=Min('variants__offer_price')).order_by('?')[:4]
+        featured_products = Product.objects.filter(is_featured=True,is_active=True).prefetch_related('variants').annotate(offer_price=Min('variants__offer_price')).order_by('?')[:4]
+        most_demanded = Product.objects.filter(is_most_demanded=True,is_active=True).prefetch_related('variants').annotate(offer_price=Min('variants__offer_price')).order_by('?')[:4]
         today = timezone.now().date()
-        new_arrivals = Product.objects.filter(created_at__date=today,is_active=True).order_by('?')[:4]
+        new_arrivals = Product.objects.filter(created_at__date=today,is_active=True).prefetch_related('variants').annotate(offer_price=Min('variants__offer_price')).order_by('?')[:4]
         
         categories = Category.objects.filter(is_active=True).prefetch_related('products')[:4]
         categories_for_template = []
@@ -59,7 +59,7 @@ class AboutView(TemplateView):
 
 def product_list_view(request):
     categories = Category.objects.filter(is_active=True).order_by('name')
-    products = Product.objects.filter(is_active=True).order_by('name')
+    products = Product.objects.filter(is_active=True).prefetch_related('variants').annotate(offer_price=Min('variants__offer_price')).order_by('name')
 
     # Query Params
     selected_category_id = request.GET.get('category')
@@ -71,9 +71,9 @@ def product_list_view(request):
     if selected_sort == 'newest':
         products = products.order_by('-created_at')
     elif selected_sort == 'price-low-high':
-        products = products.order_by('offer_price')
+        products = products.order_by('variants__offer_price')
     elif selected_sort == 'price-high-low':
-        products = products.order_by('-offer_price')
+        products = products.order_by('-variants__offer_price')
     elif selected_sort == 'name-asc':
         products = products.order_by('name')
     elif selected_sort == 'name-desc':
@@ -89,7 +89,7 @@ def product_list_view(request):
     if selected_price:
         try:
             price_limit = float(selected_price)
-            products = products.filter(offer_price__lte=price_limit)
+            products = products.filter(variants__offer_price__lte=price_limit)
         except ValueError:
             pass
 
@@ -99,8 +99,8 @@ def product_list_view(request):
 
     # Price Range
     price_range = Product.objects.filter(is_active=True).aggregate(
-        min_amount=Min('offer_price'),
-        max_amount=Max('offer_price')
+        min_amount=Min('variants__offer_price'),
+        max_amount=Max('variants__offer_price')
     )
 
     # Pagination
@@ -148,18 +148,22 @@ class ProductDetailedView(DetailView):
 
         def get_queryset(self):
             query_set =  super().get_queryset() 
-            return query_set.filter(is_active=True).select_related('category').prefetch_related('variants__size','images') 
+            return query_set.filter(is_active=True).select_related('category').prefetch_related('variants__size','images').annotate(offer_price=Min('variants__offer_price'),base_price=Min('variants__base_price'))
 
         def get_context_data(self, **kwargs): 
             context = super().get_context_data(**kwargs)
             product = self.object
             all_images = product.images.all() 
             context['images_list_limited'] = all_images[:4] 
-            context['sizes'] = product.variants.all().select_related('size')
+            context['sizes'] = product.variants.all()
             product_category = product.category
             
-            related_products = Product.objects.filter(category=product_category,is_active=True).select_related('category').exclude(pk=product.pk)
-            random_products = Product.objects.filter(is_active=True).order_by('?')
+            related_products = Product.objects.filter(category=product.category,is_active=True).select_related('category').prefetch_related('variants','images').annotate(
+                base_price=Min('variants__base_price'),
+                offer_price=Min('variants__offer_price')).exclude(pk=product.pk)
+            random_products = Product.objects.filter(is_active=True).exclude(pk=product.pk).prefetch_related('variants', 'images').annotate(
+                offer_price=Min('variants__offer_price'),
+                base_price=Min('variants__base_price')).order_by('?')
             context['related_products'] = related_products[:4]
             context['random_products'] = random_products[:4]
             
