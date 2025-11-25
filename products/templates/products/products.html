@@ -64,13 +64,13 @@
                     </div>
                     <input 
                         type="range" 
-                        name = 'price_range'
+                        name="price_range"
                         id="price_range"
                         class="price-slider-placeholder" 
                         min="{{min_amount|default:"0"}}" 
                         max="{{max_amount|default:"10000"}}" 
                         value="{{request.GET.price_range|default:max_amount}}"
-                        >
+                    >
                 </div>
                 <hr>
                 <br>
@@ -84,7 +84,6 @@
                         <option value="name-desc" {% if selected_sort == 'name-desc' %}selected{% endif %}>Name: zZ - aA</option>
                         <option value="featured" {% if selected_sort == 'featured' %}selected{% endif %}>Featured</option>
                     </select>
-
                 </div>
                 <div class="filter-buttons">
                     <a href="{% url "products_page_user" %}" class="btn-filter-reset">Reset</a>
@@ -102,11 +101,46 @@
                                value="{{ request.GET.search|default:'' }}">
                         
                         <button type="button" class="clear-search-btn" id="clear-search-btn">
-                            &times; </button>
+                            &times;
+                        </button>
                     </div>
                 </div>
+
                 <div class="products-grid"> 
                     {% for product in page_obj %}
+                        {% if product.total_stock <= 0 %}
+                        <!-- OUT OF STOCK CARD WITH DIAGONAL RIBBONS -->
+                        <div class="product-card out-of-stock">
+                            <a href="{% url 'Product_card_view' product.slug %}">
+                                <div class="product-image-placeholder" style="background-image: url({{product.image.url}}); background-size: cover;">
+                                    <span class="ribbon ribbon-coming-soon">
+                                        <span class="ribbon-track">
+                                            <span>coming soon • coming soon • coming soon •</span>
+                                            <span>coming soon • coming soon • coming soon •</span>
+                                        </span>
+                                    </span>
+
+                                    <span class="ribbon ribbon-out-of-stock">
+                                        <span class="ribbon-track">
+                                            <span>Out of stock • Out of stock • Out of stock •</span>
+                                            <span>Out of stock • Out of stock • Out of stock •</span>
+                                        </span>
+                                    </span>
+
+                                </div>
+                            </a>
+                            <div class="product-info-container">
+                                <div class="product-details">
+                                    <h5>{{product.name}}</h5>
+                                </div>
+                                <div class="product-actions">
+                                    <i class='bx bx-heart'></i>
+                                    <i class='bx bx-shopping-bag'></i>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- NORMAL CARD -->
                         <div class="product-card">
                             <a href="{% url 'Product_card_view' product.slug %}">
                                 <div class="product-image-placeholder" style="background-image: url({{product.image.url}}); background-size: cover;"></div>
@@ -114,15 +148,15 @@
                             <div class="product-info-container">
                                 <div class="product-details">
                                     <h5>{{product.name}}</h5>
-                                    {% comment %} <del><p class="product-price">₹{{product.base_price}}</p></del> {% endcomment %}
                                     <p class="product-price">₹{{product.offer_price}}</p>
                                 </div>
                                 <div class="product-actions">
                                     <i class='bx bx-heart'></i>
                                     <i class='bx bx-shopping-bag'></i>
-                                 </div>
+                                </div>
                             </div>
                         </div>
+                        {% endif %}
                     {% empty %}
                      <div class="product-empty">
                         <p>No Products</p>
@@ -130,9 +164,8 @@
                     {% endfor %}
                 </div>
 
-                <section class='pagination-container'>
+                <section class="pagination-container">
                     <div class="pagination">
-                    
                         {% if page_obj.has_previous %}
                             <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">&lt;</a>
                         {% else %}
@@ -152,7 +185,6 @@
                         {% else %}
                             <span class="disabled">&gt;</span>
                         {% endif %}
-                            
                     </div>
                 </section>
             
@@ -192,121 +224,121 @@
 
 
 {% block extra_script %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const filterForm = document.getElementById('filter-form');
-            
-            // === Synchronize Sort Inputs ===
-            const desktopSort = document.getElementById('sort-by');
-            const mobileSortRadios = document.querySelectorAll('.mobile-sort-radio');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterForm = document.getElementById('filter-form');
+        
+        // === Synchronize Sort Inputs ===
+        const desktopSort = document.getElementById('sort-by');
+        const mobileSortRadios = document.querySelectorAll('.mobile-sort-radio');
 
-            if (desktopSort && mobileSortRadios.length > 0) {
-                mobileSortRadios.forEach(radio => {
-                    radio.addEventListener('change', function() {
-                        if (this.checked) {
-                            desktopSort.value = this.value;
-                            filterForm.submit();
-                        }
-                    });
+        if (desktopSort && mobileSortRadios.length > 0) {
+            mobileSortRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        desktopSort.value = this.value;
+                        filterForm.submit();
+                    }
+                });
+            });
+        }
+
+        // === Auto-submit for other filters ===
+        const filterInputs = filterForm.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+        filterInputs.forEach(function (input) {
+            if (!input.classList.contains('mobile-sort-radio')) {
+                input.addEventListener('change', function () {
+                    filterForm.submit();
                 });
             }
+        });
 
-            // === Auto-submit for other filters ===
-            const filterInputs = filterForm.querySelectorAll('input[type="radio"], input[type="checkbox"]');
-            filterInputs.forEach(function (input) {
-                if (!input.classList.contains('mobile-sort-radio')) {
-                    input.addEventListener('change', function () {
-                        filterForm.submit();
-                    });
-                }
+        // === Auto-submit for price range ===
+        const priceRange = document.getElementById('price_range');
+        const priceValue = document.getElementById('price_value');
+        if (priceRange && priceValue) {
+            priceRange.addEventListener('input', function() {
+                priceValue.textContent = '₹' + this.value;
             });
 
-            // === Auto-submit for price range ===
-            const priceRange = document.getElementById('price_range');
-            const priceValue = document.getElementById('price_value');
-            if (priceRange && priceValue) {
-                priceRange.addEventListener('input', function() {
-                    priceValue.textContent = '₹' + this.value;
-                });
+            priceRange.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        }
 
-                priceRange.addEventListener('change', function() {
-                    filterForm.submit();
-                });
+        // === SEARCH BOX LOGIC ===
+        const searchBox = document.getElementById('search-box');
+        const clearBtn = document.getElementById('clear-search-btn');
+
+        function toggleClearButton() {
+            if (searchBox.value.length > 0) {
+                clearBtn.style.display = 'block';
+            } else {
+                clearBtn.style.display = 'none';
             }
-
-            // === SEARCH BOX LOGIC ===
-            const searchBox = document.getElementById('search-box');
-            const clearBtn = document.getElementById('clear-search-btn');
-
-            function toggleClearButton() {
-                if (searchBox.value.length > 0) {
-                    clearBtn.style.display = 'block';
-                } else {
-                    clearBtn.style.display = 'none';
-                }
-            }
-            if(searchBox && clearBtn) {
+        }
+        if (searchBox && clearBtn) {
+            toggleClearButton();
+            searchBox.addEventListener('input', toggleClearButton);
+            clearBtn.addEventListener('click', function() {
+                searchBox.value = '';
                 toggleClearButton();
-                searchBox.addEventListener('input', toggleClearButton);
-                clearBtn.addEventListener('click', function() {
-                    searchBox.value = '';
-                    toggleClearButton();
-                    filterForm.submit();
-                });
-            }
+                filterForm.submit();
+            });
+        }
 
-            // === CATEGORY DROPDOWN TOGGLE ===
-            const categoryToggle = document.getElementById('category-toggle');
-            const categoryList = document.getElementById('category-list');
-            const categoryArrow = document.getElementById('category-arrow');
-            let categoryOpen = true;
+        // === CATEGORY DROPDOWN TOGGLE ===
+        const categoryToggle = document.getElementById('category-toggle');
+        const categoryList = document.getElementById('category-list');
+        const categoryArrow = document.getElementById('category-arrow');
+        let categoryOpen = true;
 
-            if (categoryToggle && categoryList && categoryArrow) {
-                categoryToggle.addEventListener('click', () => {
-                    categoryOpen = !categoryOpen;
-                    categoryList.style.display = categoryOpen ? 'flex' : 'none';
-                    categoryArrow.innerHTML = categoryOpen ? '&#9652;' : '&#9662;'; 
-                });
-            }
+        if (categoryToggle && categoryList && categoryArrow) {
+            categoryToggle.addEventListener('click', () => {
+                categoryOpen = !categoryOpen;
+                categoryList.style.display = categoryOpen ? 'flex' : 'none';
+                categoryArrow.innerHTML = categoryOpen ? '&#9652;' : '&#9662;'; 
+            });
+        }
 
-            // ============ RESPONSIVE JS LOGIC ==================
-            const overlay = document.getElementById('overlay');
-            const body = document.body;
+        // ============ RESPONSIVE JS LOGIC ==================
+        const overlay = document.getElementById('overlay');
+        const body = document.body;
 
-            const filterSidebar = document.querySelector('.products-sidebar');
-            const openFilterBtn = document.getElementById('mobile-filter-btn');
-            const closeFilterBtn = document.getElementById('close-filter-btn');
+        const filterSidebar = document.querySelector('.products-sidebar');
+        const openFilterBtn = document.getElementById('mobile-filter-btn');
+        const closeFilterBtn = document.getElementById('close-filter-btn');
 
-            const sortModal = document.getElementById('sort-modal-mobile');
-            const openSortBtn = document.getElementById('mobile-sort-btn');
-            const closeSortBtn = document.getElementById('close-sort-btn');
+        const sortModal = document.getElementById('sort-modal-mobile');
+        const openSortBtn = document.getElementById('mobile-sort-btn');
+        const closeSortBtn = document.getElementById('close-sort-btn');
 
-            function openFilter() {
-                filterSidebar.classList.add('is-open');
-                overlay.classList.add('is-open');
-                body.style.overflow = 'hidden'; 
-            }
+        function openFilter() {
+            filterSidebar.classList.add('is-open');
+            overlay.classList.add('is-open');
+            body.style.overflow = 'hidden'; 
+        }
 
-            function openSort() {
-                sortModal.classList.add('is-open');
-                overlay.classList.add('is-open');
-                body.style.overflow = 'hidden';
-            }
+        function openSort() {
+            sortModal.classList.add('is-open');
+            overlay.classList.add('is-open');
+            body.style.overflow = 'hidden';
+        }
 
-            function closeAllModals() {
-                if(filterSidebar) filterSidebar.classList.remove('is-open');
-                if(sortModal) sortModal.classList.remove('is-open');
-                if(overlay) overlay.classList.remove('is-open');
-                body.style.overflow = ''; 
-            }
+        function closeAllModals() {
+            if (filterSidebar) filterSidebar.classList.remove('is-open');
+            if (sortModal) sortModal.classList.remove('is-open');
+            if (overlay) overlay.classList.remove('is-open');
+            body.style.overflow = ''; 
+        }
 
-            if (openFilterBtn) openFilterBtn.addEventListener('click', openFilter);
-            if (closeFilterBtn) closeFilterBtn.addEventListener('click', closeAllModals);
-            
-            if (openSortBtn) openSortBtn.addEventListener('click', openSort);
-            if (closeSortBtn) closeSortBtn.addEventListener('click', closeAllModals);
+        if (openFilterBtn) openFilterBtn.addEventListener('click', openFilter);
+        if (closeFilterBtn) closeFilterBtn.addEventListener('click', closeAllModals);
+        
+        if (openSortBtn) openSortBtn.addEventListener('click', openSort);
+        if (closeSortBtn) closeSortBtn.addEventListener('click', closeAllModals);
 
-            if (overlay) overlay.addEventListener('click', closeAllModals);
-        });
-    </script>
+        if (overlay) overlay.addEventListener('click', closeAllModals);
+    });
+</script>
 {% endblock extra_script %}
