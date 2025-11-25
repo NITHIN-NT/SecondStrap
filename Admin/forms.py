@@ -50,17 +50,14 @@ class AdminProductAddForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
-            'name',  'category', 'base_price', 'image', 'offer_price',
+            'name', 'category', 'image',
             'description', 'is_featured', 'is_selective',
             'is_most_demanded', 'is_active',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'id': 'product_name', 'required': True}),
-            # 'slug': forms.TextInput(attrs={'id': 'product_slug', 'readonly': 'readonly'}),
             'category': forms.Select(attrs={'id': 'category', 'required': True}),
             'image': forms.FileInput(attrs={'id': 'main_product_image', 'accept': 'image/*'}),
-            'base_price': forms.NumberInput(attrs={'id': 'base_price', 'step': '0.01', 'required': True}),
-            'offer_price': forms.NumberInput(attrs={'id': 'offer_price', 'step': '0.01'}),
             'description': forms.Textarea(attrs={'id': 'description', 'rows': 6}),
             'is_featured': forms.CheckboxInput(attrs={'id': 'is_featured'}),
             'is_selective': forms.CheckboxInput(attrs={'id': 'is_selective'}),
@@ -70,19 +67,10 @@ class AdminProductAddForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['offer_price'].required = False
         if self.instance and self.instance.pk:
             self.fields['image'].required = False
         else:
             self.fields['image'].required = True
-
-    def clean(self):
-        cleaned_data = super().clean()
-        base = cleaned_data.get('base_price')
-        offer = cleaned_data.get('offer_price')
-        if offer and base and offer >= base:
-            self.add_error('offer_price', "Offer price must be less than base price.")
-        return cleaned_data
 
 
 class VariantForm(forms.ModelForm):
@@ -93,8 +81,10 @@ class VariantForm(forms.ModelForm):
 
     class Meta:
         model = ProductVariant
-        fields = ['size', 'stock']
+        fields = ['size', 'base_price', 'offer_price', 'stock']
         widgets = {
+            'base_price': forms.NumberInput(attrs={'class': 'variant-base-price', 'step': '0.01', 'min': '0', 'required': True}),
+            'offer_price': forms.NumberInput(attrs={'class': 'variant-offer-price', 'step': '0.01', 'min': '0'}),
             'stock': forms.NumberInput(attrs={'class': 'variant-stock', 'min': '0', 'required': True}),
         }
 
@@ -142,15 +132,15 @@ ImageFormSet = inlineformset_factory(
     form=ImageForm,
     extra=1,
     min_num=3,
-    validate_min=True,  
+    validate_min=True,
     can_delete=True,
     can_delete_extra=True
 )
 
 class CategoryForm(forms.ModelForm):
     class Meta:
-      model = Category
-      fields = ['name','description']
+        model = Category
+        fields = ['name', 'description']
 
     def clean_name(self):
         name = self.cleaned_data.get("name")

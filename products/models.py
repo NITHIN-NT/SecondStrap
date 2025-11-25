@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.utils.text import slugify
 from autoslug import AutoSlugField
 def product_image_upload_to(instance, filename):
     return f"products/{instance.slug}/{filename}"
@@ -20,17 +19,13 @@ class Product(models.Model):
     name = models.CharField(max_length=1024)
     slug = AutoSlugField(populate_from='name', unique=True, max_length=1024)
     description = models.TextField()
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
-    offer_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
     image = models.ImageField(upload_to=product_image_upload_to, blank=True, null=True)
     alt_text = models.CharField(max_length=255, blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products') 
-
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     is_featured = models.BooleanField(default=False)
     is_selective = models.BooleanField(default=False)
     is_most_demanded = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)  # instead of is_blocked
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         ordering = ['-created_at']
@@ -43,14 +38,10 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-    def clean(self):
-        if self.offer_price is not None and self.offer_price >= self.base_price:
-            raise ValidationError("Offer price must be less than base price.")
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='products/', blank=True,null=True)
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
     alt_text = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
@@ -65,11 +56,15 @@ class Size(models.Model):
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
     size = models.ForeignKey(Size, on_delete=models.CASCADE, related_name='variants')
+    base_price = models.DecimalField(max_digits=10, decimal_places=2)
+    offer_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
 
     class Meta:
         unique_together = ('product', 'size')
-        indexes = [models.Index(fields=['product', 'size'])]
+        indexes = [
+            models.Index(fields=['product', 'size'])
+        ]
 
     def __str__(self):
         return f"{self.product.name} - {self.size.size}"
@@ -77,5 +72,7 @@ class ProductVariant(models.Model):
     @property
     def in_stock(self):
         return self.stock > 0
-    
-# fixed Model
+
+    def clean(self):
+        if self.offer_price is not None and self.offer_price >= self.base_price:
+            raise ValidationError("Offer price must be less than base price.")
