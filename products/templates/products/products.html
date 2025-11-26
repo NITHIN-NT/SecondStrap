@@ -124,7 +124,6 @@
                             <div class="product-info-container">
                                 <div class="product-details">
                                     <h5>{{product.name}}</h5>
-                                    {% comment %} <del><p class="product-price">₹{{product.offer_price}}</p></del>{% endcomment %}
                                      <p style='color:#850d07 ; font-weight : 500'>Out of Stock!!</p>
                                 </div>
                                 <div class="product-actions">
@@ -146,7 +145,6 @@
                                 </div>
                                 <div class="product-actions">
                                     <i class='bx bx-heart'></i>
-                                    <i class='bx bx-shopping-bag'></i>
                                 </div>
                             </div>
                         </div>
@@ -218,6 +216,9 @@
 
 
 {% block extra_script %}
+<!-- Axios CDN (if not already loaded globally) -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const filterForm = document.getElementById('filter-form');
