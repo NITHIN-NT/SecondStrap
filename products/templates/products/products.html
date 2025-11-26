@@ -111,27 +111,21 @@
                         {% if product.total_stock <= 0 %}
                         <!-- OUT OF STOCK CARD WITH DIAGONAL RIBBONS -->
                         <div class="product-card out-of-stock">
-                            <a href="{% url 'Product_card_view' product.slug %}">
+                            <a href="#">
                                 <div class="product-image-placeholder" style="background-image: url({{product.image.url}}); background-size: cover;">
-                                    <span class="ribbon ribbon-coming-soon">
+                                     <span class="ribbon ribbon-out-of-stock">
                                         <span class="ribbon-track">
-                                            <span>coming soon • coming soon • coming soon •</span>
-                                            <span>coming soon • coming soon • coming soon •</span>
+                                            <span>Out of stock • Out of stock • Out of stock • Out of stock •</span>
                                         </span>
-                                    </span>
-
-                                    <span class="ribbon ribbon-out-of-stock">
-                                        <span class="ribbon-track">
-                                            <span>Out of stock • Out of stock • Out of stock •</span>
-                                            <span>Out of stock • Out of stock • Out of stock •</span>
-                                        </span>
-                                    </span>
+                                    </span> 
 
                                 </div>
                             </a>
                             <div class="product-info-container">
                                 <div class="product-details">
                                     <h5>{{product.name}}</h5>
+                                    {% comment %} <del><p class="product-price">₹{{product.offer_price}}</p></del>{% endcomment %}
+                                     <p style='color:#850d07 ; font-weight : 500'>Out of Stock!!</p>
                                 </div>
                                 <div class="product-actions">
                                     <i class='bx bx-heart'></i>

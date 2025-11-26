@@ -245,11 +245,12 @@
 .product-card.out-of-stock .product-image-placeholder {
     filter: grayscale(0.8);
 }
+
 /* DIAGONAL RIBBONS WITH SMOOTH INFINITE LOOP */
 .ribbon {
     position: absolute;
     left: 50%;
-    width: 170%;                 /* a bit wider so it fully crosses */
+    width: 170%;
     background-color: #000;
     color: #fff;
     font-size: 14px;
@@ -258,45 +259,83 @@
     text-transform: lowercase;
     letter-spacing: 0.12em;
     transform-origin: center;
-    pointer-events: none;        /* keep whole card clickable */
+    pointer-events: none;
+    /* keep whole card clickable */
     white-space: nowrap;
-    overflow: hidden;            /* hide extra text while track slides */
+    overflow: hidden;
+    /* hide extra text while track slides */
 }
 
-/* diagonal positions */
-.ribbon-coming-soon {
-    top: 30%;
-    transform: translateX(-50%) rotate(-25deg);
-}
-
+/* OUT OF STOCK – STATIC HORIZONTAL RIBBON */
 .ribbon-out-of-stock {
-    top: 60%;
-    transform: translateX(-50%) rotate(25deg);
-    text-transform: capitalize;
+    bottom: 5%;
+    /* move to bottom */
+    top: auto !important;
+    /* override previous top position */
+    transform: translateX(-50%) rotate(0deg);
+    width: 100%;
+    /* cleaner horizontal ribbon */
+    text-align: center;
+    text-transform: uppercase;
+    padding: 6px 0;
+    background-color: #000;
+    color: #fff;
 }
 
 /* moving track for infinite loop */
 .ribbon-track {
     display: inline-flex;
+    white-space: nowrap;
+    will-change: transform;
+    -webkit-animation: ribbon-loop 10s linear infinite;
     animation: ribbon-loop 10s linear infinite;
+}
+
+/* stop animation for out of stock ribbon */
+.ribbon-out-of-stock .ribbon-track {
+    -webkit-animation: ribbon-loop 14s linear infinite;
+    animation: ribbon-loop 4s linear infinite;
+    display: inline-flex;
+    padding: 0;
 }
 
 /* each text block – we duplicate them in HTML */
 .ribbon-track span {
     display: inline-block;
-    padding-right: 40px;         /* spacing between repeats */
+    padding-right: 40px;
+    /* spacing between repeats */
+}
+
+/* optional: pause on hover if you want */
+.ribbon:hover .ribbon-track {
+    -webkit-animation-play-state: paused;
+    animation-play-state: paused;
 }
 
 /* perfect seamless loop */
-@keyframes ribbon-loop {
+@-webkit-keyframes ribbon-loop {
     from {
+        -webkit-transform: translateX(0);
         transform: translateX(0);
     }
+
     to {
+        -webkit-transform: translateX(-50%);
         transform: translateX(-50%);
     }
 }
 
+@keyframes ribbon-loop {
+    from {
+        -webkit-transform: translateX(0);
+        transform: translateX(0);
+    }
+
+    to {
+        -webkit-transform: translateX(-50%);
+        transform: translateX(-50%);
+    }
+}
 
 .product-info-container {
     display: flex;
