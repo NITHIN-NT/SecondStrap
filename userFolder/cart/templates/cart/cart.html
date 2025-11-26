@@ -24,7 +24,7 @@
         </div>
         
         {% for item in cartitems %}
-        <div class="cart-row">
+        <div class="cart-row" data-item-id="{{ item.id }}">
             
             <!-- PRODUCT -->
             <div class="cart-product">
@@ -34,9 +34,10 @@
                     <h3>{{ item.variant.product.name }}</h3>
                     <p class="size">Size: {{ item.size }}</p>
                     
-                    <a href="#" class="remove">
+                    <a href="#" class="remove" data-item-id="{{ item.id }}">
                         <span>🗑️</span> Remove
                     </a>
+
                 </div>
             </div>
             
@@ -63,7 +64,10 @@
         
         <!-- SUMMARY BELOW LEFT SECTION -->
         <div class="cart-summary-left">
-            <p><strong>Subtotal:</strong> ₹{{ total_price }}</p>
+            <p>
+                <strong>Subtotal:</strong>
+                <span id="summary-left-subtotal">₹{{ total_price }}</span>
+            </p>
             <small>Shipping and taxes calculated at checkout</small>
             
             <div class="cart-buttons">
@@ -78,12 +82,12 @@
         <h3>Order Summary</h3>
         
         {% for item in cartitems %}
-        <div class="summary-item">
+        <div class="summary-item" data-item-id="{{ item.id }}">
             <div>
                 <strong>{{ item.variant.product.name }}</strong>
                 <p class="summary-qty">Qty: {{ item.quantity }}</p>
             </div>
-            <span>₹{{ item.subtotal }}</span>
+            <span class="summary-subtotal">₹{{ item.subtotal }}</span>
         </div>
         {% endfor %}
         
@@ -91,14 +95,14 @@
         
         <div class="summary-item">
             <span>Subtotal</span>
-            <span>₹{{ total_price }}</span>
+            <span id="summary-right-subtotal">₹{{ total_price }}</span>
         </div>
             
         <hr>
             
         <div class="summary-total">
             <strong>Total</strong>
-            <strong>₹{{ total_price }}</strong>
+            <strong id="summary-right-total">₹{{ total_price }}</strong>
         </div>
     </div>
         
@@ -118,3 +122,120 @@
 {% endif %}
 
 {% endblock %}
+
+{% block extra_script %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    toastr.options = {
+        closeButton: true,
+        progressBar: true,
+        positionClass: "toast-top-right",
+        timeOut: 2000
+    };
+
+    // helper to format INR
+    function formatCurrency(amount) {
+        return "₹" + Number(amount).toLocaleString("en-IN");
+    }
+
+    // recompute totals from remaining rows
+    function recalcTotals() {
+        const rows = document.querySelectorAll(".cart-row");
+        let total = 0;
+
+        rows.forEach(row => {
+            const subtotalEl = row.querySelector(".cart-subtotal");
+            if (!subtotalEl) return;
+
+            const text = subtotalEl.textContent || "";
+            const numeric = text.replace(/[^\d]/g, "");  // keep only digits
+            total += parseInt(numeric || "0", 10);
+        });
+
+        const leftSubtotal  = document.getElementById("summary-left-subtotal");
+        const rightSubtotal = document.getElementById("summary-right-subtotal");
+        const rightTotal    = document.getElementById("summary-right-total");
+
+        if (leftSubtotal)  leftSubtotal.textContent  = formatCurrency(total);
+        if (rightSubtotal) rightSubtotal.textContent = formatCurrency(total);
+        if (rightTotal)    rightTotal.textContent    = formatCurrency(total);
+    }
+
+    document.querySelectorAll(".remove").forEach(btn => {
+
+        btn.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            const itemId = this.getAttribute("data-item-id");
+
+            axios.post("{% url 'remove_cart_item' %}", {
+                item_id: itemId
+            })
+            .then(response => {
+                const data = response.data;
+
+                if (data.status === "success") {
+                    toastr.success(data.message || "Item removed");
+
+                    // remove row on left side
+                    const row = document.querySelector(`.cart-row[data-item-id="${itemId}"]`);
+                    if (row && row.parentNode) {
+                        row.parentNode.removeChild(row);
+                    }
+
+                    // remove matching item from order summary
+                    const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
+                    if (summaryItem && summaryItem.parentNode) {
+                        summaryItem.parentNode.removeChild(summaryItem);
+                    }
+
+                    // recalculate totals
+                    recalcTotals();
+
+                    // 🔥 if no items left, reload so Django shows "empty cart" block
+                    const remainingRows = document.querySelectorAll(".cart-row");
+                    if (remainingRows.length === 0) {
+                        location.reload();
+                    }
+
+                } else if (data.status === "error") {
+                    toastr.error(data.message || "Something went wrong");
+
+                } else {
+                    toastr.error("Unexpected response from server");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                toastr.error("Server error. Try again.");
+            });
+
+        });
+
+    });
+
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie("csrftoken");
+axios.defaults.headers.common["X-CSRFToken"] = csrftoken;
+</script>
+{% endblock extra_script %}

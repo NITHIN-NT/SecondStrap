@@ -5,7 +5,9 @@ from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import *
 from products.models import *
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 
 
 # Create your views here.
@@ -29,12 +31,9 @@ class CartView(LoginRequiredMixin, ListView):
 
         return context
 
+
+@require_POST
 def cart_item_add(request):
-    # Allow only POST requests
-    if request.method != "POST":
-        return JsonResponse(
-            {"status": "error", "message": "Invalid request method."}, status=405
-        )
 
     # Check if the user is logged in
     if not request.user.is_authenticated:
@@ -43,7 +42,7 @@ def cart_item_add(request):
             status=401,
         )
 
-    # Parse the JSON data from the request body
+    #  JSON data from the request body
     try:
         data = json.loads(request.body)
         product_id = data.get("product_id")
@@ -65,8 +64,10 @@ def cart_item_add(request):
 
     # If size is provided, get the corresponding variant
     if size:
-        variant = get_object_or_404(ProductVariant, product=product, size__size=size)
         cleaned_size = size.strip()
+        variant = get_object_or_404(
+            ProductVariant, product=product, size__size=cleaned_size
+        )
     else:
         # If no size is provided, pick the first available variant
         variant = ProductVariant.objects.filter(product=product).first()
@@ -78,7 +79,7 @@ def cart_item_add(request):
                 },
                 status=400,
             )
-
+        cleaned_size = ""
     # Check if enough stock is available
     if variant.stock < quantity:
         return JsonResponse(
@@ -94,10 +95,7 @@ def cart_item_add(request):
 
     # Get or create the cart item for the chosen variant
     item, created = CartItems.objects.get_or_create(
-        cart=cart,
-        variant=variant,
-        size=cleaned_size,
-        defaults={"quantity": quantity}
+        cart=cart, variant=variant, size=cleaned_size, defaults={"quantity": quantity}
     )
 
     # If the item already exists, increase the quantity
@@ -120,5 +118,16 @@ def cart_item_add(request):
     return JsonResponse({"status": "success", "message": "Item added to cart !!"})
 
 
-def cart_item_remove(req):
-    pass
+@require_POST
+def cart_item_remove(request):
+    data = json.loads(request.body)
+    item_id = data.get("item_id")
+    if not item_id:
+        return JsonResponse({"status": "error", "message": "Item not in cart!!!"})
+
+    try:
+        item = CartItems.objects.get(id=item_id, cart__user=request.user)
+        item.delete()
+        return JsonResponse({"status": "success", "message": "Item removed"})
+    except CartItems.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Item not found"})
