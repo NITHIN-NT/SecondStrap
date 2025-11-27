@@ -117,8 +117,19 @@ Price and offer price is changed to the variants now the price will change with 
 
 # Cart 
 ---
-
-## Cart Adding
+started :  25/11/2025 
+### Cart Adding
 --- 
 A Loged user can add product to the cart
 Issue in the list in the cart is fixed 
+
+### Cart Remove 
+---
+Product in the cart now can remove 
+
+### Cart Update Quantity
+ongoing : 28/11/2025
+----
+In this implemented the the stock management 
+user max limit = 10
+if the stock is less than 10 , then that is the max limit

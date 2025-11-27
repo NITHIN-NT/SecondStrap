@@ -131,3 +131,56 @@ def cart_item_remove(request):
         return JsonResponse({"status": "success", "message": "Item removed"})
     except CartItems.DoesNotExist:
         return JsonResponse({"status": "error", "message": "Item not found"})
+
+
+@require_POST
+def update_cart_item_quantity(request):
+    # Getting the data
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+
+    # Collecting the details from the items
+    item_id = data.get("item_id")
+    quantity = data.get("quantity")
+
+    if not item_id:
+        return JsonResponse(
+            {"status": "error", "message": "Item not found !!"}, status=400
+        )
+
+    try:
+        quantity = int(quantity)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"status": "error", "message": "Invalid quantity"}, status=400
+        )
+
+    if quantity < 1:
+        return JsonResponse(
+            {"status": "error", "message": "Quantity must be at least 1"}, status=400
+        )
+
+    # Fetching Item form the cart
+    try:
+        item = CartItems.objects.get(id=item_id)
+    except CartItems.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "message": "Error found !!!"}, status=404
+        )
+
+    current_stock = item.variant.stock or 0
+
+    if quantity > current_stock:
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": f"Only {current_stock} items available.",
+                "available_stock": current_stock,
+            },
+            status=400,
+        )
+    item.quantity = quantity
+    item.save()
+    return JsonResponse({"status": "success", "message": "Quantity updated"})

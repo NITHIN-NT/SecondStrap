@@ -5,6 +5,7 @@
 
 {% block extra_styles %}
 <link rel="stylesheet" href="{% static 'css/cart/cart.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 {% endblock %}
 
 {% block content %}
@@ -24,7 +25,10 @@
         </div>
         
         {% for item in cartitems %}
-        <div class="cart-row" data-item-id="{{ item.id }}">
+        <div class="cart-row"
+             data-item-id="{{ item.id }}"
+             data-price="{{ item.variant.offer_price }}"
+             data-stock="{{ item.variant.stock }}">
             
             <!-- PRODUCT -->
             <div class="cart-product">
@@ -37,11 +41,10 @@
                     <a href="#" class="remove" data-item-id="{{ item.id }}">
                         <span>🗑️</span> Remove
                     </a>
-
                 </div>
             </div>
             
-            <!-- PRICE -->
+            <!-- PRICE (unit price) -->
             <div class="cart-price">
                 ₹{{ item.variant.offer_price }}
                 {% if item.variant.base_price %}
@@ -49,12 +52,14 @@
                 {% endif %}
             </div>
             
-            <!-- QUANTITY -->
-            <div class="cart-qty">
-                {{ item.quantity }}
+            <!-- QUANTITY WITH + / - -->
+            <div class="cart-qty" data-item-id="{{ item.id }}" data-stock="{{ item.variant.stock }}">
+                <button class="qty-btn minus" data-item-id="{{ item.id }}">−</button>
+                <span class="qty-value">{{ item.quantity }}</span>
+                <button class="qty-btn plus" data-item-id="{{ item.id }}">+</button>
             </div>
             
-            <!-- SUBTOTAL -->
+            <!-- SUBTOTAL (price × quantity) -->
             <div class="cart-subtotal">
                 ₹{{ item.subtotal }}
             </div>
@@ -71,7 +76,7 @@
             <small>Shipping and taxes calculated at checkout</small>
             
             <div class="cart-buttons">
-                <a href="#" class="btn-light">Continue Shopping</a>
+                <a href="{% url 'products_page_user' %}" class="btn-light">Continue Shopping</a>
                 <a href="#" class="btn-dark">Proceed to Checkout</a>
             </div>
         </div>
@@ -122,7 +127,6 @@
 {% endif %}
 
 {% endblock %}
-
 {% block extra_script %}
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -130,19 +134,21 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    // 1. CONFIGURATION
+    const USER_LIMIT = 10; // Max items a user can buy per product
+
     toastr.options = {
         closeButton: true,
         progressBar: true,
         positionClass: "toast-top-right",
-        timeOut: 2000
+        timeOut: 4000 // Slightly longer so they see the adjustment message
     };
 
-    // helper to format INR
+    // 2. HELPER FUNCTIONS
     function formatCurrency(amount) {
         return "₹" + Number(amount).toLocaleString("en-IN");
     }
 
-    // recompute totals from remaining rows
     function recalcTotals() {
         const rows = document.querySelectorAll(".cart-row");
         let total = 0;
@@ -150,92 +156,235 @@ document.addEventListener("DOMContentLoaded", function () {
         rows.forEach(row => {
             const subtotalEl = row.querySelector(".cart-subtotal");
             if (!subtotalEl) return;
-
             const text = subtotalEl.textContent || "";
-            const numeric = text.replace(/[^\d]/g, "");  // keep only digits
-            total += parseInt(numeric || "0", 10);
+            const cleaned = text.replace(/[^\d.]/g, "");
+            const value = parseFloat(cleaned) || 0;
+            total += value;
         });
 
         const leftSubtotal  = document.getElementById("summary-left-subtotal");
         const rightSubtotal = document.getElementById("summary-right-subtotal");
         const rightTotal    = document.getElementById("summary-right-total");
 
-        if (leftSubtotal)  leftSubtotal.textContent  = formatCurrency(total);
-        if (rightSubtotal) rightSubtotal.textContent = formatCurrency(total);
-        if (rightTotal)    rightTotal.textContent    = formatCurrency(total);
+        const fmtTotal = formatCurrency(total);
+
+        if (leftSubtotal)  leftSubtotal.textContent  = fmtTotal;
+        if (rightSubtotal) rightSubtotal.textContent = fmtTotal;
+        if (rightTotal)    rightTotal.textContent    = fmtTotal;
     }
 
-    document.querySelectorAll(".remove").forEach(btn => {
+    // 3. CSRF SETUP
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie("csrftoken");
+    axios.defaults.headers.common["X-CSRFToken"] = csrftoken;
 
+    // 4. AUTOMATIC STOCK CHECK ON LOAD
+    function checkStockLimitsOnLoad() {
+        const rows = document.querySelectorAll(".cart-row");
+        let changesMade = false;
+
+        rows.forEach(row => {
+            const itemId = row.getAttribute("data-item-id");
+            const stock = parseInt(row.getAttribute("data-stock") || "0", 10);
+            const qtySpan = row.querySelector(".qty-value");
+            let currentQty = parseInt(qtySpan.textContent, 10) || 0;
+
+            // Calculate the effective limit: Is stock lower? Or is User limit (10) lower?
+            const effectiveLimit = Math.min(stock, USER_LIMIT);
+
+            // If current quantity exceeds what is allowed
+            if (currentQty > effectiveLimit) {
+                const oldQty = currentQty;
+                const newQty = effectiveLimit; // Set to max available/allowed
+
+                // A. Visual Updates
+                qtySpan.textContent = newQty;
+                
+                // Update Row Subtotal
+                const unitPrice = parseFloat(row.getAttribute("data-price")) || 0;
+                const newSubtotal = unitPrice * newQty;
+                const rowSubtotalEl = row.querySelector(".cart-subtotal");
+                if (rowSubtotalEl) rowSubtotalEl.textContent = formatCurrency(newSubtotal);
+
+                // Update Summary Section
+                const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
+                if (summaryItem) {
+                    const qtyTextEl = summaryItem.querySelector(".summary-qty");
+                    const sumSubEl  = summaryItem.querySelector(".summary-subtotal");
+                    // Regex to replace just the number in "Qty: 5"
+                    if (qtyTextEl) qtyTextEl.innerHTML = qtyTextEl.innerHTML.replace(/Qty: \d+/, `Qty: ${newQty}`);
+                    if (sumSubEl)  sumSubEl.textContent = formatCurrency(newSubtotal);
+                }
+
+                // B. Notify User
+                let reason = stock < USER_LIMIT ? "Low Stock" : "Limit Exceeded";
+                toastr.warning(`Item quantity reduced from ${oldQty} to ${newQty}. (${reason})`);
+
+                // C. Sync Backend (Quietly)
+                axios.post("{% url 'update_cart_item_quantity' %}", {
+                    item_id: itemId,
+                    quantity: newQty
+                }).catch(err => console.error("Auto-correction sync failed", err));
+
+                changesMade = true;
+            }
+        });
+
+        // D. Final Total Recalculation if we changed anything
+        if (changesMade) {
+            recalcTotals();
+        }
+    }
+
+    // Run the check immediately
+    checkStockLimitsOnLoad();
+
+
+    // 5. EVENT LISTENERS (Remove & Quantity Buttons)
+
+    // REMOVE ITEM
+    document.querySelectorAll(".remove").forEach(btn => {
         btn.addEventListener("click", function (e) {
             e.preventDefault();
-
             const itemId = this.getAttribute("data-item-id");
 
-            axios.post("{% url 'remove_cart_item' %}", {
-                item_id: itemId
-            })
+            axios.post("{% url 'remove_cart_item' %}", { item_id: itemId })
             .then(response => {
                 const data = response.data;
-
                 if (data.status === "success") {
                     toastr.success(data.message || "Item removed");
-
-                    // remove row on left side
                     const row = document.querySelector(`.cart-row[data-item-id="${itemId}"]`);
-                    if (row && row.parentNode) {
-                        row.parentNode.removeChild(row);
-                    }
-
-                    // remove matching item from order summary
+                    if (row && row.parentNode) row.parentNode.removeChild(row);
+                    
                     const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
-                    if (summaryItem && summaryItem.parentNode) {
-                        summaryItem.parentNode.removeChild(summaryItem);
-                    }
+                    if (summaryItem && summaryItem.parentNode) summaryItem.parentNode.removeChild(summaryItem);
 
-                    // recalculate totals
                     recalcTotals();
-
-                    // 🔥 if no items left, reload so Django shows "empty cart" block
+                    
                     const remainingRows = document.querySelectorAll(".cart-row");
-                    if (remainingRows.length === 0) {
-                        location.reload();
-                    }
-
-                } else if (data.status === "error") {
-                    toastr.error(data.message || "Something went wrong");
-
+                    if (remainingRows.length === 0) location.reload();
                 } else {
-                    toastr.error("Unexpected response from server");
+                    toastr.error(data.message || "Something went wrong");
                 }
             })
             .catch(error => {
                 console.error(error);
                 toastr.error("Server error. Try again.");
             });
-
         });
+    });
 
+    // PLUS / MINUS HANDLER
+    document.addEventListener("click", function (e) {
+        const plusBtn  = e.target.closest(".qty-btn.plus");
+        const minusBtn = e.target.closest(".qty-btn.minus");
+        if (!plusBtn && !minusBtn) return;
+
+        e.preventDefault();
+
+        const btn    = plusBtn || minusBtn;
+        const itemId = btn.getAttribute("data-item-id");
+        const row    = document.querySelector(`.cart-row[data-item-id="${itemId}"]`);
+        if (!row) return;
+
+        const qtySpan = row.querySelector(".qty-value");
+        let currentQty = parseInt(qtySpan.textContent, 10) || 1;
+        const delta = plusBtn ? 1 : -1;
+        const newQty = currentQty + delta;
+
+        // Get stock directly from DOM (ensures we use latest data)
+        const stockAttr = row.getAttribute("data-stock") || "0";
+        const stock = parseInt(stockAttr, 10);
+
+        // 1. Prevent going below 1
+        if (newQty < 1) return;
+
+        // 2. Logic: Effective Limit (Stock vs User Limit)
+        const effectiveLimit = Math.min(stock, USER_LIMIT);
+
+        if (plusBtn) {
+            if (newQty > effectiveLimit) {
+                // Determine which message to show
+                if (stock < USER_LIMIT) {
+                    toastr.warning(`Only ${stock} items available in stock.`);
+                } else {
+                    toastr.warning(`You can only buy up to ${USER_LIMIT} units of this product.`);
+                }
+                return; // Stop execution
+            }
+        }
+
+        // Update UI immediately
+        qtySpan.textContent = newQty;
+        const unitPrice = parseFloat(row.getAttribute("data-price")) || 0;
+        const newSubtotal = unitPrice * newQty;
+
+        const rowSubtotalEl = row.querySelector(".cart-subtotal");
+        if (rowSubtotalEl) rowSubtotalEl.textContent = formatCurrency(newSubtotal);
+
+        const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
+        if (summaryItem) {
+            const qtyTextEl = summaryItem.querySelector(".summary-qty");
+            const sumSubEl  = summaryItem.querySelector(".summary-subtotal");
+
+            // Safe replace for quantity text
+            if (qtyTextEl) {
+                let text = qtyTextEl.textContent;
+                // Replace number after "Qty:"
+                if (text.includes("Qty:")) {
+                    qtyTextEl.innerHTML = text.replace(/Qty:\s*\d+/, `Qty: ${newQty}`);
+                } else {
+                     qtyTextEl.textContent = `Qty: ${newQty}`;
+                }
+            }
+            if (sumSubEl) sumSubEl.textContent = formatCurrency(newSubtotal);
+        }
+
+        recalcTotals();
+
+        // Sync with backend
+        axios.post("{% url 'update_cart_item_quantity' %}", {
+            item_id: itemId,
+            quantity: newQty
+        })
+        .then(response => {
+            const data = response.data;
+            if (data.status === "success") {
+                if (data.cart_total !== undefined) {
+                    const leftSubtotal  = document.getElementById("summary-left-subtotal");
+                    const rightSubtotal = document.getElementById("summary-right-subtotal");
+                    const rightTotal    = document.getElementById("summary-right-total");
+                    
+                    const fmt = formatCurrency(data.cart_total);
+                    if (leftSubtotal)  leftSubtotal.textContent  = fmt;
+                    if (rightSubtotal) rightSubtotal.textContent = fmt;
+                    if (rightTotal)    rightTotal.textContent    = fmt;
+                }
+            } else if (data.status === "error") {
+                toastr.error(data.message || "Could not update quantity");
+                // If backend rejects, reload to sync
+                setTimeout(() => location.reload(), 1000);
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            toastr.error("Server error while updating quantity");
+        });
     });
 
 });
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-const csrftoken = getCookie("csrftoken");
-axios.defaults.headers.common["X-CSRFToken"] = csrftoken;
 </script>
 {% endblock extra_script %}

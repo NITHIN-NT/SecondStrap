@@ -57,13 +57,15 @@
                                 <button class="btn-size {% if forloop.first %}active{% endif %}"
                                         data-size="{{ size.size }}"
                                         data-offer-price="{{ size.offer_price }}"
-                                        data-base-price="{{ size.base_price }}">{{ size.size }}</button>
+                                        data-base-price="{{ size.base_price }}"
+                                        data-stock="{{ size.stock }}">{{ size.size }}</button>
                             {% endfor %}
                         </div>
                     </div>
                     <div class="option-group">
                         <label for="quantity-display" class="quantity-label option-label">
                             <strong>Quantity</strong>
+                            <small id="stock-warning" style="color: #dc3545; display: none; margin-left: 10px; font-size: 0.8rem;"></small>
                         </label>
                         <div class="quantity-selector">
                             <button class="btn-quantity" id="btn-decrease">
@@ -222,7 +224,6 @@
     </div>
 {% endblock content %}
 {% block extra_script %}
-    <!-- Axios CDN (if not already included in base.html) -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -238,105 +239,128 @@
             });
         });
 
-        // --- Size Selector with Price Change & Default Logic ---
+        // --- Variables for Stock & Logic ---
         const sizeButtons = document.querySelectorAll('.btn-size');
         const selectedSize = document.getElementById('selected-size');
         const offerPriceDisplay = document.getElementById('offer-price-display');
         const basePriceDisplay = document.getElementById('base-price-display');
+        const decreaseBtn = document.getElementById('btn-decrease');
+        const increaseBtn = document.getElementById('btn-increase');
+        const quantityDisplay = document.getElementById('quantity-display');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        const stockWarning = document.getElementById('stock-warning');
+        
+        let quantity = 1;
+        const USER_MAX_LIMIT = 10;
+        let currentStockLimit = 10;
 
-        // 1. Set Default State (Runs once on page load)
-        const defaultBtn = document.querySelector('.btn-size.active'); // Find the button marked active by Django
+        function updateQuantityDisplay() {
+            // Safety Check
+            if (quantity > currentStockLimit) quantity = currentStockLimit > 0 ? currentStockLimit : 1;
+            if (quantity < 1) quantity = 1;
 
-        if (defaultBtn) {
-            // Set initial label
-            if (selectedSize) {
-                selectedSize.textContent = defaultBtn.dataset.size;
-            }
-            // Ensure prices match default button
-            if (defaultBtn.dataset.offerPrice) {
-                offerPriceDisplay.textContent = `₹ ${defaultBtn.dataset.offerPrice}`;
-            }
-            if (defaultBtn.dataset.basePrice) {
-                basePriceDisplay.textContent = `₹ ${defaultBtn.dataset.basePrice}`;
+            quantityDisplay.textContent = `${quantity} ${quantity === 1 ? 'item' : 'items'}`;
+            decreaseBtn.disabled = quantity <= 1;
+            
+            // Disable increase if we hit stock limit or user limit
+            increaseBtn.disabled = quantity >= currentStockLimit;
+        }
+
+        function updateStockInfo(button) {
+            const stock = parseInt(button.dataset.stock) || 0;
+            
+            // Limit is minimum of User Limit (10) OR Actual Stock
+            currentStockLimit = Math.min(USER_MAX_LIMIT, stock);
+
+            // UI Handling for Out of Stock
+            if (stock === 0) {
+                if(addToCartBtn) {
+                    addToCartBtn.disabled = true;
+                    addToCartBtn.textContent = "Out of Stock";
+                    addToCartBtn.classList.add('disabled-btn'); 
+                }
+                quantityDisplay.textContent = "0 items";
+                decreaseBtn.disabled = true;
+                increaseBtn.disabled = true;
+                if(stockWarning) stockWarning.style.display = 'none';
+            } else {
+                if(addToCartBtn) {
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.textContent = "Add to Cart";
+                    addToCartBtn.classList.remove('disabled-btn');
+                }
+                // Reset Quantity to 1 if coming from out of stock or high number
+                if (quantity > currentStockLimit || quantity === 0) {
+                    quantity = 1;
+                }
+                updateQuantityDisplay();
             }
         }
 
-        // 2. Click Logic
+        // --- Size Click Logic ---
         sizeButtons.forEach(button => {
             button.addEventListener('click', function() {
                 sizeButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
 
-                // Update Size label
-                if (selectedSize) {
-                    selectedSize.textContent = this.dataset.size;
-                }
+                if (selectedSize) selectedSize.textContent = this.dataset.size;
+                if (this.dataset.offerPrice) offerPriceDisplay.textContent = `₹ ${this.dataset.offerPrice}`;
+                if (this.dataset.basePrice) basePriceDisplay.textContent = `₹ ${this.dataset.basePrice}`;
 
-                // Update Prices dynamically
-                const newOfferPrice = this.dataset.offerPrice;
-                const newBasePrice = this.dataset.basePrice;
-
-                // Ensure data exists before updating
-                if (newOfferPrice) {
-                    offerPriceDisplay.textContent = `₹ ${newOfferPrice}`;
-                }
-                if (newBasePrice) {
-                    basePriceDisplay.textContent = `₹ ${newBasePrice}`;
-                }
+                updateStockInfo(this);
             });
         });
 
-        // --- Quantity Selector ---
-        const decreaseBtn = document.getElementById('btn-decrease');
-        const increaseBtn = document.getElementById('btn-increase');
-        const quantityDisplay = document.getElementById('quantity-display');
-        let quantity = 1;
-        const maxQuantity = 5;
-
-        function updateDisplay() {
-            quantityDisplay.textContent = `${quantity} ${quantity === 1 ? 'item' : 'items'}`;
-            decreaseBtn.disabled = quantity === 1;
-            increaseBtn.disabled = quantity === maxQuantity;
-        }
-
+        // --- Quantity Click Logic ---
         decreaseBtn.addEventListener('click', function() {
             if (quantity > 1) {
                 quantity--;
-                updateDisplay();
+                updateQuantityDisplay();
+                if(stockWarning) stockWarning.style.display = 'none';
             }
         });
 
         increaseBtn.addEventListener('click', function() {
-            if (quantity < maxQuantity) {
+            if (quantity < currentStockLimit) {
                 quantity++;
-                updateDisplay();
+                updateQuantityDisplay();
+            } else {
+                if(stockWarning) {
+                    stockWarning.textContent = `Max limit reached (${currentStockLimit})`;
+                    stockWarning.style.display = 'inline';
+                    setTimeout(() => stockWarning.style.display = 'none', 3000);
+                }
             }
         });
 
-        updateDisplay(); // Initial call to set state
+        // --- Initialization ---
+        const defaultBtn = document.querySelector('.btn-size.active');
+        if (defaultBtn) {
+            if (selectedSize) selectedSize.textContent = defaultBtn.dataset.size;
+            if (defaultBtn.dataset.offerPrice) offerPriceDisplay.textContent = `₹ ${defaultBtn.dataset.offerPrice}`;
+            if (defaultBtn.dataset.basePrice) basePriceDisplay.textContent = `₹ ${defaultBtn.dataset.basePrice}`;
+            updateStockInfo(defaultBtn);
+        } else {
+             // If no default active, initialize with safely defaults
+             if(addToCartBtn) addToCartBtn.disabled = true; 
+        }
 
-        // --- Image Zoom Logic ---
+        // --- Image Zoom & Modal (Existing) ---
         const galleryMain = document.querySelector('.gallery-main');
-
         if (galleryMain && mainImage) {
             galleryMain.addEventListener('mousemove', function(e) {
                 const rect = galleryMain.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-
                 const xPercent = (x / rect.width) * 100;
                 const yPercent = (y / rect.height) * 100;
-
                 mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
             });
-
-            // Reset the zoom origin when the mouse leaves
             galleryMain.addEventListener('mouseleave', function() {
                 mainImage.style.transformOrigin = 'center center';
             });
         }
 
-        // --- Image Click to Enlarge (Modal) ---
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImage');
         const closeModal = document.querySelector('.close-modal');
@@ -347,36 +371,24 @@
                 modalImg.src = this.src;
             });
         }
-
         thumbnails.forEach(thumb => {
             thumb.addEventListener('dblclick', function() {
                 modal.style.display = 'block';
                 modalImg.src = this.dataset.image;
             });
         });
-
-        if (closeModal) {
-            closeModal.addEventListener('click', () => modal.style.display = 'none');
-        }
-
+        if (closeModal) closeModal.addEventListener('click', () => modal.style.display = 'none');
         window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
+            if (e.target === modal) modal.style.display = 'none';
         });
 
-        // ==========================
-        //   CSRF + AXIOS ADD TO CART
-        // ==========================
-
-        // ---- CSRF helper for Django ----
+        // --- Add To Cart (Axios) ---
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
                 const cookies = document.cookie.split(';');
                 for (let i = 0; i < cookies.length; i++) {
                     const cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
                     if (cookie.substring(0, name.length + 1) === (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                         break;
@@ -386,26 +398,25 @@
             return cookieValue;
         }
         const csrftoken = getCookie('csrftoken');
-
-        // ---- Add to Cart logic ----
-        const addToCartBtn = document.getElementById('addToCartBtn');
         const productIdInput = document.getElementById('product-id');
 
         if (addToCartBtn && productIdInput) {
             addToCartBtn.addEventListener('click', function() {
-                // product.id
                 const productId = productIdInput.value;
-
-                // selected size from active button
                 const activeSizeBtn = document.querySelector('.btn-size.active');
                 const size = activeSizeBtn ? activeSizeBtn.dataset.size : null;
-
-                // current quantity (same variable used in quantity selector)
                 const currentQuantity = quantity;
 
                 if (!size) {
                     toastr.error("Please select a size.");
                     return;
+                }
+                
+                // Double check stock before sending
+                const stock = parseInt(activeSizeBtn.dataset.stock) || 0;
+                if (currentQuantity > stock || stock === 0) {
+                     toastr.error("Selected quantity exceeds available stock.");
+                     return;
                 }
 
                 axios.post(
@@ -415,35 +426,22 @@
                         size: size,
                         quantity: currentQuantity
                     },
-                    {
-                        headers: {
-                            'X-CSRFToken': csrftoken
-                        }
-                    }
+                    { headers: { 'X-CSRFToken': csrftoken } }
                 )
                 .then(function(response) {
-                    // success path
                     toastr.success(response.data.message || "Item added to the Cart");
                 })
                 .catch(function(error) {
-                    console.error('Error adding to cart:', error);
-                    console.log('error.response:', error.response);
-
                     if (error.response) {
-                        // If not logged in
                         if (error.response.status === 401) {
                             toastr.error(error.response.data.message || "Please log in to continue.");
-                            // optional redirect after showing toast
                             setTimeout(function() {
                                 window.location.href = "{% url 'login' %}?next={{ request.path }}";
                             }, 1500);
                             return;
                         }
-
-                        // Other backend errors with JSON
                         toastr.error(error.response.data?.message || "Something Went Wrong !!");
                     } else {
-                        // Network or unknown error
                         toastr.error("Network error. Please try again.");
                     }
                 });

@@ -22,7 +22,7 @@
 /* HEADER ROW: 4 COLUMNS */
 .cart-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 0.7fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
     /* Product | Price | Qty | Subtotal */
     padding-bottom: 12px;
     border-bottom: 1px solid #eaeaea;
@@ -33,7 +33,7 @@
 /* ITEM ROW: 4 COLUMNS */
 .cart-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 0.7fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
     padding: 20px 0;
     border-bottom: 1px solid #ececec;
     align-items: center;
@@ -84,13 +84,41 @@
     text-align: center;
 }
 
-.cart-qty {
-    text-align: center;
-}
-
 .cart-subtotal {
     text-align: right;
     font-weight: 600;
+}
+
+/* QUANTITY WITH + / - BUTTONS */
+.cart-qty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: #f7f7f7;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.qty-btn:hover {
+    background: #eee;
+}
+
+.qty-value {
+    min-width: 24px;
+    text-align: center;
 }
 
 /* SUMMARY BELOW LEFT */
@@ -155,6 +183,12 @@
     flex: 1;
     text-align: center;
     text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-dark:hover {
+    background-color: #333;
 }
 
 /* Responsive */
@@ -193,14 +227,12 @@
     }
 }
 
+/* EMPTY CART STATE */
 .cart-empty-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Centers content horizontally */
     text-align: center;
-
-    /* Adds the large vertical spacing */
     padding: 120px 0;
 }
 
@@ -216,11 +248,8 @@
     margin-bottom: 30px;
 }
 
-/*
-  This is the style for the black "Continue Shopping" button.
-  You can reuse this .btn-dark class elsewhere.
-*/
-.btn-dark {
+/* Button inside empty cart section (scoped so it doesn't break main cart buttons) */
+.cart-empty-container .btn-dark {
     display: inline-block;
     background-color: #000;
     color: #fff;
@@ -233,16 +262,16 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border: none;
+    flex: 0;
+    /* override flex from default .btn-dark */
 }
 
-.btn-dark:hover {
+.cart-empty-container .btn-dark:hover {
     background-color: #333;
 }
 
-
 @media (max-width: 768px) {
     .cart-empty-container {
-        /* Reduce padding on smaller screens */
         padding: 60px 0;
     }
 
@@ -255,7 +284,7 @@
         margin-bottom: 24px;
     }
 
-    .btn-dark {
+    .cart-empty-container .btn-dark {
         padding: 12px 28px;
         font-size: 0.85rem;
     }
