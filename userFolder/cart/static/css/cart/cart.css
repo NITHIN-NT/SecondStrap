@@ -23,7 +23,6 @@
 .cart-header {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;
-    /* Product | Price | Qty | Subtotal */
     padding-bottom: 12px;
     border-bottom: 1px solid #eaeaea;
     font-weight: bold;
@@ -46,11 +45,56 @@
     align-items: center;
 }
 
-.cart-product img {
+/* --- NEW / MODIFIED CSS FOR IMAGE & OVERLAY --- */
+
+/* Wrapper to hold image + overlay */
+.product-img-wrapper {
+    position: relative;
     width: 90px;
     height: 90px;
     border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Faded effect for out of stock items */
+.product-img-wrapper.faded img {
+    opacity: 0.5;
+}
+
+/* The actual product image */
+.product-img-wrapper img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    display: block;
+}
+
+/* The Overlay Container */
+.oos-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+/* The "Out Of Stock" Text Box */
+.oos-text {
+    background-color: #ffffff;
+    color: #ff0000;
+    font-weight: bold;
+    font-size: 10px;
+    padding: 4px 6px;
+    text-transform: uppercase;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+    text-align: center;
+    line-height: 1.2;
 }
 
 .cart-info h3 {
@@ -205,7 +249,6 @@
 
     .cart-header {
         display: none;
-        /* hide header on mobile */
     }
 
     .cart-row {
@@ -248,7 +291,6 @@
     margin-bottom: 30px;
 }
 
-/* Button inside empty cart section (scoped so it doesn't break main cart buttons) */
 .cart-empty-container .btn-dark {
     display: inline-block;
     background-color: #000;
@@ -263,7 +305,6 @@
     letter-spacing: 0.5px;
     border: none;
     flex: 0;
-    /* override flex from default .btn-dark */
 }
 
 .cart-empty-container .btn-dark:hover {
