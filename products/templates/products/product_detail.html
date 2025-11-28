@@ -4,8 +4,7 @@
     {{ product.name }}
 {% endblock title %}
 {% block extra_styles %}
-    <link rel="stylesheet"
-          href="{% static 'css/products/product_detail.css' %}">
+    <link rel="stylesheet" href="{% static 'css/products/product_detail.css' %}">
 {% endblock extra_styles %}
 {% block content %}
     <div class="product-detail-page-wrapper">
@@ -58,10 +57,25 @@
                                         data-size="{{ size.size }}"
                                         data-offer-price="{{ size.offer_price }}"
                                         data-base-price="{{ size.base_price }}"
-                                        data-stock="{{ size.stock }}">{{ size.size }}</button>
+                                        data-stock="{{ size.stock }}">
+                                    {{ size.size }}
+                                </button>
+                                {% comment %} When i do this i got the stock in every product  {% endcomment %}
+                                {% comment %} <p>
+                                    {% if size.stock > 10 %}
+                                        In Stock
+                                    {% elif size.stock > 5 and size.stock <= 10 %}
+                                        Limited stock
+                                    {% elif size.stock < 5 %}
+                                        only {{size.stock}} available
+                                    {% endif %}
+                                </p> {% endcomment %}
                             {% endfor %}
                         </div>
+                        
+                        <p id="size-stock-global" class="size-stock" aria-live="polite"></p>
                     </div>
+
                     <div class="option-group">
                         <label for="quantity-display" class="quantity-label option-label">
                             <strong>Quantity</strong>
@@ -133,6 +147,7 @@
                 </details>
             </div>
         </div>
+
         <div class="customer-reviews-container">
             <h2>Customer Reviews</h2>
             <div class="reviews-summary">
@@ -184,6 +199,7 @@
                 </div>
             </div>
         </div>
+
         <div class="related-products-container">
             <h2>You Might Also Like</h2>
             <div class="related-products-grid">
@@ -249,6 +265,9 @@
         const quantityDisplay = document.getElementById('quantity-display');
         const addToCartBtn = document.getElementById('addToCartBtn');
         const stockWarning = document.getElementById('stock-warning');
+        const globalStockLabel = document.getElementById('size-stock-global');
+        // NEW: Select the gallery container
+        const galleryContainer = document.querySelector('.gallery-main');
         
         let quantity = 1;
         const USER_MAX_LIMIT = 10;
@@ -266,11 +285,31 @@
             increaseBtn.disabled = quantity >= currentStockLimit;
         }
 
+        // --- Updated Stock Info Logic with Red Alert on Gallery ---
         function updateStockInfo(button) {
             const stock = parseInt(button.dataset.stock) || 0;
             
             // Limit is minimum of User Limit (10) OR Actual Stock
             currentStockLimit = Math.min(USER_MAX_LIMIT, stock);
+
+            // Helper to set the global label text & classes
+            function setStockLabel(text, cls) {
+                if (!globalStockLabel) return;
+                globalStockLabel.textContent = text;
+                globalStockLabel.classList.remove('in-stock', 'limited-stock', 'low-stock');
+                if (cls) globalStockLabel.classList.add(cls);
+            }
+
+            // === RED ALERT LOGIC (GALLERY CONTAINER) ===
+            // If stock is between 1 and 4, add the alert class to the gallery container
+            if (galleryContainer) {
+                 if (stock > 0 && stock < 5) {
+                    galleryContainer.classList.add('stock-alert');
+                } else {
+                    galleryContainer.classList.remove('stock-alert');
+                }
+            }
+            // =======================
 
             // UI Handling for Out of Stock
             if (stock === 0) {
@@ -283,6 +322,7 @@
                 decreaseBtn.disabled = true;
                 increaseBtn.disabled = true;
                 if(stockWarning) stockWarning.style.display = 'none';
+                setStockLabel('Out of Stock', 'low-stock');
             } else {
                 if(addToCartBtn) {
                     addToCartBtn.disabled = false;
@@ -294,6 +334,15 @@
                     quantity = 1;
                 }
                 updateQuantityDisplay();
+
+                // set label text & class depending on stock level
+                if (stock > 10) {
+                    setStockLabel('In stock', 'in-stock');
+                } else if (stock >= 5) {
+                    setStockLabel('Limited Stock', 'limited-stock');
+                } else { // stock between 1 and 4
+                    setStockLabel(`Only ${stock} available`, 'low-stock');
+                }
             }
         }
 
@@ -343,6 +392,7 @@
         } else {
              // If no default active, initialize with safely defaults
              if(addToCartBtn) addToCartBtn.disabled = true; 
+             if (globalStockLabel) globalStockLabel.textContent = '';
         }
 
         // --- Image Zoom & Modal (Existing) ---

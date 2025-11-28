@@ -358,7 +358,7 @@
 }
 
 /* Smaller mobile phones */
-@media (max-world: 480px) {
+@media (max-width: 480px) {
 
     /* --- Hero Section --- */
     .hero-content h1 {

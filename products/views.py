@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from django.core.paginator import Paginator
 from django.db.models import Max, Min
 from django.views.generic import TemplateView, DetailView, ListView
-from django.db.models import Min, Max, Sum
+from django.db.models import Min, Max, Sum, Count
 from django.db.models.functions import Coalesce
 
 # Create your views here.
@@ -35,19 +35,21 @@ class HomePageView(TemplateView):
         products = (
             Product.objects.select_related("category")
             .prefetch_related("variants")
-            .filter(is_active=True)
+            .filter(is_active=True, variants__stock__gte=1)
             .annotate(offer_price=Min("variants__offer_price"))
             .order_by("?")[:4]
         )
         featured_products = (
             Product.objects.filter(is_featured=True, is_active=True)
             .prefetch_related("variants")
+            .filter(is_active=True, variants__stock__gte=1)
             .annotate(offer_price=Min("variants__offer_price"))
             .order_by("?")[:4]
         )
         most_demanded = (
             Product.objects.filter(is_most_demanded=True, is_active=True)
             .prefetch_related("variants")
+            .filter(is_active=True, variants__stock__gte=1)
             .annotate(offer_price=Min("variants__offer_price"))
             .order_by("?")[:4]
         )
@@ -55,13 +57,14 @@ class HomePageView(TemplateView):
         new_arrivals = (
             Product.objects.filter(created_at__date=today, is_active=True)
             .prefetch_related("variants")
+            .filter(is_active=True, variants__stock__gte=1)
             .annotate(offer_price=Min("variants__offer_price"))
             .order_by("?")[:4]
         )
 
         categories = Category.objects.filter(is_active=True).prefetch_related(
             "products"
-        )[:4]
+        )[:5]
         categories_for_template = []
         for category in categories:
             product = category.products.filter(
@@ -91,12 +94,21 @@ class AboutView(TemplateView):
 
 
 def product_list_view(request):
-    categories = Category.objects.filter(is_active=True).order_by("name")
+    categories = (
+        Category.objects.filter(
+            is_active=True,
+        )
+        .prefetch_related("products")
+        .annotate(product_count=Count("products"))
+        .order_by("name")
+    )
+
     products = (
         Product.objects.filter(is_active=True)
         .prefetch_related("variants")
         .annotate(
             offer_price=Min("variants__offer_price"),
+            stock=Coalesce(Min("variants__stock"), 0),
             total_stock=Coalesce(
                 Sum("variants__stock"), 0
             ),  # Coalesce is a database function in Django used to
@@ -147,7 +159,7 @@ def product_list_view(request):
     )
 
     # Pagination
-    paginator = Paginator(products, 9)
+    paginator = Paginator(products, 13)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     current_page = page_obj.number

@@ -1,0 +1,156 @@
+🛒 Project Requirement To-Do List
+
+1. Database & Models (Prerequisites)
+
+[x] Design User Model (Custom user with profile image, phone).
+
+[x] Design Address Model (ForeignKey to User).
+
+[x] Design Product/Category Models (Include fields for is_listed and stock).
+
+[x] Design Cart & CartItem Models.
+
+[ ] Design Order & OrderItem Models (Include custom order_id field, distinct from PK).
+
+2. User Side: Profile Management
+
+a. User Profile
+
+[x] Create Profile View (Show User details + Profile Image + Default Address).
+
+[x] Create Edit Profile Page (Separate URL/Page from View Profile).
+
+[x] Backend: Implement OTP/Token verification logic for Email changes.
+
+[x] Frontend: Add logic to trigger OTP modal when Email is edited.
+
+[ ] Implement "Change Password" functionality.
+
+[x] Implement "Forgot Password" flow (Email trigger + Reset link).
+
+b. Address Management
+
+[x] Create "Add New Address" form.
+
+[x] Create "Edit Address" form (Pre-fill existing data).
+
+[x] Implement "Delete Address" (Soft delete or Hard delete).
+
+[x] List all addresses on the Profile page.
+
+3. User Side: Cart Management
+
+c. Cart Functionality
+
+[ ] Backend Check: Verify if Product AND Category are listed/active before adding to cart.
+
+[x] Logic: If Item exists in Cart -> Increment Quantity.
+
+[ ] Logic: If Item exists in Wishlist -> Remove from Wishlist upon adding to Cart.
+
+[x] Implement "Add to Cart" button on Product Details/Listing.
+
+[x] Create Cart Listing Page.
+
+[x] Implement Quantity Increment (+) button (Validate against Stock limits).
+
+[x] Implement Quantity Decrement (-) button.
+
+[x] Implement "Max Quantity per User" validation. --> doubt
+
+[ ] UI: Visually disable rows for "Out of Stock" items in the cart.
+
+[ ] Logic: Prevent "Proceed to Checkout" if the cart contains Out of Stock items.
+
+[x] Implement "Remove Item" button.
+
+4. User Side: Checkout & Payment
+
+d. Checkout Page
+[ ] Display list of saved addresses with radio buttons.
+
+[ ] Add "Add New Address" / "Edit Address" buttons directly in checkout flow.
+
+[ ] Logic: Ensure one address is selected as Default for the order.
+
+[ ] Order Summary Section:
+
+[ ] Display Product Image, Name, and Quantity.
+
+[ ] Calculate Item Total (Price * Qty).
+
+[ ] Calculate Tax (if applicable).
+
+[ ] Apply Discount logic (Coupons/Offers).
+
+[ ] Show Final Price (Total + Tax + Shipping - Discount).
+
+[ ] Implement "Cash on Delivery" (COD) payment option.
+
+[ ] Backend: "Place Order" Logic (Create Order, Move CartItems to OrderItems, Clear Cart).
+
+[ ] Success Page:
+
+[ ] Show "Thank You" message + Illustration.
+
+[ ] Button: "Go to Order Details".
+
+[ ] Button: "Continue Shopping".
+
+5. User Side: Order Management
+
+e. Order History
+
+[ ] Generate Custom Order ID (e.g., ORD-2025-XXXX, do not use database _id).
+
+[ ] Create Order Listing Page (Show Status, Date, ID, Total).
+
+[ ] Implement Search bar for Orders.
+
+[ ] Create Order Detail View (Full breakdown of items and pricing).
+
+[ ] Cancel Logic:
+
+[ ] Allow cancellation of full order or specific items.
+
+[ ] Ask for "Reason for Cancellation" (Optional).
+
+[ ] Inventory Update: Increment stock back to inventory upon cancellation.
+
+[ ] Return Logic:
+
+[ ] Show "Return" button only if status is "Delivered".
+
+[ ] Ask for "Reason for Return" (Mandatory).
+
+[ ] Implement PDF Invoice Generation & Download button.
+
+6. Admin Side: Order Management
+
+f. Admin Order Dashboard
+
+[ ] List all Orders (Default Sort: Descending by Date).
+
+[ ] Table Columns: OrderID, Date, User Info, Total, Status, Actions.
+
+[ ] Create "Detailed View" for Admin (See shipping address, specific items).
+
+[ ] Implement Status Change Dropdown (Pending -> Shipped -> Out for Delivery -> Delivered -> Cancelled).
+
+[ ] Implement Search (By OrderID or Username).
+
+[ ] Implement Filter (By Status, Date Range).
+
+[ ] Implement Sorting.
+
+[ ] Add "Clear Search/Filter" button.
+
+[ ] Add Pagination to the Order List table.
+
+7. Admin Side: Inventory
+
+g. Inventory Management
+
+[x] Create Inventory/Stock Overview page.
+
+[x] (Optional based on requirements) Interface to manually adjust stock levels.

@@ -241,10 +241,43 @@
     background-repeat: no-repeat;
 }
 
-/* DIM IMAGE A LITTLE WHEN OUT OF STOCK */
-.product-card.out-of-stock .product-image-placeholder {
-    filter: grayscale(0.8);
+/* ================= AVAILABILITY STATUS (NO BG — TEXT ONLY) ================ */
+
+/* === STATUS BADGE (BLACK BACKGROUND FOR ALL) === */
+.product-image-placeholder p {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    margin: 0;
+    padding: 6px 12px;
+    background: #000 !important;
+    /* black bg */
+    color: #fff !important;
+    /* white text */
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 999px;
+    z-index: 6;
+    pointer-events: none;
+    line-height: 1;
 }
+
+/* === OUT OF STOCK BADGE (RED TEXT + BLACK BG) === */
+.product-card.out-of-stock .product-image-placeholder p {
+    background: #c80501 !important;
+    color: #fff !important;
+    /* red text */
+}
+
+/* === BOTTOM TEXT (Out of Stock!!) === */
+.product-card.out-of-stock .product-details p {
+    color: #ff2623 !important;
+    /* red */
+}
+
+
+
 
 /* DIAGONAL RIBBONS WITH SMOOTH INFINITE LOOP */
 .ribbon {

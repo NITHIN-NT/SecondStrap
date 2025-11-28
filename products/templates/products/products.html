@@ -46,11 +46,14 @@
                         </li>
 
                         {% for category in categories %}
-                        <li>
-                            <input type="radio" id="cat-{{ category.id }}" name="category" value="{{category.id}}"
-                            {% if selected_category_id == category.id|stringformat:"s" %}checked{% endif %}>
-                            <label for="cat-{{ category.id }}">{{ category.name }}</label>
-                        </li>
+                        {% comment %} <h1>{{category.product_count}}</h1> {% endcomment %}
+                            {% if category.product_count > 0 %}
+                            <li>
+                                <input type="radio" id="cat-{{ category.id }}" name="category" value="{{category.id}}"
+                                {% if selected_category_id == category.id|stringformat:"s" %}checked{% endif %}>
+                                <label for="cat-{{ category.id }}">{{ category.name }}</label>
+                                </li>
+                            {% endif %}
                         {% endfor %}
                     </ul>
                 </div>
@@ -113,6 +116,10 @@
                         <div class="product-card out-of-stock">
                             <a href="#">
                                 <div class="product-image-placeholder" style="background-image: url({{product.image.url}}); background-size: cover;">
+                                    <p>{% if product.stock == 0 %}
+                                            Out of stock
+                                        {% endif %}
+                                    </p>
                                      <span class="ribbon ribbon-out-of-stock">
                                         <span class="ribbon-track">
                                             <span>Out of stock • Out of stock • Out of stock • Out of stock •</span>
@@ -124,7 +131,7 @@
                             <div class="product-info-container">
                                 <div class="product-details">
                                     <h5>{{product.name}}</h5>
-                                     <p style='color:#850d07 ; font-weight : 500'>Out of Stock!!</p>
+                                     <p>{{product.offer_price}}</p>
                                 </div>
                                 <div class="product-actions">
                                     <i class='bx bx-heart'></i>
@@ -135,7 +142,19 @@
                         <!-- NORMAL CARD -->
                         <div class="product-card">
                             <a href="{% url 'Product_card_view' product.slug %}">
-                                <div class="product-image-placeholder" style="background-image: url({{product.image.url}}); background-size: cover;"></div>
+                                <div class="product-image-placeholder {% if product.stock <= 5 and product.stock > 0 %}limited-stock-badge{% endif %}"
+                                style="background-image: url({{product.image.url}}); background-size: cover;">
+                                <p>
+                                    {% if product.stock > 10 %}
+                                        Available
+                                    {% elif product.stock > 5 %}
+                                        Few Left
+                                    {% elif product.stock <= 5 %}
+                                        Limited stock
+                                    {% endif %}
+                                </p>
+                            </div>
+
                             </a>
                             <div class="product-info-container">
                                 <div class="product-details">
