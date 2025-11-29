@@ -17,25 +17,9 @@
     {% block extra_styles %}{% endblock extra_styles %}
 
     <style>
-        /* --- This sets the DEFAULT font for your whole site --- */
+        /* --- DEFAULT FONTS --- */
         body {
             font-family: "Barlow Condensed", sans-serif;
-            font-weight: 400; /* 400 is 'regular' */
-            font-style: normal;
-        }
-
-        /* --- This makes sure other elements use the new font --- */
-        input, button, a {
-            font-family: inherit; /* 'inherit' tells them to use the body's font */
-        }
-
-        /* All the classes you provided are defined below.
-           You can now add these to any element if you want
-           a different style (e.g., class="barlow-condensed-bold")
-        */
-
-        .vt323-regular {
-            font-family: "VT323", monospace;
             font-weight: 400;
             font-style: normal;
         }
@@ -148,6 +132,7 @@
             font-style: italic;
         }
     </style>
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -156,20 +141,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
+    
     <div class="offer-carousel">
-        <div class="offer-track">
-            <div class="offer-item">🔥 Flat 50% OFF on Premium Shirts!</div>
-            <div class="offer-item">🚚 Free Shipping on Orders Above ₹999!</div>
-            <div class="offer-item">💳 Extra 10% OFF with SBI Credit Cards!</div>
-            <div class="offer-item">🕒 Limited Time Offer — Grab Yours Now!</div>
-            <div class="offer-item">🎁 Buy 2 Get 1 Free on Casual Wear!</div>
-            <div class="offer-item">🧥 Up to 40% OFF on Winter Collection!</div>
-            <div class="offer-item">🕶️ Stylish Sunglasses Starting at ₹499!</div>
-            <div class="offer-item">👟 Footwear Sale — Flat 30% OFF!</div>
-            <div class="offer-item">💼 Free Returns Within 7 Days!</div>
-            <div class="offer-item">🎉 New Arrivals Every Week — Check Now!</div>
+        <div class="offer-track" id="offer-track">
+            <div class="offer-item">Loading offers...</div>
         </div>
     </div>
+
     <header class="header">
         <nav class="navbar container">
             <a href="/" class="logo">SecondStrap</a>
@@ -203,7 +181,6 @@
                             {% else %}
                                 <span>Account</span>
                             {% endif %}
-
                         </a>
                     {% else %}
                         <a href="{% url "login" %}" class="mobile-menu-login">
@@ -287,36 +264,82 @@
 
 </body>
 {% block extra_script %}{% endblock extra_script %}
- <script>
-        // Set toastr options (optional)
-        toastr.options = {
-            "closeButton": true,
-            "progressBar": true,
-            "positionClass": "toast-top-right",
-        };
-    
-        // 4. Loop through the Django messages and show them
-        {% if messages %}
-            {% for message in messages %}
-                // Use the message 'tags' to determine the toast type
-                // (e.g., 'success', 'error', 'warning', 'info')
-                
-                var toastType = '{{ message.tags }}';
-                var messageText = '{{ message|safe }}'; // '|safe' is important if your messages have HTML
 
-                if (toastType.includes('success')) {
-                    toastr.success(messageText);
-                } else if (toastType.includes('error')) {
-                    toastr.error(messageText);
-                } else if (toastType.includes('warning')) {
-                    toastr.warning(messageText);
-                } else if (toastType.includes('info')) {
-                    toastr.info(messageText);
-                } else {
-                    // Default to 'info' if tag is something else
-                    toastr.info(messageText);
+<script>
+    // --- 1. AXIOS OFFER CAROUSEL LOGIC ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const track = document.getElementById('offer-track');
+        const endpoint = '/api/get-offers/'; // Ensure this view exists in Django
+
+        // Function to start the synchronized animation
+        function syncAnimationState(element) {
+            const animationDuration = 30000; // Must match CSS '30s'
+            const now = Date.now();
+            
+            // Calculate current position in the 30s loop based on global time
+            const timePassed = now % animationDuration;
+
+            // Apply negative delay to jump to that position
+            element.style.animationDelay = `-${timePassed}ms`;
+        }
+
+        axios.get(endpoint)
+            .then(response => {
+                const offers = response.data.offers;
+                
+                if (offers && offers.length > 0) {
+                    let htmlContent = '';
+                    offers.forEach(offer => {
+                        htmlContent += `<div class="offer-item">${offer}</div>`;
+                    });
+
+                    // Duplicate content (A + A) for seamless loop
+                    track.innerHTML = htmlContent + htmlContent;
+                    
+                    // Sync the time
+                    syncAnimationState(track);
                 }
-            {% endfor %}
-        {% endif %}
-    </script>
+            })
+            .catch(error => {
+                console.log('Using default offers (Backend not connected yet)');
+                // Fallback content if axios fails
+                const defaultOffers = [
+                    "🔥 Welcome to SecondStrap!", 
+                    "🚚 Free Shipping on Orders Above ₹999", 
+                    "💳 Extra 5% OFF on UPI payments"
+                ];
+                let htmlContent = '';
+                defaultOffers.forEach(o => htmlContent += `<div class="offer-item">${o}</div>`);
+                track.innerHTML = htmlContent + htmlContent;
+                syncAnimationState(track);
+            });
+    });
+
+    // --- 2. TOASTR SETTINGS ---
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+    };
+
+    // --- 3. DJANGO MESSAGES TO TOASTR ---
+    {% if messages %}
+        {% for message in messages %}
+            var toastType = '{{ message.tags }}';
+            var messageText = '{{ message|safe }}';
+
+            if (toastType.includes('success')) {
+                toastr.success(messageText);
+            } else if (toastType.includes('error')) {
+                toastr.error(messageText);
+            } else if (toastType.includes('warning')) {
+                toastr.warning(messageText);
+            } else if (toastType.includes('info')) {
+                toastr.info(messageText);
+            } else {
+                toastr.info(messageText);
+            }
+        {% endfor %}
+    {% endif %}
+</script>
 </html>
