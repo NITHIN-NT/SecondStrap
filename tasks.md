@@ -58,7 +58,7 @@ c. Cart Functionality
 
 [x] Implement "Max Quantity per User" validation. --> doubt
 
-[ ] UI: Visually disable rows for "Out of Stock" items in the cart.
+[X] UI: Visually disable rows for "Out of Stock" items in the cart.
 
 [ ] Logic: Prevent "Proceed to Checkout" if the cart contains Out of Stock items.
 
