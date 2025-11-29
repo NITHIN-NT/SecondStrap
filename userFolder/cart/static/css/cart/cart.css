@@ -57,17 +57,17 @@
 }
 
 /* Faded effect for out of stock items */
-.product-img-wrapper.faded img {
+/* .product-img-wrapper.faded img {
     opacity: 0.5;
-}
+} */
 
 /* The actual product image */
-.product-img-wrapper img {
+/* .product-img-wrapper img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-}
+} */
 
 /* The Overlay Container */
 .oos-overlay {
@@ -76,7 +76,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.095);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -85,8 +85,8 @@
 
 /* The "Out Of Stock" Text Box */
 .oos-text {
-    background-color: #ffffff;
-    color: #ff0000;
+    background-color: #000000;
+    color: #ffffff;
     font-weight: bold;
     font-size: 10px;
     padding: 4px 6px;

@@ -27,12 +27,12 @@
              data-item-id="{{ item.id }}"
              data-price="{{ item.variant.offer_price }}"
              data-stock="{{ item.variant.stock }}">
-            
+                {% comment %} <h1>{{item.variant.product.is_active}}</h1> {% endcomment %}
             <div class="cart-product">
                 <div class="product-img-wrapper {% if item.variant.stock <= 0 %}faded{% endif %}">
                     <img src="{{ item.variant.product.image.url }}" alt="Product">
                     
-                    {% if item.variant.stock <= 0 %}
+                    {% if item.variant.stock <= 0 or item.variant.product.is_active == False%}
                         <div class="oos-overlay">
                             <span class="oos-text">Out of Stock</span>
                         </div>
@@ -57,7 +57,7 @@
             </div>
             
             <div class="cart-qty" data-item-id="{{ item.id }}" data-stock="{{ item.variant.stock }}">
-                {% if item.variant.stock <=  0%}
+                {% if item.variant.stock <=  0 or item.variant.product.is_active == False%}
                 <span class="qty-value">{{ item.quantity }}</span>
                 {% else %}
                 <button class="qty-btn minus" data-item-id="{{ item.id }}">−</button>
