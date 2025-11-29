@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{% static 'css/checkout/checkout.css' %}">
+{% endblock %}
+{% block content %}
+<div class="checkout-wrapper">
+    
+    <div class="checkout-left">
+        
+        <section class="checkout-section">
+            <h2 class="section-title">Shipping Details</h2>
+            <h3 class="subsection-title">Select Shipping Address</h3>
+
+            <form id="checkoutForm" method="POST" action="#">
+                {% csrf_token %}
+                
+                <div class="address-selection-list">
+                    {% for add in addresses %}
+                    <div class="selection-card {% if add.is_default %}selected{% endif %}">
+                        <div class="card-radio">
+                            <input type="radio" name="selected_address" id="addr_{{add.id}}" value="{{add.id}}" {% if add.is_default %}checked{% endif %}>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-header-row">
+                                <span class="tag-label">{{ add.address_type }}</span>
+                                {% if add.is_default %}<span class="default-tag">Default</span>{% endif %}
+                            </div>
+                            <strong class="recipient-name">{{ add.full_name }}</strong>
+                            <p class="address-text">
+                                {{ add.address_line_1 }}{% if add.address_line_2 %}, {{ add.address_line_2 }}{% endif %}<br>
+                                {{ add.city }}, {{ add.state }} {{ add.postal_code }}
+                            </p>
+                        </div>
+                        <div class="card-action">
+                            <a href="#" class="edit-btn edit-address-trigger" data-id="{{add.id}}">Edit</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No addresses found.</p>
+                    {% endfor %}
+
+                    <div class="selection-card add-new-trigger" id="addNewAddressBtn" role="button" tabindex="0">
+                        <div class="card-radio">
+                            <i class='bx bx-plus'></i>
+                        </div>
+                        <div class="card-content">
+                            <strong>Use a different address</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="section-title mt-large">Payment Method</h2>
+                <div class="payment-selection-list">
+                    
+                    <div class="selection-card selected">
+                        <div class="card-radio">
+                            <input type="radio" name="payment_method" id="pay_card" value="card" checked>
+                        </div>
+                        <div class="card-content">
+                            <div class="payment-row">
+                                <i class='bx bx-credit-card'></i>
+                                <strong>Credit/Debit Card</strong>
+                            </div>
+                            <p class="sub-text">All major cards accepted</p>
+                        </div>
+                    </div>
+
+                    <div class="selection-card">
+                        <div class="card-radio">
+                            <input type="radio" name="payment_method" id="pay_upi" value="upi">
+                        </div>
+                        <div class="card-content">
+                            <div class="payment-row">
+                                <i class='bx bxl-google'></i> <strong>UPI</strong>
+                            </div>
+                            <p class="sub-text">Google Pay, PhonePe, Paytm</p>
+                        </div>
+                    </div>
+
+                    <div class="selection-card">
+                        <div class="card-radio">
+                            <input type="radio" name="payment_method" id="pay_cod" value="cod">
+                        </div>
+                        <div class="card-content">
+                            <div class="payment-row">
+                                <i class='bx bx-money'></i>
+                                <strong>Cash on Delivery</strong>
+                            </div>
+                            <p class="sub-text">Pay upon arrival</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div class="checkout-right">
+        
+        <div class="summary-card">
+            <h3 class="summary-title">Product Details</h3>
+            <div class="cart-items">
+                {% for item in cart_items %}
+                <div class="summary-item">
+                    <div class="item-img">
+                        <img src="{{ item.variant.product.image.url }}" alt="{{ item.variant.product.name }}">
+                    </div>
+                    <div class="item-info">
+                        <h4>{{ item.variant.product.name }}</h4>
+                        <p>Size: {{ item.size }}</p>
+                        <span class="price">₹{{ item.variant.offer_price }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="delivery-estimate">
+                <span>Estimated Delivery</span>
+                <strong>Oct 15 - Oct 18</strong>
+            </div>
+        </div>
+
+        <div class="summary-card mt-medium">
+            <h3 class="summary-title">Order Summary</h3>
+            <div class="summary-row">
+                <span>Subtotal ({{ cart_items|length }} items)</span>
+                <span>₹{{ subtotal }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Shipping</span>
+                <span>₹{{ shipping_fee }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Tax</span>
+                <span>₹{{ tax }}</span>
+            </div>
+            <div class="summary-row discount">
+                <span>Discount</span>
+                <span>-₹{{ discount }}</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-row total">
+                <span>Total</span>
+                <span>₹{{ total_price }}</span>
+            </div>
+
+            <div class="promo-code-box">
+                <input type="text" placeholder="Promo Code" value="SAVE20">
+                <button type="button">APPLY</button>
+            </div>
+            <p class="terms-text">By placing your order, you agree to our Terms of Service.</p>
+        </div>
+
+        <button type="submit" form="checkoutForm" class="place-order-btn">PLACE ORDER</button>
+    </div>
+</div>
+
+<div id="addressModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="addressModalTitle">
+        <div class="modal-header">
+            <h3 id="addressModalTitle">Add New Address</h3> 
+            <button class="close-modal-btn" id="closeAddressModalBtn" aria-label="Close">&times;</button>
+        </div>
+        
+        <form id="addressForm" method="POST" action='{% url "add_address" %}'>
+            {% csrf_token %}
+            <input type="hidden" name="address_id" id="address_id" value=""> 
+
+            <div class="form-group address-type-group">
+                <label class="input-label">Address Type</label>
+                <div class="radio-icon-container">
+                    <input type="radio" id="type_home" name="address_type" value="HOME" required>
+                    <label for="type_home" class="radio-icon-label">
+                        <i class="bx bxs-home-alt"></i> 
+                        <span>Home</span>
+                    </label>
+
+                    <input type="radio" id="type_work" name="address_type" value="WORK" required>
+                    <label for="type_work" class="radio-icon-label">
+                        <i class="bx bxs-briefcase"></i> 
+                        <span>Work</span>
+                    </label>
+                    
+                    <input type="radio" id="type_other" name="address_type" value="OTHER" required>
+                    <label for="type_other" class="radio-icon-label">
+                        <i class="bx bxs-map"></i> 
+                        <span>Other</span>
+                    </label>
+                </div>
+            </div>  
+
+            <div class="form-group">
+                <label for="full_name">Recipient Full Name</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address_line_1">Address Line 1</label>
+                <input type="text" id="address_line_1" name="address_line_1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="address_line_2">Address Line 2 (Optional)</label>
+                <input type="text" id="address_line_2" name="address_line_2">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City/Town</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" id="state" name="state" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="postal_code">Postal Code</label>
+                    <input type="text" id="postal_code" name="postal_code" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="country">Country</label>
+                <input type="text" id="country" name="country" value="India" required>
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="is_default" name="is_default">
+                <label for="is_default">Set as default address</label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="cancel-btn" id="cancelAddressBtn">Cancel</button>
+                <button type="submit" class="save-btn" id="saveAddressBtn">Save Address</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Use a clear placeholder in data attribute so JS can replace safely -->
+<span id="fetchUrlBase" data-url-base="#"></span>
+{% endblock %}
+
+{% block extra_script %}
+<script src="{% static 'js/checkout/checkout.js' %}"></script>
+{% endblock %}

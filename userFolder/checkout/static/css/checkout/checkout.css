@@ -1,0 +1,524 @@
+/* =========================================
+   1. General Variables & Reset
+   ========================================= */
+:root {
+    --primary-blue: #2563eb;       /* Brand Blue */
+    --light-blue-bg: #eff6ff;      /* Selected Background */
+    --border-color: #e5e7eb;       /* Light Grey Border */
+    --text-dark: #111827;          /* Headings */
+    --text-grey: #6b7280;          /* Subtitles/Body */
+    --bg-page: #f9fafb;            /* Page Background */
+    --green-success: #10b981;      /* Discount Text */
+    --black-btn: #000000;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-dark);
+    line-height: 1.5;
+}
+
+/* =========================================
+   2. Layout Wrapper
+   ========================================= */
+.checkout-wrapper {
+    display: flex;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    align-items: flex-start;
+}
+
+/* Left Side (Shipping & Payment) */
+.checkout-left {
+    flex: 2; /* Takes up 66% width */
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Right Side (Summary) */
+.checkout-right {
+    flex: 1; /* Takes up 33% width */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Headings */
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.subsection-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+}
+
+.mt-large {
+    margin-top: 3rem;
+}
+
+/* =========================================
+   3. Selection Cards (Address & Payment)
+   ========================================= */
+.address-selection-list, 
+.payment-selection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.selection-card {
+    display: flex;
+    align-items: flex-start;
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+/* Hover State */
+.selection-card:hover {
+    border-color: #cbd5e1;
+}
+
+/* Selected State (The Blue Style) */
+.selection-card.selected {
+    border-color: var(--primary-blue);
+    background-color: var(--light-blue-bg);
+    box-shadow: 0 0 0 1px var(--primary-blue); /* Thicker border effect */
+}
+
+/* Radio Button Styling */
+.card-radio {
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+    padding-top: 2px; /* Align with text */
+}
+
+.card-radio input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-blue);
+    cursor: pointer;
+}
+
+/* Card Content */
+.card-content {
+    flex-grow: 1;
+}
+
+.card-header-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.tag-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-dark);
+}
+
+.default-tag {
+    font-size: 0.7rem;
+    background: #e5e7eb;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-grey);
+}
+
+.recipient-name {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+}
+
+.address-text {
+    font-size: 0.9rem;
+    color: var(--text-grey);
+    line-height: 1.4;
+}
+
+/* Edit Button */
+.card-action {
+    margin-left: auto;
+}
+
+.edit-btn {
+    font-size: 0.85rem;
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.edit-btn:hover {
+    text-decoration: underline;
+}
+
+/* "Use a different address" special styling */
+.add-new-trigger {
+    align-items: center;
+    padding: 1rem 1.25rem;
+}
+
+.add-new-trigger i {
+    font-size: 1.2rem;
+}
+
+/* Payment Icons */
+.payment-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+.payment-row i {
+    font-size: 1.25rem;
+}
+
+.sub-text {
+    font-size: 0.8rem;
+    color: var(--text-grey);
+    margin-top: 2px;
+}
+
+/* =========================================
+   4. Right Column: Summary Cards
+   ========================================= */
+.summary-card {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.summary-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+}
+
+/* Cart Items */
+.cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.item-img {
+    width: 60px;
+    height: 70px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-info {
+    flex-grow: 1;
+}
+
+.item-info h4 {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.item-info p {
+    font-size: 0.8rem;
+    color: var(--text-grey);
+    margin-bottom: 4px;
+}
+
+.item-info .price {
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: block;
+}
+
+.delivery-estimate {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+.delivery-estimate span {
+    color: var(--text-grey);
+}
+
+/* Order Totals */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.summary-row.discount {
+    color: var(--green-success);
+}
+
+.summary-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 1rem 0;
+}
+
+.summary-row.total {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #000;
+}
+
+/* Promo Code Box */
+.promo-code-box {
+    display: flex;
+    background: #f3f4f6;
+    border-radius: 6px;
+    padding: 0.25rem;
+    margin-top: 1.5rem;
+}
+
+.promo-code-box input {
+    flex-grow: 1;
+    border: none;
+    background: transparent;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.promo-code-box button {
+    background: #e5e7eb;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+}
+
+.terms-text {
+    font-size: 0.7rem;
+    color: var(--text-grey);
+    margin-top: 1rem;
+    line-height: 1.4;
+}
+
+.terms-text a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+/* Place Order Button */
+.place-order-btn {
+    width: 100%;
+    background: var(--black-btn);
+    color: #fff;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: opacity 0.2s;
+}
+
+.place-order-btn:hover {
+    opacity: 0.9;
+}
+
+/* =========================================
+   5. Modal Styles (For Add Address)
+   ========================================= */
+.modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+input[type="text"], 
+input[type="tel"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Address Type Icons */
+.radio-icon-container {
+    display: flex;
+    gap: 1rem;
+}
+
+.radio-icon-container input {
+    display: none;
+}
+
+.radio-icon-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+/* because inputs are before labels, this works */
+.radio-icon-container input:checked + .radio-icon-label {
+    background: var(--light-blue-bg);
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.save-btn, .cancel-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.save-btn {
+    background: var(--black-btn);
+    color: #fff;
+}
+
+.cancel-btn {
+    background: #f3f4f6;
+    color: var(--text-dark);
+}
+
+/* =========================================
+   6. Mobile Responsiveness
+   ========================================= */
+@media (max-width: 768px) {
+    .checkout-wrapper {
+        flex-direction: column;
+        padding: 0 1rem;
+    }
+
+    .checkout-left, .checkout-right {
+        width: 100%;
+    }
+}
