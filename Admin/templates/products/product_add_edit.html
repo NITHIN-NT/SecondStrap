@@ -254,19 +254,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const variantTemplate = document.getElementById('variant-empty-form').innerHTML;
     const imageTemplate = document.getElementById('image-empty-form').innerHTML;
 
+    // -----------------------------
+    // Add new dynamic formset row
+    // -----------------------------
     function addFormRow(containerId, templateHtml, prefix) {
         const container = document.getElementById(containerId);
         const totalForms = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
         const formIdx = parseInt(totalForms.value, 10);
 
         let newFormHtml = templateHtml.replace(/__prefix__/g, formIdx);
-        
+
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = newFormHtml;
-        
+
         const rowWrapper = document.createElement('div');
         rowWrapper.className = 'dynamic-row';
-        
+
         while (tempDiv.firstChild) {
             rowWrapper.appendChild(tempDiv.firstChild);
         }
@@ -274,14 +277,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'btn-remove-row';
-        removeBtn.title = prefix === 'variants' ? 'Remove variant' : 'Remove image';
         removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
         rowWrapper.appendChild(removeBtn);
 
         const deleteCheckbox = rowWrapper.querySelector('input[type="checkbox"][name$="-DELETE"]');
-        if (deleteCheckbox) {
-            deleteCheckbox.parentElement.style.display = 'none';
-        }
+        if (deleteCheckbox) deleteCheckbox.parentElement.style.display = 'none';
 
         container.appendChild(rowWrapper);
         totalForms.value = formIdx + 1;
@@ -295,6 +295,9 @@ document.addEventListener('DOMContentLoaded', function() {
         addFormRow('gallery-container', imageTemplate, 'images');
     });
 
+    // -----------------------------
+    // REMOVE ROW HANDLER (FIXED)
+    // -----------------------------
     document.getElementById('product-form').addEventListener('click', function(e) {
         const btn = e.target.closest('.btn-remove-row');
         if (!btn) return;
@@ -302,30 +305,59 @@ document.addEventListener('DOMContentLoaded', function() {
         const row = btn.closest('.dynamic-row');
         const container = row.closest('.dynamic-rows-container');
 
-        if (container && container.id === 'variants-container') {
+        const prefix =
+            container.id === 'variants-container' ? 'variants' : 'images';
+
+        const totalFormsInput = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
+
+        // --- MINIMUM VARIANTS CHECK ---
+        if (prefix === 'variants') {
             const visibleRows = container.querySelectorAll('.dynamic-row:not([style*="display: none"])').length;
             if (visibleRows <= 1) {
-                alert('You must have at least one product variant.');
+                alert("You must have at least one product variant.");
                 return;
             }
         }
 
+        // --- MINIMUM GALLERY IMAGES CHECK (min=3) ---
+        if (prefix === 'images') {
+            const visibleRows = container.querySelectorAll('.dynamic-row:not([style*="display: none"])').length;
+            const minImages = 3;
+            if (visibleRows <= minImages) {
+                alert(`You must have at least ${minImages} gallery images.`);
+                return;
+            }
+        }
+
+        // --- IF EXISTING ROW (HAS DELETE CHECKBOX) ---
         const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+
         if (deleteCheckbox) {
             deleteCheckbox.checked = true;
             row.style.display = 'none';
-            const inputs = row.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                if (input !== deleteCheckbox) {
-                    input.disabled = true;
+
+            // UPDATED LOGIC HERE:
+            row.querySelectorAll('input, select, textarea').forEach(field => {
+                // 1. Don't disable the DELETE checkbox itself
+                // 2. Don't disable the ID field (field name ends with '-id')
+                if (field !== deleteCheckbox && !field.name.endsWith('-id')) {
+                    field.disabled = true;
                 }
             });
+
         } else {
+            // NEW ROW → REMOVE COMPLETELY + DECREMENT TOTAL_FORMS
             row.remove();
+            if (totalFormsInput) {
+                const count = parseInt(totalFormsInput.value, 10) || 0;
+                totalFormsInput.value = Math.max(0, count - 1);
+            }
         }
     });
 
-    // ---- Image preview + cropper integration ----
+    // --------------------------------------------------------------
+    // IMAGE CROPPER + PREVIEW
+    // --------------------------------------------------------------
     let cropper = null;
     let currentFileInput = null;
     let currentPreviewImg = null;
@@ -337,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function openCropperForInput(fileInput, previewImg, dataURL) {
         currentFileInput = fileInput;
-        currentPreviewImg = previewImg || null;
+        currentPreviewImg = previewImg;
         cropImage.src = dataURL;
         cropModal.classList.add('active');
 
@@ -358,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function fileToDataURL(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onerror = () => reject(new Error('File read error'));
+            reader.onerror = () => reject(new Error("File read error"));
             reader.onload = (e) => resolve(e.target.result);
             reader.readAsDataURL(file);
         });
@@ -372,33 +404,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getOrCreatePreviewForInput(inputEl) {
-        if (inputEl.id === '{{ product_form.image.id_for_label }}') {
-             let existingPreview = document.querySelector('.current-image-preview img');
-             if (existingPreview) return existingPreview;
+        let previewArea = inputEl.closest('.form-group').querySelector('.image-preview');
+        if (!previewArea) {
+            previewArea = document.createElement('div');
+            previewArea.classList.add('image-preview');
+            previewArea.style.marginTop = '8px';
+            previewArea.innerHTML = '<img style="max-width:120px;border-radius:6px;">';
+            inputEl.insertAdjacentElement('afterend', previewArea);
         }
-
-        let fg = inputEl.closest('.form-group') || inputEl.parentElement;
-        let galleryImg = fg.querySelector('img[height="50"]');
-        if (galleryImg) return galleryImg;
-
-        let preview = fg.querySelector('.image-preview img');
-        if (!preview) {
-            let previewContainer = fg.querySelector('.image-preview');
-            if (!previewContainer) {
-                previewContainer = document.createElement('div');
-                previewContainer.className = 'image-preview';
-                previewContainer.style.marginTop = '8px';
-                previewContainer.innerHTML = '<img style="border-radius:6px;">';
-                inputEl.insertAdjacentElement('afterend', previewContainer);
-            }
-            preview = previewContainer.querySelector('img');
-        }
-        return preview;
+        return previewArea.querySelector('img');
     }
-    
+
     document.getElementById('product-form').addEventListener('change', async function(e) {
         const target = e.target;
-        if (!target || target.tagName.toLowerCase() !== 'input' || target.type !== 'file') return;
+        if (!target || target.type !== 'file') return;
 
         const file = target.files && target.files[0];
         if (!file || !file.type.startsWith('image/')) return;
@@ -406,16 +425,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewImg = getOrCreatePreviewForInput(target);
         const dataURL = await fileToDataURL(file);
 
-        if (previewImg) {
-            previewImg.src = dataURL;
-            previewImg.style.display = 'block';
-            previewImg.style.height = 'auto';
-            if (target.id === '{{ product_form.image.id_for_label }}') {
-                previewImg.style.maxWidth = '100%';
-            } else {
-                previewImg.style.maxWidth = '100px';
-            }
-        }
+        previewImg.src = dataURL;
+        previewImg.style.display = 'block';
+
         openCropperForInput(target, previewImg, dataURL);
     });
 
@@ -423,11 +435,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!cropper || !currentFileInput) return;
 
         cropper.getCroppedCanvas().toBlob((blob) => {
-            if (!blob) {
-                console.error('Cropper produced no blob');
-                return;
-            }
-            const originalFile = (currentFileInput.files && currentFileInput.files[0]) || null;
+            if (!blob) return;
+
+            const originalFile = currentFileInput.files[0];
             const filename = originalFile ? originalFile.name : `cropped_${Date.now()}.jpg`;
 
             replaceFileInputWithBlob(currentFileInput, blob, filename);
@@ -435,14 +445,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentPreviewImg) {
                 const url = URL.createObjectURL(blob);
                 currentPreviewImg.src = url;
-                currentPreviewImg.style.display = 'block';
-                currentPreviewImg.style.height = 'auto';
-                if (currentFileInput && currentFileInput.id === '{{ product_form.image.id_for_label }}') {
-                    currentPreviewImg.style.maxWidth = '100%';
-                } else {
-                    currentPreviewImg.style.maxWidth = '100px';
-                }
             }
+
             cropper.destroy();
             cropper = null;
             cropModal.classList.remove('active');
@@ -455,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cropModal.classList.remove('active');
     });
 
-    cropModal.addEventListener('click', (e) => {
+    cropModal.addEventListener('click', function(e) {
         if (e.target === cropModal) {
             if (cropper) cropper.destroy();
             cropper = null;
@@ -464,4 +468,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %}
+
+{% endblock extraJs%}
