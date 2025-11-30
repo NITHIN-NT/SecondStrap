@@ -1,18 +1,29 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // --- 1. SELECTION LOGIC (Visual Blue Border) ---
+document.addEventListener("DOMContentLoaded", () => {
+
+    // ==========================================
+    // 1. AXIOS CONFIGURATION
+    // ==========================================
+    // Automatically attach CSRF token to every request
+    axios.defaults.xsrfCookieName = 'csrftoken';
+    axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+
+    // ==========================================
+    // 2. SELECTION LOGIC (Visual Styles)
+    // ==========================================
+    // This handles the blue border/radio selection when clicking cards
     const selectionCards = document.querySelectorAll('.selection-card');
 
     selectionCards.forEach(card => {
-        card.addEventListener('click', function(e) {
-            // If clicking edit link or clicking inside modal triggers, ignore
+        card.addEventListener('click', function (e) {
+            // Ignore if clicking "Edit" button or "Add New" button
             if (e.target.closest('.edit-btn')) return;
-            // If clicking the add new trigger, open modal (handled separately)
             if (e.target.closest('#addNewAddressBtn') || this.classList.contains('add-new-trigger')) return;
 
             const radio = this.querySelector('input[type="radio"]');
             if (radio) {
                 const groupName = radio.name;
-                // Unselect others in same group (if any)
+
+                // Unselect others in the same group
                 document.querySelectorAll(`input[name="${groupName}"]`).forEach(input => {
                     const parentCard = input.closest('.selection-card');
                     if (parentCard) parentCard.classList.remove('selected');
@@ -24,10 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Also allow clicking the internal radio to propagate visual selection
+        // Also allow clicking the actual radio button to update styles
         const innerRadio = card.querySelector('input[type="radio"]');
         if (innerRadio) {
-            innerRadio.addEventListener('change', function() {
+            innerRadio.addEventListener('change', function () {
                 if (!this.checked) return;
                 const groupName = this.name;
                 document.querySelectorAll(`input[name="${groupName}"]`).forEach(input => {
@@ -40,122 +51,213 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- 2. MODAL LOGIC (Add & Edit) ---
-    const modal = document.getElementById('addressModal');
-    const addBtn = document.getElementById('addNewAddressBtn');
-    const closeBtn = document.getElementById('closeAddressModalBtn');
-    const cancelBtn = document.getElementById('cancelAddressBtn');
-    const addressForm = document.getElementById('addressForm');
-    const modalTitle = document.getElementById('addressModalTitle');
-    const fetchUrlBaseElem = document.getElementById('fetchUrlBase');
-    const fetchUrlBase = fetchUrlBaseElem ? fetchUrlBaseElem.dataset.urlBase : '';
+    // ==========================================
+    // 3. ADDRESS MODAL & FORM LOGIC (Axios)
+    // ==========================================
 
-    function openModal() {
+    // --- Elements ---
+    const modal = document.getElementById("addressModal");
+    const form = document.getElementById("addressForm");
+    const modalTitle = document.getElementById("addressModalTitle");
+
+    // Buttons
+    const openAddBtn = document.getElementById("addNewAddressBtn");
+    const closeBtn = document.getElementById("closeAddressModalBtn");
+    const cancelBtn = document.getElementById("cancelAddressBtn");
+    const saveBtn = document.getElementById("saveAddressBtn");
+
+    // Inputs
+    const addressIdInput = document.getElementById("address_id");
+    const fullNameInput = document.getElementById("full_name");
+    const line1Input = document.getElementById("address_line_1");
+    const line2Input = document.getElementById("address_line_2");
+    const cityInput = document.getElementById("city");
+    const stateInput = document.getElementById("state");
+    const postalCodeInput = document.getElementById("postal_code");
+    const phoneInput = document.getElementById("phone_number");
+    const countryInput = document.getElementById("country");
+    const isDefaultInput = document.getElementById("is_default");
+
+    // URL Base
+    const fetchUrlBaseElem = document.getElementById("fetchUrlBase");
+    const fetchUrlBase = fetchUrlBaseElem ? fetchUrlBaseElem.getAttribute("data-url-base") : null;
+
+    // --- Helper Functions ---
+
+    const toggleModal = (show = true) => {
         if (!modal) return;
-        modal.classList.add('active');
-        modal.setAttribute('aria-hidden', 'false');
-        // focus first input for accessibility
-        const firstInput = modal.querySelector('input, textarea, select, button');
-        if (firstInput) firstInput.focus();
-    }
+        if (show) {
+            modal.classList.add("active");
+            modal.setAttribute('aria-hidden', 'false');
+        } else {
+            modal.classList.remove("active");
+            modal.setAttribute('aria-hidden', 'true');
+        }
+    };
 
-    function closeModal() {
-        if (!modal) return;
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
-    }
+    const resetForm = () => {
+        if (!form) return;
+        form.reset();
 
-    // Open Modal for ADD
-    if (addBtn) {
-        addBtn.addEventListener('click', function(e) {
+        // Clear hidden ID (Critical: sets "Add" mode)
+        if (addressIdInput) addressIdInput.value = "";
+
+        // Reset Title
+        if (modalTitle) modalTitle.textContent = "Add New Address";
+
+        // Clear Radio Buttons manually
+        document.querySelectorAll('input[name="address_type"]').forEach(r => r.checked = false);
+    };
+
+    // --- Logic: Add New Address ---
+    if (openAddBtn) {
+        openAddBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            if (addressForm) addressForm.reset();
-            const hiddenId = document.getElementById('address_id');
-            if (hiddenId) hiddenId.value = '';
-            // clear custom radio visuals
-            const radios = document.querySelectorAll('.radio-icon-container input');
-            radios.forEach(r => r.checked = false);
-            modalTitle.innerText = "Add New Address";
-            openModal();
+            resetForm();
+            toggleModal(true);
         });
 
-        // keyboard support
-        addBtn.addEventListener('keydown', function(e) {
+        // Keyboard accessibility
+        openAddBtn.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                addBtn.click();
+                openAddBtn.click();
             }
         });
     }
 
-    // Open Modal for EDIT (fetch address data)
-    document.querySelectorAll('.edit-address-trigger').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+    // --- Logic: Edit Address (Fetch via Axios) ---
+    document.querySelectorAll(".edit-address-trigger").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
             e.preventDefault();
-            const addressId = this.dataset.id;
-            if (!addressId || !fetchUrlBase) return;
 
-            // Safely replace the placeholder __ADDR_ID__ in the url template
-            const url = fetchUrlBase.replace('__ADDR_ID__', encodeURIComponent(addressId));
+            const addressId = btn.getAttribute("data-id");
+            if (!addressId) return;
 
-            fetch(url, { credentials: 'same-origin' })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.status === 'success') {
-                        const addr = data.address;
+            // 1. Prepare UI
+            resetForm();
+            if (modalTitle) modalTitle.textContent = "Edit Address";
+            if (addressIdInput) addressIdInput.value = addressId; // Sets "Edit" mode
 
-                        // Populate Fields (guarded)
-                        const setIf = (id, val) => {
-                            const el = document.getElementById(id);
-                            if (el) el.value = val ?? '';
-                        };
+            // 2. Construct URL
+            let fetchUrl = fetchUrlBase
+                ? fetchUrlBase.replace("__ADDR_ID__", addressId).replace("0", addressId)
+                : `/addresses/manage/${addressId}/`;
 
-                        setIf('address_id', addr.id);
-                        setIf('full_name', addr.full_name);
-                        setIf('address_line_1', addr.address_line_1);
-                        setIf('address_line_2', addr.address_line_2);
-                        setIf('city', addr.city);
-                        setIf('state', addr.state);
-                        setIf('postal_code', addr.postal_code);
-                        setIf('phone_number', addr.phone_number);
-                        setIf('country', addr.country);
+            // 3. Fetch Data
+            try {
+                const response = await axios.get(fetchUrl);
 
-                        // Address type radio
-                        if (addr.address_type) {
-                            const typeRadio = document.querySelector(`input[name="address_type"][value="${addr.address_type}"]`);
-                            if (typeRadio) typeRadio.checked = true;
-                        }
+                if (response.data.status === "success") {
+                    const addr = response.data.address;
 
-                        // Checkbox
-                        const isDefaultEl = document.getElementById('is_default');
-                        if (isDefaultEl) isDefaultEl.checked = !!addr.is_default;
+                    // Populate Fields
+                    if (fullNameInput) fullNameInput.value = addr.full_name;
+                    if (line1Input) line1Input.value = addr.address_line_1;
+                    if (line2Input) line2Input.value = addr.address_line_2;
+                    if (cityInput) cityInput.value = addr.city;
+                    if (stateInput) stateInput.value = addr.state;
+                    if (postalCodeInput) postalCodeInput.value = addr.postal_code;
+                    if (phoneInput) phoneInput.value = addr.phone_number;
+                    if (countryInput) countryInput.value = addr.country;
+                    if (isDefaultInput) isDefaultInput.checked = addr.is_default;
 
-                        modalTitle.innerText = "Edit Address";
-                        openModal();
-                    } else {
-                        console.error('Failed to fetch address:', data);
+                    // Populate Radio Buttons
+                    if (addr.address_type) {
+                        const radio = document.querySelector(`input[name="address_type"][value="${addr.address_type}"]`);
+                        if (radio) radio.checked = true;
                     }
-                })
-                .catch(err => console.error("Error fetching address:", err));
+
+                    toggleModal(true);
+                } else {
+                    toastr.error("Could not load address details.");
+                }
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                toastr.error("Error fetching address details.");
+            }
         });
     });
 
-    // Close Modal (buttons + backdrop)
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    // --- Logic: Save Address (Submit via Axios) ---
+    if (form) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-    window.addEventListener('click', function(e) {
-        if (!modal) return;
-        if (e.target === modal) closeModal();
+            // UI Feedback
+            const originalBtnText = saveBtn ? saveBtn.innerText : "Save";
+            if (saveBtn) {
+                saveBtn.innerText = "Saving...";
+                saveBtn.disabled = true;
+            }
+
+            try {
+                const formData = new FormData(form);
+
+                // Construct JSON Payload
+                const payload = {
+                    address_id: formData.get("address_id") || null,
+                    full_name: formData.get("full_name"),
+                    address_line_1: formData.get("address_line_1"),
+                    address_line_2: formData.get("address_line_2"),
+                    city: formData.get("city"),
+                    state: formData.get("state"),
+                    postal_code: formData.get("postal_code"),
+                    phone_number: formData.get("phone_number"),
+                    country: formData.get("country"),
+                    address_type: formData.get("address_type"),
+                    is_default: isDefaultInput ? isDefaultInput.checked : false
+                };
+
+                const url = form.getAttribute("action");
+
+                // Send POST Request
+                const response = await axios.post(url, payload);
+
+                if (response.data.status === "success") {
+                    toggleModal(false);
+                    toastr.success(response.data.message);
+
+                    // Reload to show changes
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    toastr.error(response.data.message || "Error saving address.");
+                }
+
+            } catch (error) {
+                console.error("Save Error:", error);
+
+                // Handle Django Validation Errors
+                if (error.response && error.response.data && error.response.data.errors) {
+                    const errors = error.response.data.errors;
+                    Object.keys(errors).forEach(key => {
+                        toastr.error(`${key}: ${errors[key]}`);
+                    });
+                } else {
+                    toastr.error(error.response?.data?.message || "An error occurred.");
+                }
+            } finally {
+                // Reset UI
+                if (saveBtn) {
+                    saveBtn.innerText = originalBtnText;
+                    saveBtn.disabled = false;
+                }
+            }
+        });
+    }
+
+    // --- Logic: Close Modal ---
+    if (closeBtn) closeBtn.addEventListener("click", () => toggleModal(false));
+    if (cancelBtn) cancelBtn.addEventListener("click", () => toggleModal(false));
+
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) toggleModal(false);
     });
 
-    // Escape key closes modal
-    window.addEventListener('keydown', function(e) {
+    window.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            if (modal && modal.classList.contains('active')) closeModal();
+            if (modal && modal.classList.contains('active')) toggleModal(false);
         }
     });
+
 });

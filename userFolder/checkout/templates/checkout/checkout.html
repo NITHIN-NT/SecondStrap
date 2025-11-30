@@ -4,6 +4,7 @@
 {% block title %}Checkout{% endblock %}
 {% block extra_styles %}
 <link rel="stylesheet" href="{% static 'css/checkout/checkout.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 {% endblock %}
 {% block content %}
 <div class="checkout-wrapper">
@@ -55,9 +56,9 @@
                 <h2 class="section-title mt-large">Payment Method</h2>
                 <div class="payment-selection-list">
                     
-                    <div class="selection-card selected">
+                    <div class="selection-card selected" style='display : none'>
                         <div class="card-radio">
-                            <input type="radio" name="payment_method" id="pay_card" value="card" checked>
+                            <input type="radio" name="payment_method" id="pay_card" value="card" >
                         </div>
                         <div class="card-content">
                             <div class="payment-row">
@@ -104,13 +105,14 @@
             <div class="cart-items">
                 {% for item in cart_items %}
                 <div class="summary-item">
+                    <input type="input" name="variant" value="{{item.id}}" style='display:none'>
                     <div class="item-img">
                         <img src="{{ item.variant.product.image.url }}" alt="{{ item.variant.product.name }}">
                     </div>
                     <div class="item-info">
                         <h4>{{ item.variant.product.name }}</h4>
-                        <p>Size: {{ item.size }}</p>
-                        <span class="price">₹{{ item.variant.offer_price }}</span>
+                        <p>Size: {{ item.size }} X {{item.quantity}}</p>
+                        <span class="price">₹{{ item.variant.offer_price}} x {{item.quantity}}</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -125,24 +127,24 @@
             <h3 class="summary-title">Order Summary</h3>
             <div class="summary-row">
                 <span>Subtotal ({{ cart_items|length }} items)</span>
-                <span>₹{{ subtotal }}</span>
+                <span>₹{{ cart.total_price }}</span>
             </div>
             <div class="summary-row">
                 <span>Shipping</span>
-                <span>₹{{ shipping_fee }}</span>
+                <span>₹{{ shipping_fee|default:"30" }}</span>
             </div>
             <div class="summary-row">
                 <span>Tax</span>
-                <span>₹{{ tax }}</span>
+                <span>₹{{ tax|default:"13%" }}</span>
             </div>
             <div class="summary-row discount">
                 <span>Discount</span>
-                <span>-₹{{ discount }}</span>
+                <span>-₹{{ discount|default:"0" }}</span>
             </div>
             <div class="summary-divider"></div>
             <div class="summary-row total">
                 <span>Total</span>
-                <span>₹{{ total_price }}</span>
+                <span>₹{{ grand_total }}</span>
             </div>
 
             <div class="promo-code-box">
@@ -246,9 +248,11 @@
 </div>
 
 <!-- Use a clear placeholder in data attribute so JS can replace safely -->
-<span id="fetchUrlBase" data-url-base="#"></span>
+<span id="fetchUrlBase" data-url-base="{% url "fetch_address" address_id=0 %}"></span>
 {% endblock %}
 
 {% block extra_script %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="{% static 'js/checkout/checkout.js' %}"></script>
 {% endblock %}
