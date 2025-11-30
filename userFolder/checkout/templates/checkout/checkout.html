@@ -15,7 +15,7 @@
             <h2 class="section-title">Shipping Details</h2>
             <h3 class="subsection-title">Select Shipping Address</h3>
 
-            <form id="checkoutForm" method="POST" action="#">
+            <form id="checkoutForm" method="POST" action="{% url "order" %}">
                 {% csrf_token %}
                 
                 <div class="address-selection-list">
