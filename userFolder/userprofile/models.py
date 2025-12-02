@@ -30,3 +30,17 @@ class Address(models.Model):
     def __str__(self):
         return f"{self.full_name}'s - Address in {self.city}"
     
+    def get_full_address(self):
+        parts = [
+            self.full_name,
+            self.address_line_1,
+            self.address_line_2,
+            self.city,
+            self.postal_code,
+            self.state,
+            self.country,
+            self.address_type,
+            self.phone_number,
+        ]
+        
+        return ",".join(filter(None,parts))

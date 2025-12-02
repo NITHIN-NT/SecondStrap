@@ -10,7 +10,7 @@
 
 [x] Design Cart & CartItem Models.
 
-[ ] Design Order & OrderItem Models (Include custom order_id field, distinct from PK).
+[x] Design Order & OrderItem Models (Include custom order_id field, distinct from PK).
 
 2. User Side: Profile Management
 
@@ -42,7 +42,7 @@ b. Address Management
 
 c. Cart Functionality
 
-[ ] Backend Check: Verify if Product AND Category are listed/active before adding to cart.
+[X] Backend Check: Verify if Product AND Category are listed/active before adding to cart.
 
 [x] Logic: If Item exists in Cart -> Increment Quantity.
 
@@ -60,14 +60,14 @@ c. Cart Functionality
 
 [X] UI: Visually disable rows for "Out of Stock" items in the cart.
 
-[ ] Logic: Prevent "Proceed to Checkout" if the cart contains Out of Stock items.
+[x] Logic: Prevent "Proceed to Checkout" if the cart contains Out of Stock items.
 
 [x] Implement "Remove Item" button.
 
 4. User Side: Checkout & Payment
 
 d. Checkout Page
-[ ] Display list of saved addresses with radio buttons.
+[x] Display list of saved addresses with radio buttons.
 
 [ ] Add "Add New Address" / "Edit Address" buttons directly in checkout flow.
 

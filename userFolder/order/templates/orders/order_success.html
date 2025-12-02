@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmed{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* Wrapper to center the card within your main-content area */
+    .success-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+        min-height: 60vh;
+    }
+
+    /* The Main Card */
+    .success-card {
+        background-color: #ffffff;
+        width: 100%;
+        max-width: 450px;
+        padding: 40px;
+        border-radius: 4px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        /* IMPORTANT: Keep default stacking context so icon can pop out */
+        position: relative; 
+    }
+
+    /* Green Checkmark Circle */
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        background-color: #dbfce3;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 25px auto;
+        
+        /* TRICK: High Z-Index + Relative Position */
+        /* This places the icon ON TOP of the canvas (z-9998), 
+           so confetti appears to come from behind it. */
+        position: relative;
+        z-index: 99999; 
+        box-shadow: 0 0 0 5px #fff; /* White ring to separate from confetti */
+    }
+
+    .icon-circle i {
+        font-size: 40px;
+        color: #28a745;
+    }
+
+    /* Headings */
+    .success-card h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 10; /* Keep text readable */
+    }
+
+    .success-card p.subtext {
+        color: #666;
+        font-size: 15px;
+        line-height: 1.5;
+        margin-bottom: 30px;
+        font-weight: 400;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Order Details Table */
+    .order-details {
+        margin-bottom: 30px;
+        text-align: left;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        padding: 20px 0;
+        position: relative;
+        z-index: 10;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
+
+    .detail-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .label { color: #666; font-weight: 400; }
+    .value { color: #000; font-weight: 600; }
+
+    /* Action Buttons */
+    .btn-black {
+        display: block;
+        width: 100%;
+        background-color: #000;
+        color: #fff;
+        padding: 15px 0;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        transition: background-color 0.3s;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        z-index: 10;
+    }
+
+    .btn-black:hover {
+        background-color: #333;
+        color: #fff;
+    }
+
+    .link-grey {
+        color: #666;
+        font-size: 14px;
+        font-weight: 400;
+        transition: color 0.3s;
+        position: relative;
+        z-index: 10;
+    }
+
+    .link-grey:hover {
+        color: #000;
+        text-decoration: underline;
+    }
+
+    /* Success popper (top drop-in) */
+    .success-popper {
+        position: fixed;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #28a745;
+        color: #fff;
+        padding: 14px 24px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        transition: top 0.6s ease-in-out, opacity 0.3s;
+        z-index: 100000; /* Highest */
+    }
+
+    .success-popper i {
+        font-size: 22px;
+    }
+
+    .success-popper.show {
+        top: 20px;
+    }
+
+    /* Fullscreen canvas overlay */
+    #confetti-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9998; /* High, but LOWER than the icon (99999) */
+        opacity: 1;
+        transition: opacity 0.6s ease;
+    }
+
+    #confetti-canvas.hidden {
+        opacity: 0;
+        visibility: hidden;
+    }
+</style>
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="success-wrapper">
+    <div class="success-card">
+        <!-- The ID 'check-icon' is used to target the explosion center -->
+        <div class="icon-circle" id="check-icon">
+            <i class='bx bx-check'></i>
+        </div>
+
+        <h2>Order Placed Successfully!</h2>
+        <p class="subtext">
+            Thank you for your purchase. We've received your order and will process it shortly.
+        </p>
+        <div class="order-details">
+            <div class="detail-row">
+                <span class="label">Order Number:</span>
+                <span class="value">{{ order.order_id }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Date:</span>
+                <span class="value">{{ order.created_at }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Total:</span>
+                <span class="value">₹{{ order.final_price }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Email:</span>
+                <span class="value">{{ order.user.email }}</span>
+            </div>
+        </div>
+        <a href="#">
+            <button class="btn-black">Continue Shopping</button>
+        </a>
+        
+        <a href="{% url "order_details" %}" class="link-grey">View Order Details</a>
+    </div>
+
+    <!-- top popper -->
+    <div id="success-popper" class="success-popper" aria-hidden="true">
+        <i class='bx bx-check-circle'></i>
+        <span>Order placed successfully!</span>
+    </div>
+</div>
+
+<!-- Confetti canvas -->
+<canvas id="confetti-canvas" class="hidden" aria-hidden="true"></canvas>
+{% endblock content %}
+
+{% block extra_script %}
+<!-- Load canvas-confetti library from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- 2. MAGIC UI STYLE CONFETTI -->
+<script>
+(function () {
+  // Use our existing canvas so we can control the Z-Index
+  const myCanvas = document.getElementById('confetti-canvas');
+  if(!myCanvas) return;
+
+  // Initialize the confetti instance on our specific canvas
+  const myConfetti = confetti.create(myCanvas, {
+    resize: true, // will fit to screen
+    useWorker: true
+  });
+
+  function fireFromIcon() {
+    const icon = document.getElementById('check-icon');
+    if (!icon) return;
+    
+    myCanvas.classList.remove('hidden');
+
+    // Get the position of the icon relative to the viewport (0 to 1)
+    const rect = icon.getBoundingClientRect();
+    const x = (rect.left + rect.width / 2) / window.innerWidth;
+    const y = (rect.top + rect.height / 2) / window.innerHeight;
+
+    // Fire! (These settings mimic the Magic UI 'ConfettiButton' feel)
+    myConfetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { x: x, y: y },
+        colors: ["#26ccff", "#a25afd", "#ff5e7e", "#88ff5a", "#fcff42", "#ffa62d", "#ff36ff"],
+        startVelocity: 45,
+        gravity: 1.2,
+        scalar: 0.75, // slightly smaller particles like the react component
+        ticks: 200    // how long they last
+    });
+  }
+
+  // Fire automatically shortly after load
+  document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(fireFromIcon, 300);
+  });
+})();
+</script>
+
+{% endblock extra_script %}

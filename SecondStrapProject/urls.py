@@ -7,14 +7,13 @@ urlpatterns = [
     path("defaultadmin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("accounts/inactive/", custom_inactive_account_view, name="account_inactive"),
-    path(
-        "accounts/google/login/callback/", google_callback_safe, name="google_callback"
-    ),
+    path("accounts/google/login/callback/", google_callback_safe, name="google_callback"),
     path("accounts/", include("allauth.socialaccount.providers.google.urls")),
     path("", include("products.urls")),
     path("wishlist/", include("userFolder.wishlist.urls")),
     path("cart/", include("userFolder.cart.urls")),
     path("cart/checkout/", include("userFolder.checkout.urls")),
+    path("order/",include("userFolder.order.urls")),
     path("profile/", include("userFolder.userprofile.urls"), name="userprofile"),
     path("superuser/", include("Admin.urls")),
 ]

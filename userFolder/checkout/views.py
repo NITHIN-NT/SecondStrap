@@ -26,15 +26,16 @@ class CheckOutView(View):
         addressess = Address.objects.filter(user=request.user)
         
         total_price = Decimal(cart.total_price)
-        gst = Decimal(18)
+        tax = Decimal(18)
         discount = Decimal(12)
         
-        grand_total = (total_price+ gst) - discount
+        grand_total = (total_price+ tax) - discount
         context = {
             "cart_items" : cart_items,
             "addresses" : addressess,
             'cart' : cart,
             'discount' : discount, 
+            'tax' : tax,
             'grand_total' : grand_total
         }
         return render(request, "checkout/checkout.html",context)

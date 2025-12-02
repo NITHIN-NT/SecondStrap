@@ -4,9 +4,7 @@ from products.models import ProductVariant
 
 
 class Cart(models.Model):
-    user = models.OneToOneField(
-        CustomUser, on_delete=models.CASCADE, related_name="cart"
-    )
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="cart")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -29,9 +27,7 @@ class Cart(models.Model):
 
 class CartItems(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
-    variant = models.ForeignKey(
-        ProductVariant, on_delete=models.CASCADE, related_name="cart_items"
-    )
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name="cart_items")
     quantity = models.PositiveIntegerField(default=1)
     size = models.CharField(max_length=10, blank=True)
     from_wishlist = models.BooleanField(default=False)
@@ -40,14 +36,16 @@ class CartItems(models.Model):
     def __str__(self):
         return f"{self.variant} x {self.quantity}"
 
+    # Price of the Product 
     @property
     def price(self):
         return self.variant.offer_price
 
+    # Finding the subtotal of the product
     @property
     def subtotal(self):
         return self.price * self.quantity
-
+    
     def save(self, *args, **kwargs):
         if self.quantity > self.variant.stock:
             self.quantity = self.variant.stock
