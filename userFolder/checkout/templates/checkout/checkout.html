@@ -2,10 +2,59 @@
 {% load static %}
 
 {% block title %}Checkout{% endblock %}
+
 {% block extra_styles %}
 <link rel="stylesheet" href="{% static 'css/checkout/checkout.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+<style>
+    /* Truck Animation Keyframes */
+    @keyframes drive {
+        0% { transform: translateY(0) rotate(0deg); }
+        25% { transform: translateY(-1px) rotate(-1deg); }
+        50% { transform: translateY(0) rotate(0deg); }
+        75% { transform: translateY(-1px) rotate(1deg); }
+        100% { transform: translateY(0) rotate(0deg); }
+    }
+
+    @keyframes exhaust {
+        0% { opacity: 0; transform: translate(-5px, 5px) scale(0.5); }
+        50% { opacity: 0.8; }
+        100% { opacity: 0; transform: translate(-15px, 2px) scale(1.5); }
+    }
+
+    /* Container for the loading state */
+    .btn-loading-content {
+        display: none; /* Hidden by default */
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    /* The Truck Icon Style */
+    .truck-icon {
+        font-size: 1.4rem;
+        animation: drive 0.4s infinite linear;
+    }
+
+    /* When button has .loading class */
+    .place-order-btn.loading .btn-original-text {
+        display: none;
+    }
+
+    .place-order-btn.loading .btn-loading-content {
+        display: flex;
+    }
+
+    .place-order-btn.loading {
+        cursor: not-allowed;
+        opacity: 0.9;
+        /* Optional: Change background slightly to indicate processing */
+        filter: brightness(0.95); 
+    }
+</style>
 {% endblock %}
+
 {% block content %}
 <div class="checkout-wrapper">
     
@@ -154,7 +203,13 @@
             <p class="terms-text">By placing your order, you agree to our Terms of Service.</p>
         </div>
 
-        <button type="submit" form="checkoutForm" class="place-order-btn">PLACE ORDER</button>
+        <button type="submit" form="checkoutForm" class="place-order-btn">
+            <span class="btn-original-text">PLACE ORDER</span>
+            <span class="btn-loading-content">
+                <i class='bx bxs-truck truck-icon'></i>
+                <span>Placing Order...</span>
+            </span>
+        </button>
     </div>
 </div>
 
@@ -247,7 +302,6 @@
     </div>
 </div>
 
-<!-- Use a clear placeholder in data attribute so JS can replace safely -->
 <span id="fetchUrlBase" data-url-base="{% url "fetch_address" address_id=0 %}"></span>
 {% endblock %}
 

@@ -3,19 +3,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 1. AXIOS CONFIGURATION
     // ==========================================
-    // Automatically attach CSRF token to every request
     axios.defaults.xsrfCookieName = 'csrftoken';
     axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
     // ==========================================
     // 2. SELECTION LOGIC (Visual Styles)
     // ==========================================
-    // This handles the blue border/radio selection when clicking cards
     const selectionCards = document.querySelectorAll('.selection-card');
 
     selectionCards.forEach(card => {
         card.addEventListener('click', function (e) {
-            // Ignore if clicking "Edit" button or "Add New" button
             if (e.target.closest('.edit-btn')) return;
             if (e.target.closest('#addNewAddressBtn') || this.classList.contains('add-new-trigger')) return;
 
@@ -23,19 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if (radio) {
                 const groupName = radio.name;
 
-                // Unselect others in the same group
                 document.querySelectorAll(`input[name="${groupName}"]`).forEach(input => {
                     const parentCard = input.closest('.selection-card');
                     if (parentCard) parentCard.classList.remove('selected');
                 });
 
-                // Select this one
                 radio.checked = true;
                 this.classList.add('selected');
             }
         });
 
-        // Also allow clicking the actual radio button to update styles
         const innerRadio = card.querySelector('input[type="radio"]');
         if (innerRadio) {
             innerRadio.addEventListener('change', function () {
@@ -55,18 +49,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. ADDRESS MODAL & FORM LOGIC (Axios)
     // ==========================================
 
-    // --- Elements ---
     const modal = document.getElementById("addressModal");
     const form = document.getElementById("addressForm");
     const modalTitle = document.getElementById("addressModalTitle");
 
-    // Buttons
     const openAddBtn = document.getElementById("addNewAddressBtn");
     const closeBtn = document.getElementById("closeAddressModalBtn");
     const cancelBtn = document.getElementById("cancelAddressBtn");
     const saveBtn = document.getElementById("saveAddressBtn");
 
-    // Inputs
     const addressIdInput = document.getElementById("address_id");
     const fullNameInput = document.getElementById("full_name");
     const line1Input = document.getElementById("address_line_1");
@@ -78,11 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const countryInput = document.getElementById("country");
     const isDefaultInput = document.getElementById("is_default");
 
-    // URL Base
     const fetchUrlBaseElem = document.getElementById("fetchUrlBase");
     const fetchUrlBase = fetchUrlBaseElem ? fetchUrlBaseElem.getAttribute("data-url-base") : null;
-
-    // --- Helper Functions ---
 
     const toggleModal = (show = true) => {
         if (!modal) return;
@@ -98,18 +86,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const resetForm = () => {
         if (!form) return;
         form.reset();
-
-        // Clear hidden ID (Critical: sets "Add" mode)
         if (addressIdInput) addressIdInput.value = "";
-
-        // Reset Title
         if (modalTitle) modalTitle.textContent = "Add New Address";
-
-        // Clear Radio Buttons manually
         document.querySelectorAll('input[name="address_type"]').forEach(r => r.checked = false);
     };
 
-    // --- Logic: Add New Address ---
     if (openAddBtn) {
         openAddBtn.addEventListener("click", (e) => {
             e.preventDefault();
@@ -117,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
             toggleModal(true);
         });
 
-        // Keyboard accessibility
         openAddBtn.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -126,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- Logic: Edit Address (Fetch via Axios) ---
     document.querySelectorAll(".edit-address-trigger").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
             e.preventDefault();
@@ -134,24 +113,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const addressId = btn.getAttribute("data-id");
             if (!addressId) return;
 
-            // 1. Prepare UI
             resetForm();
             if (modalTitle) modalTitle.textContent = "Edit Address";
-            if (addressIdInput) addressIdInput.value = addressId; // Sets "Edit" mode
+            if (addressIdInput) addressIdInput.value = addressId;
 
-            // 2. Construct URL
             let fetchUrl = fetchUrlBase
                 ? fetchUrlBase.replace("__ADDR_ID__", addressId).replace("0", addressId)
                 : `/addresses/manage/${addressId}/`;
 
-            // 3. Fetch Data
             try {
                 const response = await axios.get(fetchUrl);
 
                 if (response.data.status === "success") {
                     const addr = response.data.address;
 
-                    // Populate Fields
                     if (fullNameInput) fullNameInput.value = addr.full_name;
                     if (line1Input) line1Input.value = addr.address_line_1;
                     if (line2Input) line2Input.value = addr.address_line_2;
@@ -162,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (countryInput) countryInput.value = addr.country;
                     if (isDefaultInput) isDefaultInput.checked = addr.is_default;
 
-                    // Populate Radio Buttons
                     if (addr.address_type) {
                         const radio = document.querySelector(`input[name="address_type"][value="${addr.address_type}"]`);
                         if (radio) radio.checked = true;
@@ -179,12 +153,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- Logic: Save Address (Submit via Axios) ---
     if (form) {
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            // UI Feedback
             const originalBtnText = saveBtn ? saveBtn.innerText : "Save";
             if (saveBtn) {
                 saveBtn.innerText = "Saving...";
@@ -194,7 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const formData = new FormData(form);
 
-                // Construct JSON Payload
                 const payload = {
                     address_id: formData.get("address_id") || null,
                     full_name: formData.get("full_name"),
@@ -211,14 +182,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const url = form.getAttribute("action");
 
-                // Send POST Request
                 const response = await axios.post(url, payload);
 
                 if (response.data.status === "success") {
                     toggleModal(false);
                     toastr.success(response.data.message);
-
-                    // Reload to show changes
                     setTimeout(() => window.location.reload(), 500);
                 } else {
                     toastr.error(response.data.message || "Error saving address.");
@@ -227,7 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (error) {
                 console.error("Save Error:", error);
 
-                // Handle Django Validation Errors
                 if (error.response && error.response.data && error.response.data.errors) {
                     const errors = error.response.data.errors;
                     Object.keys(errors).forEach(key => {
@@ -237,7 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     toastr.error(error.response?.data?.message || "An error occurred.");
                 }
             } finally {
-                // Reset UI
                 if (saveBtn) {
                     saveBtn.innerText = originalBtnText;
                     saveBtn.disabled = false;
@@ -246,7 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- Logic: Close Modal ---
     if (closeBtn) closeBtn.addEventListener("click", () => toggleModal(false));
     if (cancelBtn) cancelBtn.addEventListener("click", () => toggleModal(false));
 
@@ -259,5 +224,20 @@ document.addEventListener("DOMContentLoaded", () => {
             if (modal && modal.classList.contains('active')) toggleModal(false);
         }
     });
+
+    // ==========================================
+    // 4. ANIMATED CHECKOUT BUTTON LOGIC (UPDATED)
+    // ==========================================
+    const mainCheckoutForm = document.getElementById("checkoutForm");
+    const placeOrderBtn = document.querySelector(".place-order-btn");
+
+    if (mainCheckoutForm && placeOrderBtn) {
+        mainCheckoutForm.addEventListener("submit", function() {
+            // Adds the 'loading' class which triggers the CSS animation
+            // Hides .btn-original-text and shows .btn-loading-content
+            placeOrderBtn.classList.add("loading");
+            placeOrderBtn.disabled = true;
+        });
+    }
 
 });

@@ -10,12 +10,13 @@
 
 {% block content %}
 <div class="od-wrapper">
+     
     <div class="od-container">
-        
-        <div class="od-header-nav">
-            <a href="#" class="back-link">
+        <a href="{% url 'profile_order' %}" class="back-link">
                 <i class='bx bx-left-arrow-alt'></i> Back to Orders
             </a>
+        <div class="od-header-nav">
+           
             <div class="od-title-row">
                 <div class="od-title-left">
                     <h1>Order Details</h1>
@@ -269,10 +270,6 @@
                 <span>Total</span>
                 <span>₹{{ order.final_price }}</span>
             </div>
-
-            <button class="btn-download-black">
-                <i class='bx bx-download'></i> Download Invoice
-            </button>
         </div>
 
     </div>

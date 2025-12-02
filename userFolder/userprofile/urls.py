@@ -1,10 +1,14 @@
 from django.urls import path
 from .views import * 
+from userFolder.order.views import *
 urlpatterns = [
     path('info/',ProfileView.as_view(),name = 'profile_view_user'),
     path('address/',ProfileAddressView.as_view(),name = 'profile_address'),
     path('payment/',ProfilePaymentView.as_view(),name = 'profile_payment'),
     path('order/',ProfileOrderView.as_view(),name = 'profile_order'),
+    path("order/<str:order_id>/",order_details_view,name="order_details"),
+    path("order/<str:order_id>/download-invoice",download_invoice_view,name='download_invoice'),
+    
     path('Wallet/',ProfileWalletView.as_view(),name = 'profile_wallet'),
     path('password/change/',change_password,name='change_password'),
 

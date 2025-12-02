@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect,get_object_or_404,HttpResponse
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.decorators import login_required
 from userFolder.userprofile.models import Address
 from userFolder.cart.models import Cart, CartItems
@@ -109,6 +111,19 @@ def order(request):
             cart_items.delete()
             
             request.session['order_id'] = order.order_id
+            
+            user_email = order.user.email
+            
+            plain_message = f'Order Successful Places!.'
+            html_message = render_to_string('email/order_success_mail.html',{'order':order,'items': order.items.all(),})
+            msg = EmailMultiAlternatives(
+                body = plain_message,
+                subject='Order Successful',
+                to=[user_email],
+            )
+            msg.attach_alternative(html_message,'text/html')
+            msg.send()
+            
     except ValueError as e:
         messages.error(request, f"Value Error: {str(e)}")
         return redirect('cart')
@@ -123,6 +138,7 @@ def order(request):
     context = {
         'order': order
     }
+    
     
     
     return render(request, 'orders/order_success.html', context)
@@ -147,7 +163,7 @@ def order_details_view(request,order_id):
 
 def download_invoice_view(request, order_id):
     order = get_object_or_404(OrderMain, order_id=order_id)
-    
+
     context = {
         'order': order,
         'items': order.items.all(),
