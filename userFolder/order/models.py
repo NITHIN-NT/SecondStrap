@@ -61,6 +61,20 @@ class OrderMain(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def get_progress_status(self):
+        status_map = {
+            'pending': 0,             
+            'confirmed': 1,           
+            'shipped': 2,             
+            'out_for_delivery': 3,    
+            'delivered': 4,           
+            'cancelled': -1,
+            'returned': -2,
+            'return_requested': -2,
+            'partially_cancelled': -1,
+        }
+        return status_map.get(self.order_status, 0)
+    
     class Meta:
         ordering = ['-created_at'] 
 

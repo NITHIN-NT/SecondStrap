@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Order Details #{{ order.order_number }}{% endblock %}
+{% block title %}Order Details #{{ order.order_id }}{% endblock %}
 
 {% block extra_styles %}
 <link rel="stylesheet" href="{% static "css/order/order_details.css" %}">
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 {% endblock extra_styles %}
 
 {% block content %}
@@ -19,9 +20,9 @@
                 <div class="od-title-left">
                     <h1>Order Details</h1>
                     <div class="od-meta">
-                        <span>Order #: {{ order.order_id}}</span>
+                        <span>Order #: {{ order.order_id }}</span>
                         <span>•</span>
-                        <span>Placed on: {{ order.created_at }}</span>
+                        <span>Placed on: {{ order.created_at|date:"M d, Y" }}</span>
                     </div>
                 </div>
                 <div>
@@ -34,102 +35,172 @@
 
         <div class="od-card">
             <h3 class="od-card-title">Order Status</h3>
-            <div class="status-header">
-                <div class="status-icon-box">
-                    <i class='bx bx-check'></i>
+            
+            {% if order.order_status == 'cancelled' or order.order_status == 'partially_cancelled' %}
+                <div class="status-header">
+                    <div class="status-icon-box" style="background: #fee2e2;">
+                        <i class='bx bx-x' style="color: #dc2626;"></i>
+                    </div>
+                    <div class="status-text">
+                        <h3>Order Cancelled</h3>
+                        <p>Updated on {{ order.updated_at|date:"M d, Y" }}</p>
+                    </div>
                 </div>
-                <div class="status-text">
-                    <h3>{{order.order_status}}</h3>
-                    <p>Delivered on June 14, 2023</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width: 100%; background: #dc2626;"></div>
                 </div>
-            </div>
 
-            <div class="progress-track">
-                <span>Order Placed</span>
-                <span>Delivered</span>
-            </div>
-            <div class="progress-bar-container">
-                <div class="progress-bar-fill" style="width: 100%;"></div>
-            </div>
+            {% elif order.order_status == 'returned' %}
+                <div class="status-header">
+                    <div class="status-icon-box" style="background: #ffedd5;">
+                        <i class='bx bx-revision' style="color: #ea580c;"></i>
+                    </div>
+                    <div class="status-text">
+                        <h3>Returned</h3>
+                        <p>Updated on {{ order.updated_at|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width: 100%; background: #ea580c;"></div>
+                </div>
 
-            {% comment %} <div class="tracking-info-row">
-                <div class="ti-col">
-                    <h4>Tracking Number</h4>
-                    <p>TRK8374626374</p>
+            {% else %}
+                <div class="status-header">
+                    <div class="status-icon-box">
+                        {% if order.get_progress_status == 4 %}
+                            <i class='bx bx-check-double'></i> {% else %}
+                            <i class='bx bx-time-five'></i> {% endif %}
+                    </div>
+                    <div class="status-text">
+                        <h3>{{ order.get_order_status }}</h3>
+                        
+                        {% if order.get_progress_status == 4 %}
+                            <p>Delivered on {{ order.updated_at|date:"M d, Y" }}</p>
+                        {% else %}
+                            <p>Estimated Delivery: {{ order.created_at|date:"M d" }} - {{ order.updated_at|date:"M d" }}</p>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="ti-col">
-                    <h4>Carrier</h4>
-                    <p>FedEx</p>
+
+                <div class="progress-track">
+                    <span>Order Placed</span>
+                    <span>Delivered</span>
                 </div>
-                <div class="ti-col">
-                    <a href="#" class="track-link">Track Package <i class='bx bx-right-arrow-alt'></i></a>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" 
+                        style="width: 
+                        {% if order.get_progress_status == 0 %}15%
+                        {% elif order.get_progress_status == 1 %}40%
+                        {% elif order.get_progress_status == 2 %}65%
+                        {% elif order.get_progress_status == 3 %}85%
+                        {% elif order.get_progress_status == 4 %}100%
+                        {% else %}0%{% endif %};">
+                    </div>
                 </div>
-            </div> {% endcomment %}
+            {% endif %}
         </div>
 
         <div class="od-card">
             <h3 class="od-card-title">Tracking History</h3>
-            <div class="timeline">
-                
-                <div class="timeline-item">
-                    <div class="timeline-icon"><i class='bx bx-check'></i></div>
-                    <div class="timeline-content">
-                        <h4>Order Placed</h4>
-                        <span>{{order.created_at}}</span>
-                    </div>
+            
+            {% if order.order_status == 'cancelled' or order.order_status == 'partially_cancelled' %}
+                <div class="alert alert-danger" style="color: #dc2626; padding: 10px; background: #fee2e2; border-radius: 6px;">
+                    <i class='bx bx-x-circle'></i> This order has been cancelled.
                 </div>
-
-                <div class="timeline-item">
-                    <div class="timeline-icon"><i class='bx bx-check'></i></div>
-                    <div class="timeline-content">
-                        <h4>Processing</h4>
-                        <span>June 12, 2023 at 2:45 PM</span>
-                    </div>
+            {% elif order.order_status == 'returned' %}
+                <div class="alert alert-warning" style="color: #ea580c; padding: 10px; background: #ffedd5; border-radius: 6px;">
+                    <i class='bx bx-revision'></i> This order has been returned.
                 </div>
-
-                <div class="timeline-item">
-                    <div class="timeline-icon"><i class='bx bx-check'></i></div>
-                    <div class="timeline-content">
-                        <h4>Shipped</h4>
-                        <span>June 13, 2023 at 8:15 AM</span>
+            {% else %}
+            
+                <div class="timeline">
+                    
+                    <div class="timeline-item {% if order.get_progress_status >= 0 %}active{% endif %}">
+                        <div class="timeline-icon">
+                            <i class='bx bx-check'></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Order Placed</h4>
+                            <span>{{ order.created_at|date:"M d, Y" }}</span>
+                        </div>
                     </div>
-                </div>
 
-                <div class="timeline-item">
-                    <div class="timeline-icon"><i class='bx bx-check'></i></div>
-                    <div class="timeline-content">
-                        <h4>Out for Delivery</h4>
-                        <span>June 14, 2023 at 8:30 AM</span>
+                    <div class="timeline-item {% if order.get_progress_status >= 1 %}active{% endif %}">
+                        <div class="timeline-icon">
+                            <i class='bx {% if order.get_progress_status > 1 %}bx-check{% elif order.get_progress_status == 1 %}bx-loader-alt bx-spin{% else %}bx-cog{% endif %}'></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Processing</h4>
+                            {% if order.get_progress_status >= 1 %}
+                                <span>Confirmed</span>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
 
-                <div class="timeline-item">
-                    <div class="timeline-icon"><i class='bx bx-check'></i></div>
-                    <div class="timeline-content">
-                        <h4>Delivered</h4>
-                        <span>June 14, 2023 at 2:10 PM</span>
+                    <div class="timeline-item {% if order.get_progress_status >= 2 %}active{% endif %}">
+                        <div class="timeline-icon">
+                            <i class='bx {% if order.get_progress_status > 2 %}bx-check{% else %}bx-package{% endif %}'></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Shipped</h4>
+                            {% if order.get_progress_status == 2 %}
+                                <span>On the way</span>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
 
-            </div>
+                    <div class="timeline-item {% if order.get_progress_status >= 3 %}active{% endif %}">
+                        <div class="timeline-icon">
+                            <i class='bx {% if order.get_progress_status > 3 %}bx-check{% else %}bx-truck{% endif %}'></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Out for Delivery</h4>
+                            {% if order.get_progress_status == 3 %}
+                                <span>Arriving Today</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="timeline-item {% if order.get_progress_status >= 4 %}active{% endif %}">
+                        <div class="timeline-icon">
+                            <i class='bx {% if order.get_progress_status >= 4 %}bx-check{% else %}bx-home-smile{% endif %}'></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Delivered</h4>
+                            {% if order.get_progress_status >= 4 %}
+                                <span>{{ order.updated_at|date:"M d, Y" }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            {% endif %}
         </div>
 
         <div class="od-card">
             <h3 class="od-card-title">Items in Your Order</h3>
-            {% for order_item in order_items %}
+            {% for order_item in order.items.all %}
                 <div class="item-row">
-                    <img src="{{order_item.variant.product.image.url}}" alt="Product" class="item-img">
+                    {% if order_item.variant.product.image %}
+                        <img src="{{ order_item.variant.product.image.url }}" alt="Product" class="item-img">
+                    {% else %}
+                        <div class="item-img" style="background: #eee;"></div>
+                    {% endif %}
+                    
                     <div class="item-details">
-                        <span class="item-name">{{order_item.product_name}}</span>
-                        <div class="item-meta"> {{order_item.variant.size}} • Qty {{order_item.quantity}}</div>
+                        <span class="item-name">{{ order_item.product_name }}</span>
+                        <div class="item-meta"> 
+                            {% if order_item.variant.size %}Size: {{ order_item.variant.size }} • {% endif %}
+                            Qty: {{ order_item.quantity }}
+                        </div>
                     </div>
                     <div class="item-price-group">
-                        <span class="item-unit-price">₹{{order_item.price_at_purchase}}</span>
-                        <span class="item-total-price">₹{{order_item.get_total_price}}</span>
+                        <span class="item-unit-price">₹{{ order_item.price_at_purchase }}</span>
+                        <span class="item-total-price">₹{{ order_item.get_total_price }}</span>
                     </div>
-            </div>
+                </div>
             {% endfor %}
-
         </div>
 
         <div class="address-grid">
@@ -137,52 +208,66 @@
             <div class="od-card">
                 <h3 class="od-card-title">Shipping Information</h3>
                 <div class="address-lines">
-                    <strong>{{order.shipping_address_name}}</strong> {{order.shipping_address_line_1}}<br>
-                    {{order.shipping_city}} {{order.shipping_pincode}}<br>
-                    {{order.shipping_state}}
+                    <strong>{{ order.shipping_address_name }}</strong>
+                    {{ order.shipping_address_line_1 }}<br>
+                    {{ order.shipping_city }} - {{ order.shipping_pincode }}<br>
+                    {{ order.shipping_state }}<br>
+                    Phone: {{ order.shipping_phone }}
                 </div>
             </div>
 
             <div class="od-card">
-                <h3 class="od-card-title">Billing Information</h3>
+                <h3 class="od-card-title">Payment Details</h3>
                 <div class="address-lines">
-                    <strong>{{order.shipping_address_name}}</strong> {{order.shipping_address_line_1}}<br>
-                    {{order.shipping_city}} {{order.shipping_pincode}}<br>
-                    {{order.shipping_state}}
+                    <strong>Billing same as shipping</strong>
                 </div>
                 
                 <div class="payment-info">
-                    <span class="payment-label">{% if payment_method == cod %}Cash on Delivary{% endif %}</span>
-                    <span class="payment-value">{% if payment_method == code %}{% endif %}</span>
+                    <span class="payment-label">Method</span>
+                    <span class="payment-value">
+                        {{ order.get_payment_method_display|default:"Not Selected" }}
+                    </span>
+                    
+                    <br>
+                    <span class="payment-label">Status</span>
+                    <span class="payment-value">
+                        {% if order.payment_status == 'paid' %}
+                            <span style="color: #10b981;">Paid</span>
+                        {% elif order.payment_status == 'failed' %}
+                            <span style="color: #dc2626;">Failed</span>
+                        {% else %}
+                            <span style="color: #f59e0b;">{{ order.get_payment_status_display }}</span>
+                        {% endif %}
+                    </span>
                 </div>
             </div>
 
         </div>
         <br>
 
-        <div class="od-card">
+        <div class="od-card order-summary-card">
             <h3 class="od-card-title">Order Summary</h3>
             
             <div class="summary-row">
                 <span>Subtotal</span>
-                <span>₹{{order.total_price}}</span>
+                <span>₹{{ order.total_price }}</span>
             </div>
             <div class="summary-row">
                 <span>Shipping</span>
-                <span>₹{{shipping}}</span>
+                <span>₹49.00</span>
             </div>
             <div class="summary-row">
-                <span>Tax</span>
-                <span>₹{{tax}}</span>
+                <span>Tax (18%)</span>
+                <span>₹18.00</span>
             </div>
             <div class="summary-row">
                 <span>Discount</span>
-                <span>-₹{{discount}}</span>
+                <span style="color: #10b981;">-₹{{ order.discount_amount }}</span>
             </div>
 
             <div class="summary-row total">
                 <span>Total</span>
-                <span>₹{{order.final_price}}</span>
+                <span>₹{{ order.final_price }}</span>
             </div>
 
             <button class="btn-download-black">

@@ -1,19 +1,17 @@
 /* ---------------------------
    Fully updated stylesheet
-   - normalized spacing
-   - corrected background for item-img (very subtle off-white)
-   - box-border + soft card shadows ("box-border-shadow")
-   - fixes to remove double-padding gap between address cards & order summary
-   NOTE: Add class "order-summary-card" to the order summary wrapper:
-     <div class="od-card order-summary-card">...</div>
+   - Merged Layout Styles
+   - Added Vertical Timeline Logic (Gray -> Green)
+   - Added Horizontal Progress Bar Styles
    --------------------------- */
 
 /* --- PAGE LAYOUT --- */
 .od-wrapper {
-    background-color: #ffffff; /* Pure White */
+    background-color: #ffffff;
     padding: 40px 0;
     min-height: 100vh;
     box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .od-container {
@@ -35,6 +33,7 @@
     font-weight: 500;
     font-size: 15px;
     margin-bottom: 10px;
+    text-decoration: none;
 }
 
 .back-link i {
@@ -76,6 +75,7 @@
     font-weight: 500;
     font-size: 14px;
     color: #333;
+    text-decoration: none;
     transition: all 0.2s;
 }
 
@@ -89,12 +89,12 @@
     font-size: 16px;
 }
 
-/* --- CARD COMPONENT (UPDATED WITH CONSISTENT SPACING) --- */
+/* --- CARD COMPONENT --- */
 .od-card {
     background: #fff;
     border-radius: 10px;
-    padding: 24px 28px;       /* normalized */
-    margin-bottom: 18px;      /* normalized */
+    padding: 24px 28px;
+    margin-bottom: 18px;
     border: 1px solid #e8eaed;
     box-shadow: 0 8px 24px rgba(16,24,40,0.06);
     box-sizing: border-box;
@@ -107,7 +107,7 @@
     color: #111;
 }
 
-/* --- ORDER STATUS CARD --- */
+/* --- ORDER STATUS HEADER (Top Green Icons) --- */
 .status-header {
     display: flex;
     gap: 20px;
@@ -127,7 +127,7 @@
 }
 
 .status-icon-box i {
-    color: #059669;
+    color: #059669; /* Green Icon */
     font-size: 28px;
 }
 
@@ -142,7 +142,7 @@
     font-size: 14px;
 }
 
-/* Horizontal Progress Bar */
+/* --- HORIZONTAL PROGRESS BAR (Added) --- */
 .progress-track {
     display: flex;
     justify-content: space-between;
@@ -153,81 +153,55 @@
 }
 
 .progress-bar-container {
-    height: 6px;
-    background: #e5e7eb;
+    height: 8px;
+    background: #f3f4f6; /* Light gray background track */
     border-radius: 10px;
     position: relative;
-    margin-bottom: 28px;
     overflow: hidden;
 }
 
 .progress-bar-fill {
     height: 100%;
-    background: #10b981;
-    width: 100%;
+    background: #10b981; /* Default Green fill */
     border-radius: 10px;
+    transition: width 0.6s ease-out; /* Smooth animation */
 }
 
-.tracking-info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-}
-
-.ti-col h4 {
-    color: #888;
-    font-weight: 400;
-    margin-bottom: 4px;
-    font-size: 13px;
-}
-
-.ti-col p {
-    font-weight: 600;
-    color: #111;
-}
-
-.track-link {
-    color: #2563eb;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-}
-
-.track-link i {
-    margin-left: 4px;
-}
-
-/* --- TRACKING HISTORY --- */
+/* --- VERTICAL TRACKING HISTORY (The Dynamic Timeline) --- */
 .timeline {
     position: relative;
     padding-left: 10px;
+    padding-top: 10px;
 }
 
 .timeline-item {
     position: relative;
-    padding-left: 44px;
-    padding-bottom: 24px;
+    padding-left: 44px; /* Space for icon */
+    padding-bottom: 28px; /* Space between steps */
 }
 
 .timeline-item:last-child {
     padding-bottom: 0;
 }
 
+/* The Vertical Line (Default: Gray) */
 .timeline-item::before {
     content: '';
     position: absolute;
-    left: 11px;
+    left: 11px; /* Perfectly centered based on 26px icon */
     top: 5px;
-    bottom: -5px;
+    bottom: -5px; /* Extends to next item */
     width: 2px;
-    background: #eaeef1;
+    background: #eaeef1; /* Gray inactive line */
+    transition: background 0.3s ease;
 }
 
+/* Remove line for last item */
 .timeline-item:last-child::before {
     display: none;
 }
 
+/* The Icon Circle (Default: Gray Border, Gray Icon) */
 .timeline-icon {
     position: absolute;
     left: 0;
@@ -235,28 +209,58 @@
     width: 26px;
     height: 26px;
     background: #fff;
-    border: 2px solid #10b981;
+    border: 2px solid #eaeef1; /* Gray border */
     border-radius: 50%;
-    color: #10b981;
+    color: #ccc; /* Gray icon color */
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 16px;
-    z-index: 2;
+    font-size: 14px;
+    z-index: 2; /* Sits on top of line */
+    transition: all 0.3s ease;
 }
 
+/* Content Text (Default) */
 .timeline-content h4 {
     font-size: 15px;
     font-weight: 700;
     margin-bottom: 4px;
+    color: #555; /* Slightly lighter for inactive */
+    transition: color 0.3s ease;
 }
 
 .timeline-content span {
     font-size: 13px;
-    color: #666;
+    color: #888;
 }
 
-/* --- ITEMS CARD --- */
+/* --- ACTIVE STATE (The Magic) --- */
+/* These styles apply when Django adds the class "active" */
+
+/* 1. Turn the vertical line Green */
+.timeline-item.active::before {
+    background: #10b981;
+}
+
+/* 2. Turn the Icon Green */
+.timeline-item.active .timeline-icon {
+    background: #10b981;
+    border-color: #10b981;
+    color: #fff; /* White checkmark */
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15); /* Soft Glow */
+}
+
+/* 3. Darken the Text */
+.timeline-item.active .timeline-content h4 {
+    color: #000;
+}
+
+.timeline-item.active .timeline-content span {
+    color: #10b981; /* Green date/status */
+    font-weight: 500;
+}
+
+/* --- ITEMS LIST --- */
 .item-row {
     display: flex;
     padding: 16px 0;
@@ -277,12 +281,11 @@
 .item-img {
     width: 70px;
     height: 70px;
-    background: #fbfbfc;               /* very subtle off-white to match white page */
+    background: #fbfbfc;
     border-radius: 8px;
     object-fit: cover;
     margin-right: 20px;
-    box-sizing: border-box;
-    border: 1px solid #eef0f2;         /* subtle frame for product images */
+    border: 1px solid #eef0f2;
     box-shadow: 0 6px 14px rgba(16,24,40,0.04);
 }
 
@@ -295,6 +298,7 @@
     font-size: 16px;
     margin-bottom: 5px;
     display: block;
+    color: #111;
 }
 
 .item-meta {
@@ -318,6 +322,7 @@
     display: block;
     font-weight: 700;
     font-size: 15px;
+    color: #111;
 }
 
 /* --- ADDRESS GRID --- */
@@ -327,13 +332,13 @@
     gap: 20px;
 }
 
-/* Lighter padding inside the grid and remove internal bottom margin to avoid double spacing */
+/* Override inner card padding for addresses */
 .address-grid .od-card {
     padding: 20px 24px;
     margin-bottom: 0;
+    height: 100%; /* Make them equal height */
 }
 
-/* Address lines */
 .address-lines {
     font-size: 15px;
     line-height: 1.6;
@@ -344,11 +349,14 @@
     display: block;
     font-weight: 700;
     margin-bottom: 5px;
+    color: #111;
 }
 
-/* Payment info */
+/* Payment Info inside Address Card */
 .payment-info {
     margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
 }
 
 .payment-label {
@@ -361,12 +369,12 @@
 .payment-value {
     font-weight: 600;
     font-size: 15px;
+    color: #111;
 }
 
 /* --- ORDER SUMMARY --- */
-/* Add class "order-summary-card" to the HTML wrapper to apply the top padding fix */
 .order-summary-card {
-    padding-top: 18px !important; /* prevents double padding gap */
+    padding-top: 24px !important; /* Consistent padding */
 }
 
 .summary-row {
@@ -412,12 +420,11 @@
     font-size: 18px;
 }
 
-/* --- SMALL ADJUSTMENTS --- */
+/* --- UTILITIES / MOBILE --- */
 .status-text, .timeline-content, .item-meta, .address-lines {
     word-break: break-word;
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
     .address-grid {
         grid-template-columns: 1fr;
@@ -430,8 +437,14 @@
         gap: 15px;
     }
 
+    .item-row {
+        flex-wrap: wrap;
+    }
+
     .item-price-group {
-        min-width: auto;
+        width: 100%;
         text-align: left;
+        margin-top: 10px;
+        padding-left: 90px; /* Align with text, not image */
     }
 }
