@@ -24,7 +24,7 @@ a. User Profile
 
 [x] Frontend: Add logic to trigger OTP modal when Email is edited.
 
-[ ] Implement "Change Password" functionality.
+[x] Implement "Change Password" functionality.
 
 [x] Implement "Forgot Password" flow (Email trigger + Reset link).
 
@@ -69,41 +69,41 @@ c. Cart Functionality
 d. Checkout Page
 [x] Display list of saved addresses with radio buttons.
 
-[ ] Add "Add New Address" / "Edit Address" buttons directly in checkout flow.
+[x] Add "Add New Address" / "Edit Address" buttons directly in checkout flow.
 
-[ ] Logic: Ensure one address is selected as Default for the order.
+[x] Logic: Ensure one address is selected as Default for the order.
 
 [ ] Order Summary Section:
 
-[ ] Display Product Image, Name, and Quantity.
+[x] Display Product Image, Name, and Quantity.
 
-[ ] Calculate Item Total (Price * Qty).
+[x Calculate Item Total (Price * Qty).
 
-[ ] Calculate Tax (if applicable).
+[x] Calculate Tax (if applicable).
 
-[ ] Apply Discount logic (Coupons/Offers).
+[x] Apply Discount logic (Coupons/Offers).
 
-[ ] Show Final Price (Total + Tax + Shipping - Discount).
+[x] Show Final Price (Total + Tax + Shipping - Discount).
 
-[ ] Implement "Cash on Delivery" (COD) payment option.
+[x] Implement "Cash on Delivery" (COD) payment option.
 
-[ ] Backend: "Place Order" Logic (Create Order, Move CartItems to OrderItems, Clear Cart).
+[x] Backend: "Place Order" Logic (Create Order, Move CartItems to OrderItems, Clear Cart).
 
 [ ] Success Page:
 
-[ ] Show "Thank You" message + Illustration.
+[x] Show "Thank You" message + Illustration.
 
-[ ] Button: "Go to Order Details".
+[x] Button: "Go to Order Details".
 
-[ ] Button: "Continue Shopping".
+[x] Button: "Continue Shopping".
 
 5. User Side: Order Management
 
 e. Order History
 
-[ ] Generate Custom Order ID (e.g., ORD-2025-XXXX, do not use database _id).
+[x] Generate Custom Order ID (e.g., ORD-2025-XXXX, do not use database _id).
 
-[ ] Create Order Listing Page (Show Status, Date, ID, Total).
+[x] Create Order Listing Page (Show Status, Date, ID, Total).
 
 [ ] Implement Search bar for Orders.
 

@@ -1,0 +1,192 @@
+<!DOCTYPE HTML>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Invoice #{{ order.order_id }}</title>
+    <style type="text/css">
+        @page {
+            size: a4 portrait;
+            margin: 1cm;
+            @frame footer_frame {           /* Static Footer Frame */
+                -pdf-frame-content: footerContent;
+                bottom: 0cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 1cm;
+            }
+        }
+        
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        /* TABLES */
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Essential for borders in PDF */
+        }
+
+        .header-table {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .info-table {
+            margin-bottom: 20px;
+        }
+
+        .items-table {
+            margin-bottom: 30px;
+        }
+
+        .items-table th {
+            text-align: left;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #333;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .items-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* TYPOGRAPHY */
+        h1 { font-size: 24px; color: #000; margin: 0; text-transform: uppercase; }
+        p { margin: 0 0 5px 0; }
+        strong { font-weight: bold; }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        .gray-text { color: #777; font-size: 10px; text-transform: uppercase; margin-bottom: 5px; }
+
+        /* LOGO STYLING */
+        .logo-box {
+            background-color: #000;
+            color: #fff;
+            padding: 2px 6px;
+            display: inline-block; /* Required for padding to show in PDF */
+        }
+
+        /* TOTALS SECTION */
+        .totals-table {
+            width: 40%;
+            /* margin-left: auto does not work reliably in some PDF engines, 
+               we rely on align="right" in the HTML tag instead */
+        }
+        
+        .totals-table td {
+            padding: 6px;
+            text-align: right;
+        }
+
+        .final-total {
+            border-top: 2px solid #333;
+            font-weight: bold;
+            font-size: 14px;
+            color: #000;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+           <td valign="top">
+                <h1>
+                    <span class="logo-box">SECOND</span>STRAP
+                </h1>
+                <p style="color: #777; margin-top: 5px; font-size: 10px;">Premium E-Commerce</p>
+            </td>
+            <td valign="top" class="text-right">
+                <p class="gray-text">INVOICE NO</p>
+                <p><strong>#{{ order.order_id }}</strong></p>
+                <p class="gray-text">DATE</p>
+                <p>{{ order.created_at|date:"M d, Y" }}</p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="info-table">
+        <tr>
+            <td width="55%" valign="top">
+                <p class="gray-text">ISSUED TO:</p>
+                <p><strong>{{ order.shipping_address_name }}</strong></p>
+                <p>{{ order.shipping_address_line_1 }}</p>
+                {% if order.shipping_address_line_2 %}<p>{{ order.shipping_address_line_2 }}</p>{% endif %}
+                <p>{{ order.shipping_city }} - {{ order.shipping_pincode }}</p>
+                <p>{{ order.shipping_state }}</p>
+                <p>Phone: {{ order.shipping_phone }}</p>
+            </td>
+            <td width="45%" valign="top" class="text-right">
+                <p class="gray-text">PAYMENT DETAILS:</p>
+                <p>Method: {{ order.get_payment_method_display }}</p>
+                <p>Status: {{ order.payment_status|title }}</p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th width="50%">Description</th>
+                <th width="15%" class="text-center">Size</th>
+                <th width="15%" class="text-center">Qty</th>
+                <th width="20%" class="text-right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>
+                    <strong>{{ item.product_name }}</strong>
+                </td>
+                <td class="text-center">{{ item.variant.size }}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-right">Rs. {{ item.get_total_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="totals-table" align="right">
+        <tr>
+            <td>Subtotal</td>
+            <td>Rs. {{ order.total_price }}</td>
+        </tr>
+        <tr>
+            <td>Shipping</td>
+            <td>Rs. 49.00</td> 
+        </tr>
+        <tr>
+            <td>Tax (18%)</td>
+            <td>Rs. 18.00</td>
+        </tr>
+        {% if order.discount_amount > 0 %}
+        <tr>
+            <td style="color: green;">Discount</td>
+            <td style="color: green;">- Rs. {{ order.discount_amount }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="final-total">Amount Due</td>
+            <td class="final-total">Rs. {{ order.final_price }}</td>
+        </tr>
+    </table>
+
+    <div id="footerContent" style="text-align: center; color: #999; font-size: 10px;">
+        THANK YOU FOR SHOPPING WITH US | SECONDSTRAP
+    </div>
+
+</body>
+</html>

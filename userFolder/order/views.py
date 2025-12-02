@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect,get_object_or_404
+from django.shortcuts import render, redirect,get_object_or_404,HttpResponse
 from django.contrib.auth.decorators import login_required
 from userFolder.userprofile.models import Address
 from userFolder.cart.models import Cart, CartItems
@@ -6,6 +6,8 @@ from .models import OrderMain, OrderItem, ProductVariant
 from django.contrib import messages
 from django.db import transaction
 from decimal import Decimal
+from .utils import render_to_pdf 
+
 @login_required(login_url='login')
 def order(request):
     if request.method != 'POST':
@@ -121,6 +123,8 @@ def order(request):
     context = {
         'order': order
     }
+    
+    
     return render(request, 'orders/order_success.html', context)
 
 def order_details_view(request,order_id):
@@ -140,3 +144,24 @@ def order_details_view(request,order_id):
     }
     
     return render(request,'orders/order_details.html',context)
+
+def download_invoice_view(request, order_id):
+    order = get_object_or_404(OrderMain, order_id=order_id)
+    
+    context = {
+        'order': order,
+        'items': order.items.all(),
+        'company_name': "SecondStrap", 
+        'company_email': "support@secondstrap.com",
+    }
+    
+    pdf = render_to_pdf('invoice/invoice.html', context)
+    
+    if pdf:
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = f"Invoice_{order.order_id}.pdf"
+        content = f"attachment; filename={filename}"
+        response['Content-Disposition'] = content
+        return response
+        
+    return HttpResponse("Not found")
