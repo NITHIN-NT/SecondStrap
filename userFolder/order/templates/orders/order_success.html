@@ -216,7 +216,7 @@
             <button class="btn-black">Continue Shopping</button>
         </a>
         
-        <a href="{% url "order_details" %}" class="link-grey">View Order Details</a>
+        <a href="{% url "order_details" order.order_id %}" class="link-grey">View Order Details</a>
     </div>
 
     <!-- top popper -->

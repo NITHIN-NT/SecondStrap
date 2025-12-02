@@ -7,47 +7,34 @@
     <link rel="stylesheet" href="{% static 'css/userprofile/profile_orders.css' %}">
 {% endblock profile_extra_style %}
 
-
 {% block profile_content %}
 
 <div class="profile-card">
     
     <div class="profile-card-header">
         <h2>Recent Orders</h2>
-        </div>
-
-    <div classs="profile-card-body">
-        
+    </div>
+    <div class="profile-card-body">
         <div class="order-list">
+            {% for order in orders %}
+                <a href="{% url "order_details" order.order_id %}" class="order-item">
+                    <div class="order-item-details">
+                        <span class="order-item-id">Order #{{ order.order_id }}</span>
+                        
+                        <p class="order-item-meta">
+                            {{ order.created_at|date:"M d, Y" }} • ₹{{ order.final_price }}
+                        </p>
+                        
+                        <span class="status-text">{{ order.status }}</span>
+                    </div>
+                    <i class='bx bx-chevron-right'></i>
+                </a>
             
-            <a href="#" class="order-item">
-                <div class="order-item-details">
-                    <span class="order-item-id">Order # 644818</span>
-                    <p class="order-item-meta">3 items • $149.99</p>
+            {% empty %}
+                <div style="padding: 20px; text-align: center; color: #666;">
+                    <p>No orders placed yet.</p>
                 </div>
-                <i class='bx bx-chevron-right'></i>
-            </a>
-
-            <a href="#" class="order-item">
-                <div class="order-item-details">
-                    <span class="order-item-id">Order # 628917</span>
-                    <p class="order-item-meta">3 items • $149.99</p>
-                </div>
-                <i class='bx bx-chevron-right'></i>
-            </a>
-
-            <a href="#" class="order-item">
-                <div class="order-item-details">
-                    <span class="order-item-id">Order # 314505</span>
-                    <p class="order-item-meta">3 items • $149.99</p>
-                </div>
-                <i class='bx bx-chevron-right'></i>
-            </a>
-
-        </div>
-
-        <div class="view-all-container">
-            <a href="#" class="view-all-link">View All Orders</a>
+            {% endfor %} 
         </div>
 
     </div>

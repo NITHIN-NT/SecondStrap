@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from userFolder.userprofile.models import Address
 from userFolder.cart.models import Cart, CartItems
@@ -123,10 +123,10 @@ def order(request):
     }
     return render(request, 'orders/order_success.html', context)
 
-def order_details_view(request):
+def order_details_view(request,order_id):
     user = request.user
-    order_id = request.session.get('order_id')
-    order = OrderMain.objects.get(order_id = order_id,user=user)
+        
+    order = get_object_or_404(OrderMain,order_id = order_id ,user=request.user)
     order_items = OrderItem.objects.filter(order=order)
     tax = Decimal(18)
     shipping =Decimal(49.00)

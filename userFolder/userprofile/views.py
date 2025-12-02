@@ -20,6 +20,7 @@ from django.contrib import messages
 from .models import Address
 from django.db import IntegrityError
 from django.contrib.auth import update_session_auth_hash
+from userFolder.order.models import OrderMain
 # Create your views here.
 
 class SecureUserMixin(LoginRequiredMixin):
@@ -294,8 +295,14 @@ def delete_address(request, address_id=None):
 class ProfilePaymentView(SecureUserMixin, TemplateView):
     template_name = "userprofile/profile_payment.html"
 
-class ProfileOrderView(SecureUserMixin, TemplateView):
+class ProfileOrderView(SecureUserMixin, ListView):
+    model = OrderMain
+    context_object_name = 'orders'
     template_name = "userprofile/profile_orders.html"
+    paginate_by = 10  
+
+    def get_queryset(self):
+        return OrderMain.objects.filter(user=self.request.user).order_by('-created_at')
 
 class ProfileWalletView(SecureUserMixin, TemplateView):
     template_name = "userprofile/wallet.html"
