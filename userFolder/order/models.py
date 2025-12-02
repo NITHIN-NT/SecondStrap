@@ -5,6 +5,7 @@ from django.utils import timezone
 import random
 import string
 from decimal import Decimal
+from django.db.models import Sum
 
 ORDER_STATUS_CHOICES = [
     ('pending', 'Pending'),
@@ -89,6 +90,10 @@ class OrderMain(models.Model):
     def __str__(self):
         return f"{self.order_id}"
     
+    @property
+    def get_total_item_count(self):
+        result = self.items.aggregate(total=Sum('quantity'))['total']
+        return result or 0
     
 class OrderItem(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE, related_name='items')
@@ -106,4 +111,5 @@ class OrderItem(models.Model):
     
     def __str__(self):
         return f"{self.product_name} ({self.quantity})"
+    
     

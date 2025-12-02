@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import AdminProductsView,AdminCategoryView,AdminUserView,AdminHome,StockManagementView
+from .views import AdminProductsView,AdminCategoryView,AdminUserView,AdminHome,StockManagementView,AdminOrderView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -27,7 +27,10 @@ urlpatterns = [
     path('category/add',views.admin_category_management,name='admin_category_add'),
     path('category/edit/<int:id>',views.admin_category_management,name='admin_category_edit'),
 
-    path('stock/',StockManagementView.as_view(),name='stock_mangement')
+    path('stock/',StockManagementView.as_view(),name='stock_mangement'),
+    
+    path('order/',AdminOrderView.as_view(),name='Admin_order'),
+    path('order/<str:order_id>',views.admin_order_detailed_view,name='Admin_order_detailed_view'),
 
 ]
 

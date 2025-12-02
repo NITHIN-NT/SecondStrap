@@ -1,6 +1,6 @@
 from django.utils.text import slugify
 from django.views.decorators.cache import never_cache
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, DetailView
 
 from django.template.loader import render_to_string
 
@@ -34,6 +34,7 @@ from .utils import send_html_mail
 
 from accounts.models import CustomUser, EmailOTP
 from products.models import Product, Category, ProductVariant, ProductImage
+from userFolder.order.models import OrderMain,OrderItem,ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES
 from django.views.decorators.http import require_POST
 
 
@@ -574,3 +575,20 @@ class StockManagementView(ListView):
         return Product.objects.annotate(
             total_stock=Sum("variants__stock"), variant_count=Count("variants")
         ).prefetch_related("variants", "variants__size")
+
+@method_decorator([never_cache, superuser_required], name="dispatch")
+class AdminOrderView(ListView):
+    model = OrderMain
+    context_object_name = 'orders'
+    template_name ='order/order.html'
+    
+def admin_order_detailed_view(request,order_id):
+    order = get_object_or_404(OrderMain, order_id=order_id)
+    
+    context = {
+        'order' : order,
+        'order_status_choices': ORDER_STATUS_CHOICES, 
+        'payment_status_choices': PAYMENT_STATUS_CHOICES,
+    }
+    return render(request,'order/order_detailed.html',context)
+    

@@ -1,0 +1,151 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Page Header Styling */
+    .page-header {
+        margin-bottom: 25px;
+    }
+    .page-header h2 {
+        font-family: 'Inter', sans-serif;
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 5px;
+    }
+    .page-header p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    /* Table Container Styling */
+    .table-container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden; /* Ensures borders wrap correctly */
+    }
+
+    /* Table Styling */
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .custom-table thead {
+        background-color: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .custom-table th {
+        text-align: left;
+        padding: 12px 24px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .custom-table tbody tr {
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .custom-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .custom-table td {
+        padding: 16px 24px;
+        font-size: 14px;
+        color: #374151; /* Dark gray text */
+        vertical-align: middle;
+    }
+
+    /* Specific Column Styling */
+    .col-id { color: #6b7280; } /* Slightly lighter for ID */
+    .col-customer { font-weight: 500; color: #111827; }
+
+    /* Badge/Pill Styling */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 9999px; /* Pill shape */
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    /* Status Colors */
+    .badge-success {
+        background-color: #d1fae5; /* Light Green */
+        color: #065f46; /* Dark Green */
+    }
+    
+    .badge-processing {
+        background-color: #dbeafe; /* Light Blue */
+        color: #1e40af; /* Dark Blue */
+    }
+
+    .badge-shipped {
+        background-color: #fef3c7; /* Light Yellow/Orange */
+        color: #92400e; /* Dark Orange */
+    }
+    
+    .badge-pending {
+        background-color: #fef9c3; /* Light Yellow */
+        color: #854d0e; /* Dark Yellow */
+    }
+
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="orders-page-wrapper">
+    
+    <div class="page-header">
+        <h2>Orders</h2>
+        <p>Track and manage customer orders</p>
+    </div>
+
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Items</th>
+                    <th>Payment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td class="col-id">{{order.order_id}}</td>
+                    <td class="col-customer">{{order.shipping_address_name}}</td>
+                    <td>{{order.created_at}}</td>
+                    <td><span class="status-badge badge-success">{{order.order_status}}</span></td>
+                    <td>₹{{order.final_price}}</td>
+                    <td>{{order.get_total_item_count}}</td>
+                    <td><span class="status-badge badge-success">{{order.payment_status}}</span></td>
+                    <td>
+                        <a href="{% url 'Admin_order_detailed_view' order.order_id %}" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}

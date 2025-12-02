@@ -1,0 +1,265 @@
+/* =========================================
+   1. Main Layout & Wrapper
+   ========================================= */
+.admin-od-wrapper {
+    padding: 30px;
+    background-color: #f8fafc;
+    /* Slate-50 background */
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #334155;
+}
+
+/* Header Area */
+.admin-od-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.admin-od-header h1 {
+    margin: 8px 0 4px 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Grid Layout: Left (Main) and Right (Sidebar) */
+.admin-od-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    /* Flexible left, Fixed width right */
+    gap: 24px;
+    align-items: start;
+}
+
+/* Responsive: Stack on smaller screens */
+@media (max-width: 1024px) {
+    .admin-od-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================
+   2. Card Styling
+   ========================================= */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #e2e8f0;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* =========================================
+   3. Table Styling (Order Items)
+   ========================================= */
+.admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.admin-table th {
+    text-align: left;
+    color: #64748b;
+    /* Slate-500 */
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.admin-table td {
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Item Display inside table */
+.item-flex {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.product-thumb {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background-color: #f1f5f9;
+}
+
+/* =========================================
+   4. Financial Summary
+   ========================================= */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.info-label {
+    color: #64748b;
+}
+
+.info-val {
+    font-weight: 500;
+    color: #0f172a;
+}
+
+.total-row {
+    border-top: 2px solid #e2e8f0;
+    padding-top: 16px;
+    margin-top: 16px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* =========================================
+   5. Action Panel (Forms & Buttons)
+   ========================================= */
+.action-group {
+    margin-bottom: 16px;
+}
+
+.action-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.form-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    font-size: 14px;
+    color: #334155;
+    transition: all 0.2s;
+    appearance: none;
+    /* Removes default arrow on some browsers */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #0f172a;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+}
+
+.btn-update {
+    width: 100%;
+    background-color: #0f172a;
+    /* Main Dark Color */
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 8px;
+}
+
+.btn-update:hover {
+    background-color: #334155;
+}
+
+/* =========================================
+   6. Status Badges
+   ========================================= */
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    /* Pill shape */
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+/* Green */
+.badge-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Red */
+.badge-info {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* Blue */
+.badge-warning {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+/* Orange/Yellow */
+
+/* =========================================
+   7. Customer & Address Details
+   ========================================= */
+.customer-avatar {
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+}
+
+/* Links */
+a.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #64748b;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+a.back-link:hover {
+    color: #0f172a;
+}
