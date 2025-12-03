@@ -36,7 +36,7 @@ from accounts.models import CustomUser, EmailOTP
 from products.models import Product, Category, ProductVariant, ProductImage
 from userFolder.order.models import OrderMain,OrderItem,ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES
 from django.views.decorators.http import require_POST
-
+from django.http import JsonResponse
 
 # Create your views here.
 @never_cache
@@ -581,6 +581,60 @@ class AdminOrderView(ListView):
     model = OrderMain
     context_object_name = 'orders'
     template_name ='order/order.html'
+    ordering = ['-created_at']
+    paginate_by = 9
+    
+    def get_queryset(self):
+        querset =  super().get_queryset()
+        search = self.request.GET.get('search')
+        status = self.request.GET.get('status')
+        payemnt = self.request.GET.get('payment')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+
+        if search:
+            querset = querset.filter(order_id__icontains = search)
+            
+        if status:
+            querset = querset.filter(order_status__icontains = status)
+        
+        if payemnt:
+            querset = querset.filter(payment_status__icontains = payemnt)
+            
+        if start_date and end_date:
+            querset = querset.filter(created_at__date__range =[start_date,end_date])
+        elif start_date :
+            querset = querset.filter(created_at__date__gte=start_date)
+        elif end_date :
+            querset = querset.filter(created_at__date__lte=end_date)
+            
+        return querset
+        
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        paginator = context.get("paginator")
+        page_obj = context.get("page_obj")
+
+        if paginator and page_obj:
+            context['custom_page_range'] = paginator.get_elided_page_range(
+                number=page_obj.number,
+                on_each_side=5,
+                on_ends=1
+            )
+
+        query_params = self.request.GET.copy()
+        if "page" in query_params:
+            del query_params["page"]
+
+        encoded = query_params.urlencode()
+        context['query_params'] = encoded  
+
+        context['order_status_choices'] = ORDER_STATUS_CHOICES
+        context['payment_status_choices'] = PAYMENT_STATUS_CHOICES
+        return context
+
+    
     
 def admin_order_detailed_view(request,order_id):
     order = get_object_or_404(OrderMain, order_id=order_id)
@@ -591,4 +645,22 @@ def admin_order_detailed_view(request,order_id):
         'payment_status_choices': PAYMENT_STATUS_CHOICES,
     }
     return render(request,'order/order_detailed.html',context)
+  
+@login_required
+@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@transaction.atomic
+def admin_order_status_update(request,order_id):
+    if request.method != 'POST':
+        return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+    try :
+        order_status = request.POST.get('order_status')
+        payment_status = request.POST.get('payment_status')
+        
+        order = get_object_or_404(OrderMain,order_id=order_id)
     
+        order.order_status = order_status
+        order.payment_status = payment_status
+        order.save()
+        return JsonResponse({"status" : 'success' , "message":"Order Status updated !"})
+    except Exception as e :
+        return JsonResponse({'status' : 'error' , 'message' : 'Update Failed, Something Went Wrong !!'})

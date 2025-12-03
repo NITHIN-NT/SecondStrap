@@ -280,7 +280,7 @@ a.back-link:hover {
                 <i class='bx bx-arrow-back'></i> Back to List
             </a>
             <h1 style="margin-top: 5px; font-size: 24px;">Order #{{ order.order_id }}</h1>
-            <span style="color: #666; font-size: 14px;">Placed on {{ order.created_at|date:"M d, Y H:i" }}</span>
+            <span style="color: #666; font-size: 14px;">Placed on {{ order.created_at }}</span>
         </div>
         <div>
             {% if order.order_status == 'delivered' %}
@@ -364,7 +364,7 @@ a.back-link:hover {
             <div class="card" style="border-left: 4px solid #0f172a;">
                 <h3 class="card-title"><i class='bx bx-slider-alt'></i> Update Status</h3>
                 
-                <form method="POST" action="#"> 
+                <form id="orderStatusForm" method="POST" action="{% url 'order_status_update' order.order_id %}">
                     {% csrf_token %}
                     
                     <div class="action-group">
@@ -428,3 +428,70 @@ a.back-link:hover {
     </div>
 </div>
 {% endblock content %}
+{% block extraJs %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Ensure the toastr options match your base settings
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "timeOut": "4000" // Auto dismiss after 2 seconds
+    };
+
+    const statusForm = document.getElementById('orderStatusForm');
+
+    if (statusForm) {
+        statusForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const actionUrl = this.getAttribute('action');
+            
+            // Button loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = 'Updating...';
+            submitBtn.disabled = true;
+
+            fetch(actionUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 1. Show Success Toast using your existing library
+                    toastr.success(data.message || 'Status updated successfully');
+
+                    // 2. Wait 1 second so the user sees the toast, then reload
+                    // If we reload immediately, the toast disappears too fast
+                    setTimeout(() => {
+                        location.reload();
+                    }, 4000);
+
+                } else {
+                    // 3. Show Error Toast
+                    toastr.error(data.message || 'Something went wrong');
+                    
+                    // Reset button immediately so they can try again
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('A network error occurred');
+                
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+});
+</script>
+{% endblock extraJs %}

@@ -31,7 +31,7 @@ urlpatterns = [
     
     path('order/',AdminOrderView.as_view(),name='Admin_order'),
     path('order/<str:order_id>',views.admin_order_detailed_view,name='Admin_order_detailed_view'),
-
+    path('order/update/<str:order_id>',views.admin_order_status_update,name='order_status_update')
 ]
 
 if settings.DEBUG:
