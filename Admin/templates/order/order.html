@@ -2,107 +2,7 @@
 {% load static %}
 
 {% block extra_css %}
-<style>
-    /* Page Header Styling */
-    .page-header {
-        margin-bottom: 25px;
-    }
-    .page-header h2 {
-        font-family: 'Inter', sans-serif;
-        font-size: 24px;
-        font-weight: 600;
-        color: #111827;
-        margin-bottom: 5px;
-    }
-    .page-header p {
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: #6b7280;
-        margin: 0;
-    }
-
-    /* Table Container Styling */
-    .table-container {
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        overflow: hidden; /* Ensures borders wrap correctly */
-    }
-
-    /* Table Styling */
-    .custom-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: 'Inter', sans-serif;
-    }
-
-    .custom-table thead {
-        background-color: #f9fafb;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .custom-table th {
-        text-align: left;
-        padding: 12px 24px;
-        font-size: 12px;
-        font-weight: 600;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .custom-table tbody tr {
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .custom-table tbody tr:last-child {
-        border-bottom: none;
-    }
-
-    .custom-table td {
-        padding: 16px 24px;
-        font-size: 14px;
-        color: #374151; /* Dark gray text */
-        vertical-align: middle;
-    }
-
-    /* Specific Column Styling */
-    .col-id { color: #6b7280; } /* Slightly lighter for ID */
-    .col-customer { font-weight: 500; color: #111827; }
-
-    /* Badge/Pill Styling */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 12px;
-        border-radius: 9999px; /* Pill shape */
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 1;
-    }
-
-    /* Status Colors */
-    .badge-success {
-        background-color: #d1fae5; /* Light Green */
-        color: #065f46; /* Dark Green */
-    }
-    
-    .badge-processing {
-        background-color: #dbeafe; /* Light Blue */
-        color: #1e40af; /* Dark Blue */
-    }
-
-    .badge-shipped {
-        background-color: #fef3c7; /* Light Yellow/Orange */
-        color: #92400e; /* Dark Orange */
-    }
-    
-    .badge-pending {
-        background-color: #fef9c3; /* Light Yellow */
-        color: #854d0e; /* Dark Yellow */
-    }
-
-</style>
+<link rel="stylesheet" href="{% static "css/order/order.css" %}">
 {% endblock extra_css %}
 
 {% block content %}
@@ -111,6 +11,56 @@
     <div class="page-header">
         <h2>Orders</h2>
         <p>Track and manage customer orders</p>
+    </div>
+
+    <div class="filter-container">
+        <form method="GET" class="filter-form">
+            
+            <div class="filter-group search-group">
+                <label>Search</label>
+                <input type="text" name="search" class="form-control" placeholder="ID or Customer Name..." value="{{ request.GET.search }}">
+            </div>
+
+            <div class="filter-group">
+                <label>Status</label>
+                <select name="status" class="form-control">
+                    <option value="">All</option>
+                    {% for key, value in status_choices %}
+                    <option value="{{ key }}" {% if request.GET.status == key %}selected{% endif %}>{{ value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Payment</label>
+                <select name="payment" class="form-control">
+                    <option value="">All</option>
+                    {% for key, value in payment_choices %}
+                    <option value="{{ key }}" {% if request.GET.payment == key %}selected{% endif %}>{{ value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>From</label>
+                <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+            </div>
+            
+            <div class="filter-group">
+                <label>To</label>
+                <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn-filter">
+                    <i class="fas fa-filter"></i> Apply
+                </button>
+                
+                <a href="#" class="btn-clear">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
     </div>
 
     <div class="table-container">
@@ -130,21 +80,39 @@
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td class="col-id">{{order.order_id}}</td>
-                    <td class="col-customer">{{order.shipping_address_name}}</td>
-                    <td>{{order.created_at}}</td>
-                    <td><span class="status-badge badge-success">{{order.order_status}}</span></td>
-                    <td>₹{{order.final_price}}</td>
-                    <td>{{order.get_total_item_count}}</td>
-                    <td><span class="status-badge badge-success">{{order.payment_status}}</span></td>
-                    <td>
-                        <a href="{% url 'Admin_order_detailed_view' order.order_id %}" title="View Details">
-                            <i class="fas fa-eye"></i>
+                    <td data-label="Order ID" class="col-id">#{{order.order_id}}</td>
+                    <td data-label="Customer" class="col-customer">{{order.shipping_address_name}}</td>
+                    <td data-label="Date">{{order.created_at|date:"M d, Y"}}</td>
+                    
+                    <td data-label="Status">
+                        <span class="status-badge status-{{ order.order_status }}">
+                            {{ order.get_order_status_display }}
+                        </span>
+                    </td>
+                    
+                    <td data-label="Total">₹{{order.final_price}}</td>
+                    <td data-label="Items">{{order.get_total_item_count}}</td>
+                    
+                    <td data-label="Payment">
+                        <span class="status-badge status-{{ order.payment_method }}">
+                            {{ order.get_payment_method_display }}
+                        </span>
+                    </td>
+                    
+                    <td data-label="Action">
+                        <a href="{% url 'Admin_order_detailed_view' order.order_id %}" title="View Details" style="color: #4b5563; text-decoration: underline;">
+                            View Details
                         </a>
                     </td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280; display: block;">
+                        No orders found matching your filters.
+                    </td>
+                </tr>
                 {% endfor %}
-                </tbody>
+            </tbody>
         </table>
     </div>
 </div>

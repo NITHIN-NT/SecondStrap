@@ -2,10 +2,10 @@
 {% load static %}
 
 {% block extra_css %}
+
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 <style>
-    /* =========================================
-   1. Main Layout & Wrapper
-   ========================================= */
+
 .admin-od-wrapper {
     padding: 30px;
     background-color: #f8fafc;
@@ -269,7 +269,6 @@ a.back-link:hover {
     color: #0f172a;
 }
 </style>
-<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 {% endblock extra_css %}
 
 {% block content %}
@@ -277,7 +276,7 @@ a.back-link:hover {
     
     <div class="admin-od-header">
         <div>
-            <a href="#" style="text-decoration: none; color: #666; font-size: 14px;">
+            <a href="{% url 'Admin_order' %}" style="text-decoration: none; color: #666; font-size: 14px;">
                 <i class='bx bx-arrow-back'></i> Back to List
             </a>
             <h1 style="margin-top: 5px; font-size: 24px;">Order #{{ order.order_id }}</h1>
@@ -397,9 +396,16 @@ a.back-link:hover {
             <div class="card">
                 <h3 class="card-title">Customer</h3>
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <div style="width: 40px; height: 40px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class='bx bx-user' style="font-size: 20px; color: #666;"></i>
-                    </div>
+                    {% if order.user.profile %}
+                        <img src="{{ order.user.profile }}" alt="User" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb;">
+                    {% else %}
+                        <div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; 
+                                    display: flex; align-items: center; justify-content: center;
+                                    border: 2px solid #e5e7eb;">
+                            <i class='bx bx-user' style="font-size: 20px; color: #6b7280;"></i>
+                        </div>
+                    {% endif %}
+
                     <div>
                         <div style="font-weight: 600;">{{ order.user.first_name }}</div>
                         <div style="font-size: 13px; color: #666;">{{ order.user.email }}</div>
