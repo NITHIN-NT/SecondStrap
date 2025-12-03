@@ -570,11 +570,32 @@ class StockManagementView(ListView):
     model = Product
     context_object_name = "products"
     template_name = "stock/stock_management.html"
+    paginate_by = 9
 
-    def get_queryset(self):
+    def get_queryset(self, **kwargs):
         return Product.objects.annotate(
             total_stock=Sum("variants__stock"), variant_count=Count("variants")
         ).prefetch_related("variants", "variants__size")
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        paginator = context.get("paginator")
+        page_obj = context.get("page_obj")
+
+        if paginator and page_obj:
+            context['custom_page_range'] = paginator.get_elided_page_range(
+                number=page_obj.number,
+                on_each_side=2,
+                on_ends=1
+            )
+
+        query_params = self.request.GET.copy()
+        if "page" in query_params:
+            del query_params["page"]
+
+        encoded = query_params.urlencode()
+        context['query_params'] = encoded  
+        return context
 
 @method_decorator([never_cache, superuser_required], name="dispatch")
 class AdminOrderView(ListView):
