@@ -1,24 +1,8 @@
-/* ================================================= */
-/* --- STYLES FOR PROFILE ORDERS PAGE --- */
-/* ================================================= */
-
-/* Note: .profile-card, .profile-card-header, 
-   and .profile-card-body are already styled 
-   in your main 'profile_base.css'.
-*/
-
-/* Container for the list of order links */
 .order-list {
-    /* We're not using the default .profile-card-body padding 
-      so that the borders of the items can go edge-to-edge.
-      If your .profile-card-body has padding,
-      you might need to adjust this.
-    */
     display: flex;
     flex-direction: column;
 }
 
-/* Individual order item link */
 .order-item {
     display: flex;
     justify-content: space-between;
@@ -27,7 +11,6 @@
     text-decoration: none;
     color: #333;
     border-bottom: 1px solid #f0f0f0;
-    /* Light line between items */
     transition: background-color 0.3s ease;
 }
 
@@ -37,10 +20,8 @@
 
 .order-item:hover {
     background-color: #f8f9fa;
-    /* Light hover effect */
 }
 
-/* Left side details */
 .order-item-details {
     display: flex;
     flex-direction: column;
@@ -58,11 +39,9 @@
     margin: 0.25rem 0 0 0;
 }
 
-/* Right side chevron icon */
 .order-item i {
     font-size: 1.5rem;
     color: #adb5bd;
-    /* Light grey for the icon */
     transition: transform 0.3s ease;
 }
 
@@ -89,4 +68,53 @@
 
 .view-all-link:hover {
     color: #0056b3;
+}
+
+/* ==================== BADGE BASE STYLE ==================== */
+.badge {
+    display: inline-block;
+    /* Reduced horizontal padding (18px -> 10px) makes it narrower */
+    padding: 6px 10px;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 50px;
+    box-shadow: none;
+}
+
+/* ==================== PASTEL COLOR THEMES ==================== */
+
+/* 1. Pending (Yellow/Cream background, Brown text) */
+.bg-warning {
+    background-color: #FFF3CD !important;
+    color: #856404 !important;
+}
+
+/* 2. Returned / Cancelled (Pale Pink background, Dark Red text) */
+.bg-danger {
+    background-color: #F8D7DA !important;
+    color: #721C24 !important;
+}
+
+/* 3. Delivered (Mint Green background, Dark Green text) */
+.bg-success {
+    background-color: #D4EDDA !important;
+    color: #155724 !important;
+}
+
+/* 4. Confirmed / Shipped (Pale Blue background, Dark Blue text) */
+.bg-primary {
+    background-color: #CCE5FF !important;
+    /* Or #e7f1ff for lighter blue */
+    color: #004085 !important;
+}
+
+/* 5. Default / Secondary (Light Grey background, Dark Grey text) */
+.bg-secondary {
+    background-color: #E2E3E5 !important;
+    color: #383D41 !important;
 }

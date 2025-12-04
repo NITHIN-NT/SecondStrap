@@ -95,6 +95,17 @@ class OrderMain(models.Model):
         result = self.items.aggregate(total=Sum('quantity'))['total']
         return result or 0
     
+    @property
+    def get_status_color(self):
+        if self.order_status in ['delivered']:
+            return 'success' 
+        elif self.order_status in ['cancelled', 'returned']:
+            return 'danger'  
+        elif self.order_status in ['pending', 'return_requested']:
+            return 'warning' 
+        elif self.order_status in ['confirmed', 'shipped', 'out_for_delivery']:
+            return 'primary' 
+        return 'secondary'
 class OrderItem(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')
