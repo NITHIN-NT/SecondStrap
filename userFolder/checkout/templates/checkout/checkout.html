@@ -222,24 +222,27 @@
         
         <form id="addressForm" method="POST" action='{% url "add_address" %}'>
             {% csrf_token %}
+    
             <input type="hidden" name="address_id" id="address_id" value=""> 
 
             <div class="form-group address-type-group">
                 <label class="input-label">Address Type</label>
+                <span class="error-msg" id="error_address_type"></span>
+
                 <div class="radio-icon-container">
-                    <input type="radio" id="type_home" name="address_type" value="HOME" required>
+                    <input type="radio" id="type_home" name="address_type" value="HOME">
                     <label for="type_home" class="radio-icon-label">
                         <i class="bx bxs-home-alt"></i> 
                         <span>Home</span>
                     </label>
 
-                    <input type="radio" id="type_work" name="address_type" value="WORK" required>
+                    <input type="radio" id="type_work" name="address_type" value="WORK">
                     <label for="type_work" class="radio-icon-label">
                         <i class="bx bxs-briefcase"></i> 
-                        <span>Work</span>
+                        <span>Work/Office</span>
                     </label>
                     
-                    <input type="radio" id="type_other" name="address_type" value="OTHER" required>
+                    <input type="radio" id="type_other" name="address_type" value="OTHER">
                     <label for="type_other" class="radio-icon-label">
                         <i class="bx bxs-map"></i> 
                         <span>Other</span>
@@ -249,49 +252,63 @@
 
             <div class="form-group">
                 <label for="full_name">Recipient Full Name</label>
-                <input type="text" id="full_name" name="full_name" required>
+                <span class="error-msg" id="error_full_name"></span>
+                <input type="text" id="full_name" name="full_name" >
             </div>
 
             <div class="form-group">
-                <label for="address_line_1">Address Line 1</label>
-                <input type="text" id="address_line_1" name="address_line_1" required>
+                <label for="address_line_1">Address Line 1 (House No., Street)</label>
+                <span class="error-msg" id="error_address_line_1"></span>
+                <input type="text" id="address_line_1" name="address_line_1" >
             </div>
             
             <div class="form-group">
-                <label for="address_line_2">Address Line 2 (Optional)</label>
+                <label for="address_line_2">Address Line 2 (Apartment, Landmark - *Optional*)</label>
+                <span class="error-msg" id="error_address_line_2"></span>
                 <input type="text" id="address_line_2" name="address_line_2">
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="city">City/Town</label>
-                    <input type="text" id="city" name="city" required>
+                    <span class="error-msg" id="error_city"></span>
+                    <input type="text" id="city" name="city" >
                 </div>
+                
                 <div class="form-group">
-                    <label for="state">State</label>
-                    <input type="text" id="state" name="state" required>
+                    <label for="state">State/Province</label>
+                    <span class="error-msg" id="error_state"></span>
+                    <input type="text" id="state" name="state" >
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="postal_code">Postal Code</label>
-                    <input type="text" id="postal_code" name="postal_code" required>
+                    <label for="postal_code">Postal/ZIP Code</label>
+                    <span class="error-msg" id="error_postal_code"></span>
+                    <input type="text" id="postal_code" name="postal_code" pattern="\d{6}" maxlength="6" >
                 </div>
+
                 <div class="form-group">
                     <label for="phone_number">Phone Number</label>
-                    <input type="tel" id="phone_number" name="phone_number" required>
+                    <span class="error-msg" id="error_phone_number"></span>
+                    <input type="tel" id="phone_number" name="phone_number" pattern="\d{10}" maxlength="10" >
                 </div>
             </div>
             
             <div class="form-group">
                 <label for="country">Country</label>
-                <input type="text" id="country" name="country" value="India" required>
+                <span class="error-msg" id="error_country"></span>
+                <input type="text" id="country" name="country" value="India" >
             </div>
             
             <div class="form-group checkbox-group">
                 <input type="checkbox" id="is_default" name="is_default">
-                <label for="is_default">Set as default address</label>
+                <label for="is_default">Set as default shipping address</label>
+            </div>
+
+            <div class="form-group">
+                <span class="error-msg" id="error_non_field_errors"></span>
             </div>
 
             <div class="modal-actions">

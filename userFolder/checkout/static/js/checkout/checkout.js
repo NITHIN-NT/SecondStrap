@@ -157,6 +157,10 @@ document.addEventListener("DOMContentLoaded", () => {
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
+            // 1. Clear previous error messages
+            document.querySelectorAll('.error-msg').forEach(el => el.textContent = '');
+
+            // 2. Manage Button State
             const originalBtnText = saveBtn ? saveBtn.innerText : "Save";
             if (saveBtn) {
                 saveBtn.innerText = "Saving...";
@@ -166,44 +170,60 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const formData = new FormData(form);
 
+                // Construct payload manually to ensure types (bools/nulls) are correct
                 const payload = {
                     address_id: formData.get("address_id") || null,
+                    address_type: formData.get("address_type") || 'OTHER',
                     full_name: formData.get("full_name"),
                     address_line_1: formData.get("address_line_1"),
-                    address_line_2: formData.get("address_line_2"),
+                    address_line_2: formData.get("address_line_2") || null,
                     city: formData.get("city"),
                     state: formData.get("state"),
                     postal_code: formData.get("postal_code"),
                     phone_number: formData.get("phone_number"),
                     country: formData.get("country"),
-                    address_type: formData.get("address_type"),
                     is_default: isDefaultInput ? isDefaultInput.checked : false
                 };
 
                 const url = form.getAttribute("action");
 
+                // 3. Send Request
                 const response = await axios.post(url, payload);
 
+                // 4. Handle Success
                 if (response.data.status === "success") {
                     toggleModal(false);
-                    toastr.success(response.data.message);
+                    toastr.success(response.data.message || "Address saved successfully!");
+
+                    // Small delay to allow the toastr to be seen before reload
                     setTimeout(() => window.location.reload(), 500);
                 } else {
+                    // Handle logical error passed with success status 200 but logical failure
                     toastr.error(response.data.message || "Error saving address.");
                 }
 
             } catch (error) {
                 console.error("Save Error:", error);
 
+                // 5. Handle Validation Errors from Server
                 if (error.response && error.response.data && error.response.data.errors) {
                     const errors = error.response.data.errors;
+
+                    // Loop through errors and display them in the HTML spans
                     Object.keys(errors).forEach(key => {
-                        toastr.error(`${key}: ${errors[key]}`);
+                        // Look for id="error_field_name" (e.g., error_full_name)
+                        const errorSpan = document.getElementById(`error_${key}`);
+
+                        if (errorSpan) {
+                            errorSpan.textContent = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
+                        }
                     });
                 } else {
-                    toastr.error(error.response?.data?.message || "An error occurred.");
+                    // Generic fallback for server crash or network error
+                    toastr.error(error.response?.data?.message || "An unexpected error occurred.");
                 }
             } finally {
+                // 6. Reset Button
                 if (saveBtn) {
                     saveBtn.innerText = originalBtnText;
                     saveBtn.disabled = false;
@@ -232,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const placeOrderBtn = document.querySelector(".place-order-btn");
 
     if (mainCheckoutForm && placeOrderBtn) {
-        mainCheckoutForm.addEventListener("submit", function() {
+        mainCheckoutForm.addEventListener("submit", function () {
             // Adds the 'loading' class which triggers the CSS animation
             // Hides .btn-original-text and shows .btn-loading-content
             placeOrderBtn.classList.add("loading");
