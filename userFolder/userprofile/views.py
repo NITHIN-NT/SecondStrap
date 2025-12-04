@@ -266,32 +266,30 @@ def manage_address(request,address_id=None):
 
 @never_cache
 @login_required
+@require_POST
 def delete_address(request, address_id=None):
     if not address_id:
-        messages.error(request,'Address ID is required')
+        return JsonResponse({'status': 'error', 'message': 'Address ID is required'})
 
-    try :
-        address = Address.objects.get(id=address_id,user=request.user)
-    except Address.DoesNotExist :
-        messages.error(request,'Address not found !')
-        return redirect('profile_address')
+    try:
+        address = Address.objects.get(id=address_id, user=request.user)
+    except Address.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Address not found!'})
 
-    
     other_address = request.user.address_set.exclude(id=address_id)
     if not other_address.exists():
-        messages.error(request,'You must have at least one address')
-        return redirect('profile_address')
+        return JsonResponse({'status': 'error', 'message': 'You must have at least one address'})
 
     was_default = address.is_default
     address.delete()
     
     if was_default:
         new_default = other_address.order_by('id').first()
-        new_default.is_default = True
-        new_default.save(update_fields=['is_default'])
+        if new_default:
+            new_default.is_default = True
+            new_default.save(update_fields=['is_default'])
 
-    messages.success(request,'Address Deleted Successfully')
-    return redirect('profile_address') 
+    return JsonResponse({'status': 'success', 'message': 'Address Deleted Successfully'})
 class ProfilePaymentView(SecureUserMixin, TemplateView):
     template_name = "userprofile/profile_payment.html"
 

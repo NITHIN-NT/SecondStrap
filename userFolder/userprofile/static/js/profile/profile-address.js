@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // --- 1. Element References ---
+
+    // =========================================================
+    // 1. SELECTORS
+    // =========================================================
+    
+    // -- Add/Edit Modal Elements --
     const modal = document.getElementById("addressModal");
     const openBtn = document.getElementById("addNewAddress");
     const closeBtn = document.getElementById("closeAddressModalBtn");
@@ -9,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalTitle = document.getElementById("addressModalTitle");
     const addressIdInput = document.getElementById("address_id");
 
-    // Input references for prefilling
+    // -- Form Inputs --
     const fullNameInput = document.getElementById("full_name");
     const line1Input = document.getElementById("address_line_1");
     const line2Input = document.getElementById("address_line_2");
@@ -20,185 +25,212 @@ document.addEventListener("DOMContentLoaded", () => {
     const countryInput = document.getElementById("country");
     const isDefaultInput = document.getElementById("is_default");
 
-    // Delete Address Conformation modal references
-    const deleteLinks = document.querySelectorAll('.delete-address-link');
-    const deleteModal = document.getElementById('deleteConfirmModal');
-    const deleteForm = document.getElementById('deleteAddressForm');
-    const deleteLabel = document.getElementById('deleteAddressLabel');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-    const closeDeleteModalBtn = document.getElementById('closeDeleteModalBtn');
+    // -- Delete Modal Elements --
+    const deleteModal = document.getElementById("deleteConfirmModal");
+    const deleteForm = document.getElementById("deleteAddressForm");
+    const deleteLabel = document.getElementById("deleteAddressLabel");
+    const closeDeleteBtn = document.getElementById("closeDeleteModalBtn");
+    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 
-    if (!deleteModal) return; 
 
-    // MODIFICATION START: Using 'active' class for consistency
-    function openDeleteModal(url, labelText) {
-        if (deleteForm) {
-            deleteForm.action = url;          // set POST action
-        }
-        if (deleteLabel) {
-            deleteLabel.textContent = labelText || '';
-        }
+    // =========================================================
+    // 2. UTILITY FUNCTIONS
+    // =========================================================
 
-        // Use 'active' class to show modal
-        deleteModal.classList.add('active'); 
+    // Clear all inline red error messages
+    function clearErrors() {
+        document.querySelectorAll(".error-msg").forEach(e => e.innerHTML = "");
     }
 
-    function closeDeleteModal() {
-        // Use 'active' class to hide modal
-        deleteModal.classList.remove('active'); 
-    }
-    // MODIFICATION END
-
-    deleteLinks.forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const url = this.getAttribute('href');
-            const labelText = this.dataset.addressLabel || '';
-
-            if (!url) return;
-            openDeleteModal(url, labelText);
-        });
-    });
-
-    if (cancelDeleteBtn) {
-        cancelDeleteBtn.addEventListener('click', function () {
-            closeDeleteModal();
-        });
-    }
-
-    if (closeDeleteModalBtn) {
-        closeDeleteModalBtn.addEventListener('click', function () {
-            closeDeleteModal();
-        });
-    }
-
-    // Close when clicking outside the modal content
-    deleteModal.addEventListener('click', function (e) {
-        if (e.target === deleteModal) {
-            closeDeleteModal();
-        }
-    });
-
-    // --- 2. Modal Functions ---
-    const openModal = (e) => {
-        if (e) e.preventDefault();
-        // Uses 'active' class to show modal
-        if (modal) modal.classList.add("active"); 
-    };
-
-    const closeModal = () => {
-        // Uses 'active' class to hide modal
-        if (modal) modal.classList.remove("active");
-        if (form) {
-            form.reset();
-            addressIdInput.value = ""; // Clear hidden ID
-            modalTitle.textContent = "Add New Address";
-        }
-    };
-
-    // Function to get the CSRF token from the meta tag or form input
+    // Fetch CSRF token for Axios requests
     function getCsrfToken() {
-        const csrfTokenEl = document.querySelector("[name=csrfmiddlewaretoken]");
-        return csrfTokenEl ? csrfTokenEl.value : "";
+        const token = document.querySelector("[name=csrfmiddlewaretoken]");
+        return token ? token.value : "";
     }
 
-    // --- 3. Base Event Listeners ---
-    if (openBtn) openBtn.addEventListener("click", () => {
-        // Reset and then open for "Add New"
-        closeModal();
+    // Open Add/Edit Modal
+    function openModal() {
+        modal.classList.add("active");
+    }
+
+    // Close Add/Edit Modal & Reset Form
+    function closeModal() {
+        modal.classList.remove("active");
+        form.reset();
+        clearErrors();
+        modalTitle.textContent = "Add New Address";
+        addressIdInput.value = "";
+        
+        // Reset radio buttons manually
+        const radios = document.getElementsByName("address_type");
+        radios.forEach(r => r.checked = false);
+        
+        // Reset button text just in case it was stuck on "Error"
+        saveBtn.innerText = "Save Address"; 
+    }
+
+    // Close Delete Modal
+    function closeDeleteModal() {
+        deleteModal.classList.remove("active");
+    }
+
+
+    // =========================================================
+    // 3. EVENT LISTENERS (MODAL CONTROLS)
+    // =========================================================
+
+    // Open "Add New Address"
+    openBtn.addEventListener("click", () => {
+        closeModal(); // Ensure clean state
         openModal();
     });
-    if (closeBtn) closeBtn.addEventListener("click", closeModal);
-    if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
 
-    // Close modal on outside click
+    // Close "Add/Edit" Modal
+    closeBtn.addEventListener("click", closeModal);
+    cancelBtn.addEventListener("click", closeModal);
+
+    // Close Modals on Click Outside
     window.addEventListener("click", (e) => {
         if (e.target === modal) closeModal();
+        if (e.target === deleteModal) closeDeleteModal();
     });
 
-    const fetchUrlBaseElement = document.getElementById("fetchUrlBase");
-    const fetchUrlBase = fetchUrlBaseElement
-        ? fetchUrlBaseElement.getAttribute("data-url-base")
-        : null;
 
-    // --- 4. Edit/Prefill Logic using Axios GET ---
-    document.querySelectorAll(".edit-address-link").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
+    // =========================================================
+    // 4. EVENT LISTENERS (DELETE FLOW)
+    // =========================================================
+
+    // Open Delete Confirmation
+    document.querySelectorAll(".delete-address-link").forEach(link => {
+        link.addEventListener("click", (e) => {
             e.preventDefault();
 
-            const addressId = btn.getAttribute("data-address-id");
+            // Get data from the clicked link
+            const deleteUrl = link.getAttribute("href");
+            const label = link.dataset.addressLabel;
 
-            if (!addressId) {
-                console.error("Address ID not found for editing.");
-                toastr.error("Address ID not found for editing.");
-                return;
+            // Update modal content
+            deleteLabel.textContent = label;
+            deleteForm.action = deleteUrl;
+
+            // Show modal
+            deleteModal.classList.add("active");
+        });
+    });
+
+    // Close Delete Modal
+    closeDeleteBtn.addEventListener("click", closeDeleteModal);
+    cancelDeleteBtn.addEventListener("click", closeDeleteModal);
+
+    // Submit Delete Form
+    deleteForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const confirmBtn = deleteForm.querySelector("button[type='submit']");
+        const originalText = confirmBtn.innerText;
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = "Deleting...";
+
+        const csrf = getCsrfToken();
+
+        try {
+            const response = await axios.post(deleteForm.action, {}, {
+                headers: { "X-CSRFToken": csrf }
+            });
+
+            if (response.data.status === "success") {
+                toastr.success("Address deleted successfully.");
+                closeDeleteModal();
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                toastr.error(response.data.message || "Failed to delete address.");
+                closeDeleteModal();
             }
+        } catch (error) {
+            toastr.error("An error occurred while deleting.");
+        } finally {
+            confirmBtn.innerText = originalText;
+            confirmBtn.disabled = false;
+        }
+    });
 
-            // IMPORTANT CHANGE: reset BEFORE setting addressId so reset doesn't clear it
-            if (form) {
-                form.reset(); // Clear the form while loading data
-            }
 
+    // =========================================================
+    // 5. EVENT LISTENERS (EDIT FLOW)
+    // =========================================================
+    
+    document.querySelectorAll(".edit-address-link").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            clearErrors();
+
+            const id = btn.dataset.addressId;
+            addressIdInput.value = id;
             modalTitle.textContent = "Edit Address";
-            addressIdInput.value = addressId; // Set the hidden ID for the POST request
+
             openModal();
 
-            let fetchUrl;
-            if (fetchUrlBase) {
-                fetchUrl = fetchUrlBase.replace("0/", `${addressId}/`);
-            } else {
-                fetchUrl = `addresses/fetch/${addressId}/`; // fallback with trailing slash
-            }
+            // Construct fetch URL dynamically
+            const fetchUrl = document
+                .getElementById("fetchUrlBase")
+                .getAttribute("data-url-base")
+                .replace("0/", `${id}/`);
 
             try {
-                // Axios GET Request to fetch address details
                 const response = await axios.get(fetchUrl);
 
                 if (response.data.status === "success") {
-                    const address = response.data.address;
+                    const a = response.data.address;
 
-                    // Prefill Form Fields
-                    fullNameInput.value = address.full_name || '';
-                    line1Input.value = address.address_line_1 || '';
-                    line2Input.value = address.address_line_2 || '';
-                    cityInput.value = address.city || '';
-                    stateInput.value = address.state || '';
-                    postalCodeInput.value = address.postal_code || '';
-                    phoneInput.value = address.phone_number || '';
-                    countryInput.value = address.country || '';
-                    isDefaultInput.checked = address.is_default || false;
+                    // Populate fields
+                    fullNameInput.value = a.full_name;
+                    line1Input.value = a.address_line_1;
+                    line2Input.value = a.address_line_2;
+                    cityInput.value = a.city;
+                    stateInput.value = a.state;
+                    postalCodeInput.value = a.postal_code;
+                    phoneInput.value = a.phone_number;
+                    countryInput.value = a.country;
+                    isDefaultInput.checked = a.is_default;
 
-                    // Prefill Radio Buttons (HOME, WORK, OTHER)
-                    const addressType = address.address_type ? address.address_type.toLowerCase() : '';
-                    const addressTypeInput = document.getElementById(`type_${addressType}`);
-                    if (addressTypeInput) {
-                        addressTypeInput.checked = true;
+                    // Handle Radio Buttons
+                    if (a.address_type) {
+                        const type = a.address_type.toLowerCase();
+                        const radio = document.getElementById(`type_${type}`);
+                        if (radio) radio.checked = true;
                     }
 
                 } else {
-                    toastr.error(response.data.message || "Could not fetch address data.");
+                    toastr.error("Error fetching address details.");
                     closeModal();
                 }
-            } catch (error) {
-                console.error("Axios GET Error: ", error.response?.data || error.message);
+            } catch {
                 toastr.error("Error fetching address details.");
                 closeModal();
             }
         });
     });
 
-    // If somehow there's no form, skip submit logic
-    if (!form) return;
 
-    // --- 5. Form Submission (Add/Update) using Axios POST ---
+    // =========================================================
+    // 6. EVENT LISTENER (SAVE/UPDATE SUBMIT)
+    // =========================================================
+
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const url = form.action; // Assumes form.action points to the POST endpoint
+        clearErrors();
+
         const formData = new FormData(form);
 
-        // 1. Construct Payload
+        // -- Simple Frontend Validation --
+        if (!formData.get("address_type")) {
+            const errorSpan = document.getElementById("error_address_type");
+            if (errorSpan) errorSpan.innerHTML = "Please select an address type.";
+            return;
+        }
+
         const payload = {
+            address_id: formData.get("address_id"),
             full_name: formData.get("full_name"),
             address_line_1: formData.get("address_line_1"),
             address_line_2: formData.get("address_line_2"),
@@ -207,27 +239,20 @@ document.addEventListener("DOMContentLoaded", () => {
             postal_code: formData.get("postal_code"),
             phone_number: formData.get("phone_number"),
             country: formData.get("country"),
-            // Checkbox value needs careful handling: if not checked, it won't be in FormData
-            is_default: formData.get("is_default") === "on", 
+            is_default: formData.get("is_default") === "on",
             address_type: formData.get("address_type"),
-            address_id: formData.get("address_id") || null,
         };
 
-        // 2. Get CSRF Token
-        const csrfToken = getCsrfToken();
+        const csrf = getCsrfToken();
 
-        // 3. Update Save Button UI
-        const originalBtnText = saveBtn ? saveBtn.innerText : "";
-        if (saveBtn) {
-            saveBtn.innerText = "Saving...";
-            saveBtn.disabled = true;
-        }
+        saveBtn.disabled = true;
+        const originalText = "Save Address"; // We know the default text
+        saveBtn.innerText = "Saving...";
 
         try {
-            // 4. Send Axios Request
-            const response = await axios.post(url, JSON.stringify(payload), {
+            const response = await axios.post(form.action, JSON.stringify(payload), {
                 headers: {
-                    "X-CSRFToken": csrfToken,
+                    "X-CSRFToken": csrf,
                     "Content-Type": "application/json",
                 },
             });
@@ -235,30 +260,43 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.data.status === "success") {
                 closeModal();
                 toastr.success(response.data.message);
+                setTimeout(() => window.location.reload(), 1000);
+            }
+            else if (response.data.errors) {
+                // -- Logic: Button Text = "Error" --
+                saveBtn.innerText = "Error"; 
 
-                // Auto refresh page after successful add/update
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
-            } else {
-                // If there are specific field errors from Django/server
-                if (response.data.errors) {
-                    let errorMessage = response.data.message || "Please check the form for errors.";
-                    // Optionally display specific error messages here using toastr
-                    toastr.error(errorMessage);
-                } else {
-                    toastr.error(response.data.message || "Error Saving Address");
-                }
+                Object.entries(response.data.errors).forEach(([field, messages]) => {
+                    const target = document.getElementById(`error_${field}`);
+                    if (target) target.innerHTML = messages.join("<br>");
+                });
             }
         } catch (error) {
-            console.error("Axios Error : ", error.response?.data || error.message);
-            toastr.error("Error Saving Address. Check console for details.");
+            // -- Logic: Button Text = "Error" --
+            saveBtn.innerText = "Error";
+
+            const errors = error.response?.data?.errors;
+            if (errors) {
+                Object.entries(errors).forEach(([field, messages]) => {
+                    const target = document.getElementById(`error_${field}`);
+                    if (target) target.innerHTML = messages.join("<br>");
+                });
+            } else {
+                toastr.error("Unexpected error occurred.");
+            }
         } finally {
-            // 5. Reset Save Button UI
-            if (saveBtn) {
-                saveBtn.innerText = originalBtnText;
-                saveBtn.disabled = false;
+            saveBtn.disabled = false;
+
+            // If the button says "Error", wait 2 seconds before resetting to "Save Address"
+            if (saveBtn.innerText === "Error") {
+                setTimeout(() => {
+                    saveBtn.innerText = originalText;
+                }, 2000);
+            } else {
+                // If successful (and page hasn't reloaded yet), revert immediately
+                saveBtn.innerText = originalText;
             }
         }
     });
+
 });

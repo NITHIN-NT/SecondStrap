@@ -161,7 +161,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Default grey for Add/Edit */
+    background-color: rgba(0, 0, 0, 0.259);
+    /* Default grey for Add/Edit */
     display: none;
     justify-content: center;
     align-items: center;
@@ -234,29 +235,38 @@
 
 /* Override background for delete modal to be darker */
 #deleteConfirmModal {
-    background-color: rgba(0, 0, 0, 0.8); /* Darker overlay for delete */
+    background-color: rgba(0, 0, 0, 0.8);
+    /* Darker overlay for delete */
 }
 
 #deleteConfirmModal .modal-content {
-    background-color: #fff; /* Keep content white */
-    max-width: 400px; /* Make delete modal a bit narrower */
-    text-align: center; /* Center align all content inside the delete modal */
-    padding: 1.5rem 1rem; /* Adjust padding for smaller modal */
+    background-color: #fff;
+    /* Keep content white */
+    max-width: 400px;
+    /* Make delete modal a bit narrower */
+    text-align: center;
+    /* Center align all content inside the delete modal */
+    padding: 1.5rem 1rem;
+    /* Adjust padding for smaller modal */
 }
 
 #deleteConfirmModal .modal-header {
-    justify-content: center; /* Center header title */
-    border-bottom: none; /* Remove border from delete modal header */
+    justify-content: center;
+    /* Center header title */
+    border-bottom: none;
+    /* Remove border from delete modal header */
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
 }
 
 #deleteConfirmModal .modal-header h3 {
-    color: #333; /* Darker text for header */
+    color: #333;
+    /* Darker text for header */
 }
 
 #deleteConfirmModal .close-modal-btn {
-    position: absolute; /* Position close button absolutely */
+    position: absolute;
+    /* Position close button absolutely */
     top: 10px;
     right: 15px;
     color: #666;
@@ -269,25 +279,31 @@
 
 #deleteConfirmModal .modal-body {
     padding-bottom: 1.5rem;
-    color: #555; /* Default text color */
+    color: #555;
+    /* Default text color */
     font-size: 1rem;
     line-height: 1.5;
 }
 
 #deleteConfirmModal .modal-body strong {
-    color: #333; /* Stronger color for the address label */
+    color: #333;
+    /* Stronger color for the address label */
 }
 
 #deleteConfirmModal .modal-actions {
-    justify-content: center; /* Center align buttons */
-    border-top: none; /* Remove border from delete modal actions */
+    justify-content: center;
+    /* Center align buttons */
+    border-top: none;
+    /* Remove border from delete modal actions */
     padding-top: 0;
     margin-top: 0;
 }
 
 #deleteConfirmModal .modal-actions button {
-    min-width: 100px; /* Ensure buttons have a decent minimum width */
-    padding: 0.7rem 1.2rem; /* Slightly smaller padding for delete buttons */
+    min-width: 100px;
+    /* Ensure buttons have a decent minimum width */
+    padding: 0.7rem 1.2rem;
+    /* Slightly smaller padding for delete buttons */
     font-size: 0.9rem;
 }
 
@@ -425,7 +441,8 @@
 /* --- Modal Action Buttons (General, overridden for delete modal) --- */
 .modal-actions {
     display: flex;
-    justify-content: flex-end; /* Default for Add/Edit */
+    justify-content: flex-end;
+    /* Default for Add/Edit */
     gap: 1rem;
     margin-top: 2rem;
     padding-top: 1rem;
@@ -467,6 +484,23 @@
     align-items: center;
     gap: 0.5rem;
 }
+
+/* ================================================= */
+/* --- Error --- */
+/* ================================================= */
+.error-msg {
+    display: block;
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+    min-height: 0;
+}
+
+.input-error {
+    border-color: #dc3545 !important;
+}
+
 
 /* ================================================= */
 /* --- MEDIA QUERIES (Responsiveness) --- */

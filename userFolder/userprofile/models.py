@@ -10,7 +10,7 @@ class Address(models.Model):
     user = models.ForeignKey("accounts.CustomUser" , on_delete=models.CASCADE)
     full_name = models.CharField(max_length=250)
     address_line_1 = models.TextField()
-    address_line_2 = models.TextField()
+    address_line_2 = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=250)
     state = models.CharField(max_length=250)
     postal_code = models.CharField(max_length=10)
@@ -20,7 +20,9 @@ class Address(models.Model):
     address_type = models.CharField(
         max_length=50,
         choices=AddressType.choices,
-        default=AddressType.HOME
+        default=AddressType.HOME,
+        blank=True,
+        null=True
     )
 
     class Meta:
