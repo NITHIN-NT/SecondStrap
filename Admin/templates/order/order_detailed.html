@@ -2,20 +2,18 @@
 {% load static %}
 
 {% block extra_css %}
-
 <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 <style>
 
+/* --- 1. GENERAL LAYOUT --- */
 .admin-od-wrapper {
     padding: 30px;
-    background-color: #f8fafc;
-    /* Slate-50 background */
+    background-color: #f8fafc; /* Slate-50 */
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #334155;
 }
 
-/* Header Area */
 .admin-od-header {
     display: flex;
     justify-content: space-between;
@@ -30,25 +28,20 @@
     color: #0f172a;
 }
 
-/* Grid Layout: Left (Main) and Right (Sidebar) */
 .admin-od-grid {
     display: grid;
-    grid-template-columns: 1fr 380px;
-    /* Flexible left, Fixed width right */
+    grid-template-columns: 1fr 380px; /* Flexible left, Fixed right */
     gap: 24px;
     align-items: start;
 }
 
-/* Responsive: Stack on smaller screens */
 @media (max-width: 1024px) {
     .admin-od-grid {
         grid-template-columns: 1fr;
     }
 }
 
-/* =========================================
-   2. Card Styling
-   ========================================= */
+/* --- 2. CARD STYLING --- */
 .card {
     background: #ffffff;
     border-radius: 12px;
@@ -70,9 +63,7 @@
     gap: 8px;
 }
 
-/* =========================================
-   3. Table Styling (Order Items)
-   ========================================= */
+/* --- 3. TABLE STYLING --- */
 .admin-table {
     width: 100%;
     border-collapse: separate;
@@ -82,7 +73,6 @@
 .admin-table th {
     text-align: left;
     color: #64748b;
-    /* Slate-500 */
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -102,7 +92,6 @@
     border-bottom: none;
 }
 
-/* Item Display inside table */
 .item-flex {
     display: flex;
     align-items: center;
@@ -118,47 +107,122 @@
     background-color: #f1f5f9;
 }
 
-/* =========================================
-   4. Financial Summary
-   ========================================= */
+/* --- 4. RETURN ACTION BUTTONS (INDIVIDUAL) --- */
+.action-btn-wrapper {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.btn-action-sm {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+/* Approve (Green) */
+.btn-approve-item {
+    background-color: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+.btn-approve-item:hover {
+    background-color: #166534;
+    color: white;
+}
+
+/* Reject (Red) */
+.btn-reject-item {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+.btn-reject-item:hover {
+    background-color: #991b1b;
+    color: white;
+}
+
+.return-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #ffedd5;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    display: inline-block;
+}
+
+/* --- 5. BULK ACTION SIDEBAR --- */
+.bulk-return-wrapper {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #cbd5e1;
+}
+
+.bulk-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-bulk {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.btn-bulk-approve {
+    background-color: #f0fdf4;
+    color: #15803d;
+    border-color: #15803d;
+}
+.btn-bulk-approve:hover {
+    background-color: #15803d;
+    color: white;
+}
+
+.btn-bulk-reject {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border-color: #b91c1c;
+}
+.btn-bulk-reject:hover {
+    background-color: #b91c1c;
+    color: white;
+}
+
+/* --- 6. GENERAL UTILS --- */
 .info-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 12px;
     font-size: 14px;
 }
+.info-label { color: #64748b; }
+.info-val { font-weight: 500; color: #0f172a; }
+.total-row { border-top: 2px solid #e2e8f0; padding-top: 16px; margin-top: 16px; font-size: 18px; font-weight: 700; }
 
-.info-label {
-    color: #64748b;
-}
-
-.info-val {
-    font-weight: 500;
-    color: #0f172a;
-}
-
-.total-row {
-    border-top: 2px solid #e2e8f0;
-    padding-top: 16px;
-    margin-top: 16px;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-/* =========================================
-   5. Action Panel (Forms & Buttons)
-   ========================================= */
-.action-group {
-    margin-bottom: 16px;
-}
-
-.action-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: #475569;
-    margin-bottom: 6px;
-}
+.action-group { margin-bottom: 16px; }
+.action-label { display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 6px; }
 
 .form-select {
     width: 100%;
@@ -168,106 +232,35 @@
     background-color: #f8fafc;
     font-size: 14px;
     color: #334155;
-    transition: all 0.2s;
     appearance: none;
-    /* Removes default arrow on some browsers */
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 10px center;
     background-size: 16px;
 }
 
-.form-select:focus {
-    outline: none;
-    border-color: #0f172a;
-    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
-}
-
 .btn-update {
     width: 100%;
     background-color: #0f172a;
-    /* Main Dark Color */
     color: white;
     padding: 12px;
     border: none;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s;
     margin-top: 8px;
 }
+.btn-update:hover { background-color: #334155; }
 
-.btn-update:hover {
-    background-color: #334155;
-}
+.badge { display: inline-block; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-danger { background: #fee2e2; color: #b91c1c; }
+.badge-info { background: #dbeafe; color: #1d4ed8; }
+.badge-warning { background: #fef3c7; color: #b45309; }
 
-/* =========================================
-   6. Status Badges
-   ========================================= */
-.badge {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 9999px;
-    /* Pill shape */
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+a.back-link { display: inline-flex; align-items: center; gap: 4px; color: #64748b; font-weight: 500; text-decoration: none; }
+a.back-link:hover { color: #0f172a; }
 
-.badge-success {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-/* Green */
-.badge-danger {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-/* Red */
-.badge-info {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
-
-/* Blue */
-.badge-warning {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-/* Orange/Yellow */
-
-/* =========================================
-   7. Customer & Address Details
-   ========================================= */
-.customer-avatar {
-    width: 40px;
-    height: 40px;
-    background: #f1f5f9;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-}
-
-/* Links */
-a.back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: #64748b;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-a.back-link:hover {
-    color: #0f172a;
-}
 </style>
 {% endblock extra_css %}
 
@@ -276,7 +269,7 @@ a.back-link:hover {
     
     <div class="admin-od-header">
         <div>
-            <a href="{% url 'Admin_order' %}" style="text-decoration: none; color: #666; font-size: 14px;">
+            <a href="{% url 'Admin_order' %}" class="back-link">
                 <i class='bx bx-arrow-back'></i> Back to List
             </a>
             <h1 style="margin-top: 5px; font-size: 24px;">Order #{{ order.order_id }}</h1>
@@ -303,8 +296,8 @@ a.back-link:hover {
                         <tr>
                             <th>Product</th>
                             <th>Unit Price</th>
-                            <th>Quantity</th>
-                            <th style="text-align: right;">Total</th>
+                            <th>Total</th>
+                            <th style="text-align: right;">Return Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -320,14 +313,43 @@ a.back-link:hover {
                                     <div>
                                         <div style="font-weight: 500;">{{ item.product_name }}</div>
                                         <div style="font-size: 12px; color: #666;">
-                                            Size: {{ item.variant.size }}
+                                            Size: {{ item.variant.size }} | x{{ item.quantity }}
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td>₹{{ item.price_at_purchase }}</td>
-                            <td>x{{ item.quantity }}</td>
-                            <td style="text-align: right;">₹{{ item.get_total_price }}</td>
+                            <td>₹{{ item.get_total_price }}</td>
+                            
+                            <td style="text-align: right;">
+                                {% if item.status == 'return_requested' %}
+                                    
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                        <span class="return-badge">Request Pending</span>
+                                        
+                                        <div class="action-btn-wrapper">
+                                            <button class="btn-action-sm btn-reject-item" 
+                                                    onclick="handleItemReturn('{{ item.id }}', 'reject')"
+                                                    title="Reject Request">
+                                                <i class='bx bx-x'></i> Reject
+                                            </button>
+
+                                            <button class="btn-action-sm btn-approve-item" 
+                                                    onclick="handleItemReturn('{{ item.id }}', 'approve')"
+                                                    title="Approve Return">
+                                                <i class='bx bx-check'></i> Approve
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                {% elif item.status == 'returned' %}
+                                    <span class="badge badge-success">Returned</span>
+                                {% elif item.status == 'return_rejected' %}
+                                    <span class="badge badge-danger">Return Rejected</span>
+                                {% else %}
+                                    <span style="color: #cbd5e1;">-</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -362,18 +384,15 @@ a.back-link:hover {
         <div class="col-right">
             
             <div class="card" style="border-left: 4px solid #0f172a;">
-                <h3 class="card-title"><i class='bx bx-slider-alt'></i> Update Status</h3>
+                <h3 class="card-title"><i class='bx bx-slider-alt'></i> Manage Order</h3>
                 
                 <form id="orderStatusForm" method="POST" action="{% url 'order_status_update' order.order_id %}">
                     {% csrf_token %}
-                    
                     <div class="action-group">
                         <label class="action-label">Order Status</label>
                         <select name="order_status" class="form-select">
                             {% for key, label in order_status_choices %}
-                                <option value="{{ key }}" {% if order.order_status == key %}selected{% endif %}>
-                                    {{ label }}
-                                </option>
+                                <option value="{{ key }}" {% if order.order_status == key %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -382,30 +401,46 @@ a.back-link:hover {
                         <label class="action-label">Payment Status</label>
                         <select name="payment_status" class="form-select">
                             {% for key, label in payment_status_choices %}
-                                <option value="{{ key }}" {% if order.payment_status == key %}selected{% endif %}>
-                                    {{ label }}
-                                </option>
+                                <option value="{{ key }}" {% if order.payment_status == key %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <button type="submit" class="btn-update">Update Order</button>
+                    <button type="submit" class="btn-update">Update Status</button>
                 </form>
+
+                {% if has_pending_returns %} 
+                <div class="bulk-return-wrapper">
+                    <label class="action-label">Pending Returns</label>
+                    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px; line-height: 1.4;">
+                        Manage all pending requests at once.
+                    </p>
+                    
+                    <div class="bulk-btn-group">
+                        <button type="button" class="btn-bulk btn-bulk-approve" 
+                                onclick="handleBulkReturn('{{ order.order_id }}', 'approve')">
+                            <i class='bx bx-check-double'></i> Approve All Returns
+                        </button>
+                        
+                        <button type="button" class="btn-bulk btn-bulk-reject" 
+                                onclick="handleBulkReturn('{{ order.order_id }}', 'reject')">
+                            <i class='bx bx-x-circle'></i> Reject All Requests
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <div class="card">
                 <h3 class="card-title">Customer</h3>
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
                     {% if order.user.profile %}
-                        <img src="{{ order.user.profile }}" alt="User" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb;">
+                        <img src="{{ order.user.profile }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb;">
                     {% else %}
-                        <div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; 
-                                    display: flex; align-items: center; justify-content: center;
-                                    border: 2px solid #e5e7eb;">
+                        <div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #e5e7eb;">
                             <i class='bx bx-user' style="font-size: 20px; color: #6b7280;"></i>
                         </div>
                     {% endif %}
-
                     <div>
                         <div style="font-weight: 600;">{{ order.user.first_name }}</div>
                         <div style="font-size: 13px; color: #666;">{{ order.user.email }}</div>
@@ -428,70 +463,146 @@ a.back-link:hover {
     </div>
 </div>
 {% endblock content %}
+
 {% block extraJs %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // Ensure the toastr options match your base settings
-    toastr.options = {
-        "closeButton": true,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "timeOut": "4000" // Auto dismiss after 2 seconds
-    };
-
-    const statusForm = document.getElementById('orderStatusForm');
-
-    if (statusForm) {
-        statusForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const actionUrl = this.getAttribute('action');
-            
-            // Button loading state
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerText;
-            submitBtn.innerText = 'Updating...';
-            submitBtn.disabled = true;
-
-            fetch(actionUrl, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
+    // 1. Helper: Get CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // 1. Show Success Toast using your existing library
-                    toastr.success(data.message || 'Status updated successfully');
+            }
+        }
+        return cookieValue;
+    }
 
-                    // 2. Wait 1 second so the user sees the toast, then reload
-                    // If we reload immediately, the toast disappears too fast
-                    setTimeout(() => {
-                        location.reload();
-                    }, 4000);
+    // 2. Handle Individual Item (Approve OR Reject)
+    function handleItemReturn(itemId, actionType) {
+        let confirmMsg = actionType === 'approve' ? 'Approve return?' : 'Reject return request?';
+        if(!confirm(confirmMsg)) return;
 
-                } else {
-                    // 3. Show Error Toast
-                    toastr.error(data.message || 'Something went wrong');
-                    
-                    // Reset button immediately so they can try again
-                    submitBtn.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                toastr.error('A network error occurred');
-                
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-            });
+        // Ensure this URL matches your backend urls.py
+        // e.g., path('manage-return-item/<int:item_id>/', views.manage_return_item, ...)
+        const url = `/admin_panel/manage-return-item/${itemId}/`; 
+        const csrftoken = getCookie('csrftoken');
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 'action': actionType }) 
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                toastr.success(`Return ${actionType}ed successfully`);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                toastr.error(data.message || 'Error updating item');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            toastr.error('Network error');
         });
     }
-});
+
+    // 3. Handle Bulk Actions (Approve All OR Reject All)
+    function handleBulkReturn(orderId, actionType) {
+        let confirmMsg = actionType === 'approve' 
+            ? 'Approve ALL pending returns?' 
+            : 'Reject ALL pending return requests?';
+            
+        if(!confirm(confirmMsg)) return;
+
+        // Ensure this URL matches your backend urls.py
+        // e.g., path('manage-return-all/<int:order_id>/', views.manage_return_all, ...)
+        const url = `/admin_panel/manage-return-all/${orderId}/`; 
+        const csrftoken = getCookie('csrftoken');
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 'action': actionType })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                toastr.success(`All returns ${actionType}ed successfully`);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                toastr.error(data.message || 'Error processing bulk action');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            toastr.error('Network error');
+        });
+    }
+
+    // 4. On Load: Toastr Config & Status Form
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Toastr Defaults
+        if (typeof toastr !== 'undefined') {
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "timeOut": "3000"
+            };
+        }
+
+        // Standard Order Status Form Listener
+        const statusForm = document.getElementById('orderStatusForm');
+
+        if (statusForm) {
+            statusForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const actionUrl = this.getAttribute('action');
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerText;
+                submitBtn.innerText = 'Updating...';
+                submitBtn.disabled = true;
+
+                fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        toastr.success(data.message || 'Status updated successfully');
+                        setTimeout(() => { location.reload(); }, 2000);
+                    } else {
+                        toastr.error(data.message || 'Something went wrong');
+                        submitBtn.innerText = originalBtnText;
+                        submitBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('A network error occurred');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                });
+            });
+        }
+    });
 </script>
 {% endblock extraJs %}

@@ -614,7 +614,7 @@ class AdminOrderView(ListView):
         end_date = self.request.GET.get('end_date')
 
         if search:
-            querset = querset.filter(order_id__icontains = search)
+            querset = querset.filter(order_id__icontains = search.strip())
             
         if status:
             querset = querset.filter(order_status__icontains = status)
