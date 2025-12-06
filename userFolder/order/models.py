@@ -17,6 +17,7 @@ ORDER_STATUS_CHOICES = [
     ('returned', 'Returned'),
     ('return_requested', 'Return Requested'),
     ('partially_cancelled', 'Partially cancelled'), 
+    ('return_canceled','Return Canceled'),
 ]
 
 PAYMENT_CHOICES = [
@@ -31,11 +32,23 @@ PAYMENT_STATUS_CHOICES = [
     ('failed', 'Failed'),
 ]
 
+RETURN_CHOICES = [
+    ('pending', 'Pending'),
+    ('return_requested', 'Return Requested'),
+    ('return_approved', 'Return Approved'),
+    ('return_rejected', 'Return Rejected'),
+    ('return_canceled','Return Canceled'),
+]
+
 def generate_order_id():
     date = timezone.now().strftime("%Y%m%d")
     suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     return f"ORD-{date}-{suffix}"
 
+def generate_return_id():
+    suffix = ''.join(random.choices(string.digits,k=8))
+    return f"RET-{suffix}"
+    
 class OrderMain(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='orders')
     order_id = models.CharField(max_length=50, unique=True, default=generate_order_id, editable=False)
@@ -54,10 +67,14 @@ class OrderMain(models.Model):
     order_status = models.CharField(max_length=150, choices=ORDER_STATUS_CHOICES, default='pending')
     
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
-    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=12) 
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
+    shipping_amount = models.DecimalField(max_digits=10,decimal_places=2,default=49)
+    tax_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0)
     final_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     
     coupon_code = models.CharField(max_length=50, null=True, blank=True)
+    
+    is_returned = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -76,15 +93,22 @@ class OrderMain(models.Model):
         }
         return status_map.get(self.order_status, 0)
     
+    @property
+    def has_return_requested(self):
+        return self.order_status == 'return_requested' or self.items.filter(status = 'return_requested').exists()
+    
+    # using the @ property we can directly call teh has_return_requested in views/shell . 
+    # if don't use that we call like has_return_requested() like this 
     class Meta:
         ordering = ['-created_at'] 
 
     def save(self, *args, **kwargs):
         total = self.total_price or Decimal('0.00')
         discount = self.discount_amount or Decimal('0.00')
-        tax = Decimal(18)
-        shipping =Decimal(49.00)
-        self.final_price = (total + tax + shipping )- discount
+        shipping = self.shipping_amount or Decimal('0.00')
+        tax = self.tax_amount or Decimal('0.00')
+        
+        self.final_price = (total + tax + shipping) - discount
         super().save(*args, **kwargs)
         
     def __str__(self):
@@ -116,6 +140,9 @@ class OrderItem(models.Model):
     
     status = models.CharField(max_length=50, choices=ORDER_STATUS_CHOICES, default='pending')
     
+    is_returned = models.BooleanField(default=False)
+
+    
     @property
     def get_total_price(self):
         return self.price_at_purchase * self.quantity
@@ -123,4 +150,27 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.product_name} ({self.quantity})"
     
+    @property
+    def get_status_color(self):
+        if self.status in ['delivered']:
+            return 'success' 
+        elif self.status in ['cancelled', 'returned']:
+            return 'danger'  
+        elif self.status in ['pending', 'return_requested']:
+            return 'warning' 
+        elif self.status in ['confirmed', 'shipped', 'out_for_delivery']:
+            return 'primary' 
+        return 'secondary'
+class ReturnOrder(models.Model):
+    order = models.ForeignKey(OrderMain, on_delete=models.CASCADE  ,related_name='returns')
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name='returns')
     
+    item = models.ForeignKey(OrderItem,on_delete=models.CASCADE,null=True,blank=True,related_name='return_item')
+    return_id = models.CharField(max_length=50, unique=True, default=generate_return_id, editable=False)
+    return_reason = models.TextField()
+    return_status = models.CharField(max_length=50,choices=RETURN_CHOICES,default='pending')
+    return_note = models.TextField(null=True,blank=True)
+    return_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.return_id} - {self.user.first_name}"

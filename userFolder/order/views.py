@@ -4,11 +4,15 @@ from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.decorators import login_required
 from userFolder.userprofile.models import Address
 from userFolder.cart.models import Cart, CartItems
-from .models import OrderMain, OrderItem, ProductVariant
+from .models import *
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.db import transaction
 from decimal import Decimal
 from .utils import render_to_pdf 
+from django.http import JsonResponse
+import json
+from django.db import transaction
 
 @login_required(login_url='login')
 def order(request):
@@ -139,8 +143,6 @@ def order(request):
         'order': order
     }
     
-    
-    
     return render(request, 'orders/order_success.html', context)
 
 def order_details_view(request,order_id):
@@ -158,7 +160,7 @@ def order_details_view(request,order_id):
         'discount' : discount,
         'shipping' : shipping
     }
-    
+    print(order.has_return_requested)
     return render(request,'orders/order_details.html',context)
 
 def download_invoice_view(request, order_id):
@@ -181,3 +183,102 @@ def download_invoice_view(request, order_id):
         return response
         
     return HttpResponse("Not found")
+
+@login_required
+@require_POST
+def return_order_view(request, order_id):
+    try: 
+        data = json.loads(request.body)
+        list_return_items = data.get('returns', [])
+        
+        if not list_return_items:
+            return JsonResponse({'status': 'error', 'message': 'No items selected for return.'}, status=400)
+        
+        order = get_object_or_404(OrderMain, order_id=order_id, user=request.user)
+        print(order)
+        with transaction.atomic():
+            items_updated_count = 0
+            for item in list_return_items:
+                item_id = item.get('item_id')
+                reason = item.get('reason')
+                note = item.get('note')
+                
+                print(item_id)
+                print(reason)
+                print(note)
+                
+                order_item = get_object_or_404(OrderItem, id=item_id, order=order)
+                print( f"return item :{order_item}")
+                if order_item.status in ['returned', 'return_requested', 'cancelled', 'partially_cancelled']:
+                    continue
+                
+                order_item.status = 'return_requested'
+                order_item.save()
+
+                ReturnOrder.objects.create(
+                    order=order,
+                    user=request.user,
+                    item=order_item,
+                    return_reason=reason,
+                    return_note=note,
+                    return_status='return_requested'
+                )
+                items_updated_count += 1
+                
+            if items_updated_count == 0:
+                return JsonResponse({'status': 'error', 'message': 'Selected items are not eligible for return.'}, status=400)
+
+            total_items = order.items.count()
+            
+            print(f"total items : {total_items}")
+            
+            non_active_items = order.items.filter(
+                status__in=['return_requested', 'returned', 'cancelled', 'partially_cancelled']
+            ).count()
+            
+            if total_items == non_active_items:
+                order.order_status = 'return_requested'
+                order.save()
+        
+        return JsonResponse({'status': 'success', 'message': 'Return request submitted successfully.'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format.'}, status=400)
+    
+    except Exception as e:
+        print(f"Error: {e}")  
+        return JsonResponse({'status': 'error', 'message': 'Something went wrong'}, status=500)
+
+
+
+@login_required
+def cancel_return_order_view(request, order_id):
+    order = get_object_or_404(OrderMain, order_id=order_id, user=request.user)
+    return_items = ReturnOrder.objects.filter(order=order, return_status='return_requested')
+    if not return_items.exists():
+        messages.warning(request, 'No active return requests found for this order')
+        return redirect('order_details', order_id=order_id)
+        
+    try:
+        with transaction.atomic():
+            for return_entry in return_items:
+                print(f"return Items : {return_entry}")
+                order_item = return_entry.item
+                order_item.status = 'delivered'
+                order_item.save()
+    
+            return_items.update(return_status = 'return_canceled')
+                
+            has_other_returns = order.items.filter(status = 'return_requested').exists()
+            if not has_other_returns:
+                order.order_status = 'delivered'
+                order.is_returned = False
+                order.save()
+                
+        messages.success(request, "Return request cancelled Successfully.")
+        
+    except Exception as e:
+        print(f"Error cancelling return: {e}") 
+        messages.error(request, 'An error occurred')
+
+    return redirect('order_details', order_id=order_id)

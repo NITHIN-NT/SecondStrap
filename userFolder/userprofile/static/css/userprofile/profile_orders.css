@@ -73,9 +73,7 @@
 /* ==================== BADGE BASE STYLE ==================== */
 .badge {
     display: inline-block;
-    /* Reduced horizontal padding (18px -> 10px) makes it narrower */
     padding: 6px 10px;
-
     font-size: 0.85rem;
     font-weight: 700;
     line-height: 1;
