@@ -255,11 +255,9 @@
                     {% endif %}
 
                 {% elif order.order_status == 'pending' or order.order_status == 'confirmed' or order.order_status == 'processing' %}
-                    <a href="#">
-                        <button onclick="confirmCancel()" class="btn-action btn-cancel-full">
-                            <i class='bx bx-x-circle'></i>Cancel Order
-                        </button>
-                    </a>
+                    <button type="button" onclick="openCancelOrderModal()" class="btn-action btn-cancel-full">
+                        <i class='bx bx-x-circle'></i>Cancel Order
+                    </button>
                 {% endif %}
             </div>
         {% endif %}
@@ -388,6 +386,28 @@
                 Yes, Cancel Return
             </a>
         </div>
+    </div>
+</div>
+
+<div id="cancelOrderModal" class="custom-modal">
+    <div class="custom-modal-content modal-sm">
+        <div class="modal-header">
+            <h3>Cancel Order</h3>
+            <span class="close-modal" onclick="closeCancelOrderModal()">&times;</span>
+        </div>
+        
+        <form action="{% url 'cancel_order_view' order.order_id %}" method="POST" id='cancelOrderForm'>
+            {% csrf_token %}
+            <div class="modal-body" style="text-align: center; padding: 30px 20px;">
+                <i class='bx bx-error-circle' style="font-size: 50px; color: #dc2626; margin-bottom: 15px;"></i>
+                <p style="font-size: 16px; color: #444;">Are you sure you want to cancel this order?<br>This action cannot be undone.</p>
+            </div>
+
+            <div class="modal-footer" style="justify-content: center;">
+                <button type="button" class="btn-cancel-modal" onclick="closeCancelOrderModal()">Go Back</button>
+                <button type="submit" class="btn-confirm-modal" style="background-color: #dc2626;">Yes, Cancel Order</button>
+            </div>
+        </form>
     </div>
 </div>
 

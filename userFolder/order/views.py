@@ -255,8 +255,6 @@ def return_order_view(request, order_id):
         print(f"Error: {e}")  
         return JsonResponse({'status': 'error', 'message': 'Something went wrong'}, status=500)
 
-
-
 @login_required
 def cancel_return_order_view(request, order_id):
     order = get_object_or_404(OrderMain, order_id=order_id, user=request.user)
@@ -288,3 +286,30 @@ def cancel_return_order_view(request, order_id):
         messages.error(request, 'An error occurred')
 
     return redirect('order_details', order_id=order_id)
+
+@login_required
+def cancel_order_view(request,order_id):
+    order = get_object_or_404(OrderMain,order_id=order_id,user=request.user)
+    
+    if order.order_status in ['shipped','out_for_delivery','delivered','cancelled']:
+        return JsonResponse({'status': "error", "message": 'Cannot cancel: Order is already out to you or cancelled.'})
+    
+    try :    
+        order_items = order.items.all()
+        for item in order_items:
+            item.status = 'cancelled'
+            item.save()
+            
+            # Increasing the stock 
+            variant =  item.variant
+            variant.stock += item.quantity
+            variant.save()
+
+        order.order_status = 'cancelled'
+        order.save()
+        
+        return JsonResponse({"status": "success", "message": "Order cancelled successfully"})
+    except Exception as e :
+        print(str(e))
+        return JsonResponse({"status" :"error","message" : "sorry something went wrong while canceling the order."})
+    
