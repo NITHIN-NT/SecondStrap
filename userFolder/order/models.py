@@ -6,6 +6,7 @@ import random
 import string
 from decimal import Decimal
 from django.db.models import Sum
+from datetime import timedelta
 
 ORDER_STATUS_CHOICES = [
     ('pending', 'Pending'),
@@ -130,6 +131,11 @@ class OrderMain(models.Model):
         elif self.order_status in ['confirmed', 'shipped', 'out_for_delivery']:
             return 'primary' 
         return 'secondary'
+    
+    def is_return_priod_expired(self):
+        if self.order_status == 'delivered' and self.updated_at:
+            return timezone.now() > (self.updated_at + timedelta(days=7))
+        return False
 class OrderItem(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')

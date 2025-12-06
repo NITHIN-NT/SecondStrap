@@ -2,7 +2,8 @@
    Fully Updated Stylesheet
    - Page Layout
    - Timeline & Status
-   - RED THEMED MODAL (Updated)
+   - RED THEMED MODAL
+   - NEW: Small Modal & Disabled Buttons
    --------------------------- */
 
 /* --- PAGE LAYOUT --- */
@@ -453,6 +454,15 @@
     border-color: #333;
 }
 
+/* NEW: Disabled Button Style */
+.btn-disabled {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+    background-color: #9ca3af !important;
+    border-color: #9ca3af !important;
+    color: #fff !important;
+}
+
 /* ================================================= */
 /* --- CUSTOM MODAL STYLES (RED THEME) --- */
 /* ================================================= */
@@ -480,6 +490,12 @@
     max-width: 600px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     animation: slideDown 0.3s ease-out;
+}
+
+/* NEW: Small Modal modifier */
+.modal-sm {
+    max-width: 400px !important;
+    margin-top: 15vh; /* Center it more vertically */
 }
 
 @keyframes slideDown {
@@ -754,9 +770,7 @@
 /* ==================== BADGE BASE STYLE ==================== */
 .badge {
     display: inline-block;
-    /* Reduced horizontal padding (18px -> 10px) makes it narrower */
     padding: 6px 10px;
-
     font-size: 0.85rem;
     font-weight: 700;
     line-height: 1;
@@ -814,7 +828,6 @@
         gap: 15px;
     }
 
-    /* Make buttons full width on mobile */
     .od-bottom-actions {
         align-items: stretch;
         text-align: center;
@@ -824,7 +837,6 @@
         max-width: 100%;
     }
 
-    /* Adjust item row for mobile */
     .item-row {
         flex-wrap: wrap;
     }
@@ -835,6 +847,5 @@
         margin-top: 10px;
         padding-left: 90px;
         align-items: flex-start;
-        /* Realign left for mobile */
     }
 }

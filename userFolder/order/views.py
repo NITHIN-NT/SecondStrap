@@ -195,7 +195,17 @@ def return_order_view(request, order_id):
             return JsonResponse({'status': 'error', 'message': 'No items selected for return.'}, status=400)
         
         order = get_object_or_404(OrderMain, order_id=order_id, user=request.user)
-        print(order)
+        
+        if order.order_status !=  'delivered':
+            return JsonResponse({"status" : "error" , "message" : "Order has not been delivered yet."},status=400)
+        
+        current_date = timezone.now()
+        delivered_date = order.updated_at
+        
+        difference = current_date - delivered_date
+        if difference.days > 7:
+            return JsonResponse({"status" : "error","message" : "Return period expired. You can only return items within 7 days of delivery."},status=400)
+        
         with transaction.atomic():
             items_updated_count = 0
             for item in list_return_items:
@@ -203,12 +213,8 @@ def return_order_view(request, order_id):
                 reason = item.get('reason')
                 note = item.get('note')
                 
-                print(item_id)
-                print(reason)
-                print(note)
                 
                 order_item = get_object_or_404(OrderItem, id=item_id, order=order)
-                print( f"return item :{order_item}")
                 if order_item.status in ['returned', 'return_requested', 'cancelled', 'partially_cancelled']:
                     continue
                 

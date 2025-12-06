@@ -231,28 +231,35 @@
 
         {% if order.order_status != 'cancelled' and order.order_status != 'returned' %}
             <div class="od-bottom-actions">
+                
                 {% if order.has_return_requested %}
-                <a href="{% url 'cancel_return_order_view' order.order_id %}">
-                    <button type='button' class="btn-action btn-return-cancel"> 
-                        <i class='bx bx-x-circle'></i> 
-                            
-                                Cancel Return
-                            </button>
-                </a>
-                {% elif order.order_status == 'delivered' and order.payment_status == 'paid' %}
-                    <div class="action-note">
-                        <p>Need to return items? You can request a return within 7 days.</p>
-                    </div>
-                    <button onclick="openReturnModal()" type="button" class="btn-action btn-return-full">
-                        <i class='bx bx-revision'></i> Return Items / Order
+                    <button type='button' onclick="openCancelReturnModal()" class="btn-action btn-return-cancel"> 
+                        <i class='bx bx-x-circle'></i> Cancel Return Request
                     </button>
 
+                {% elif order.order_status == 'delivered' and order.payment_status == 'paid' %}
+                    {% if not order.is_return_period_expired %}
+                        <div class="action-note">
+                            <p>Need to return items? You can request a return within 7 days.</p>
+                        </div>
+                        <button onclick="openReturnModal()" type="button" class="btn-action btn-return-full">
+                            <i class='bx bx-revision'></i> Return Items / Order
+                        </button>
+                    {% else %}
+                        <div class="action-note">
+                            <p style="color: #dc2626;">Return period expired (7 days passed).</p>
+                        </div>
+                        <button type="button" class="btn-action btn-disabled" disabled>
+                            Return Window Closed
+                        </button>
+                    {% endif %}
+
                 {% elif order.order_status == 'pending' or order.order_status == 'confirmed' or order.order_status == 'processing' %}
-                <a href="#">
-                    <button onclick="confirmCancel()" class="btn-action btn-cancel-full">
-                        <i class='bx bx-x-circle'></i>Cancel Order
-                    </button>
-                </a>
+                    <a href="#">
+                        <button onclick="confirmCancel()" class="btn-action btn-cancel-full">
+                            <i class='bx bx-x-circle'></i>Cancel Order
+                        </button>
+                    </a>
                 {% endif %}
             </div>
         {% endif %}
@@ -362,6 +369,28 @@
         </form>
     </div>
 </div>
+
+<div id="cancelReturnModal" class="custom-modal">
+    <div class="custom-modal-content modal-sm">
+        <div class="modal-header">
+            <h3>Cancel Return Request</h3>
+            <span class="close-modal" onclick="closeCancelReturnModal()">&times;</span>
+        </div>
+        
+        <div class="modal-body" style="text-align: center; padding: 30px 20px;">
+            <i class='bx bx-question-mark' style="font-size: 50px; color: #f59e0b; margin-bottom: 15px;"></i>
+            <p style="font-size: 16px; color: #444;">Are you sure you want to cancel your return request? <br>You can re-apply if the 7-day window is still open.</p>
+        </div>
+
+        <div class="modal-footer" style="justify-content: center;">
+            <button type="button" class="btn-cancel-modal" onclick="closeCancelReturnModal()">No, Keep it</button>
+            <a href="{% url 'cancel_return_order_view' order.order_id %}" class="btn-confirm-modal" style="text-decoration: none;">
+                Yes, Cancel Return
+            </a>
+        </div>
+    </div>
+</div>
+
 {% endblock content %}
 {% block extra_script %}
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
