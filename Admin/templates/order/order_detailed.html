@@ -8,7 +8,7 @@
 /* --- 1. GENERAL LAYOUT --- */
 .admin-od-wrapper {
     padding: 30px;
-    background-color: #f8fafc; /* Slate-50 */
+    background-color: #f8fafc;
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #334155;
@@ -64,6 +64,7 @@
 }
 
 /* --- 3. TABLE STYLING --- */
+/* FIXED: Removed the typo "is" here */
 .admin-table {
     width: 100%;
     border-collapse: separate;
@@ -107,16 +108,17 @@
     background-color: #f1f5f9;
 }
 
-/* --- 4. RETURN ACTION BUTTONS (INDIVIDUAL) --- */
+/* --- 4. ACTION BUTTONS --- */
 .action-btn-wrapper {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
+    align-items: center;
     margin-top: 4px;
 }
 
 .btn-action-sm {
-    padding: 6px 10px;
+    padding: 6px 12px;
     border-radius: 6px;
     font-size: 11px;
     font-weight: 600;
@@ -124,7 +126,7 @@
     border: 1px solid transparent;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     transition: all 0.2s;
     text-decoration: none;
 }
@@ -151,6 +153,17 @@
     color: white;
 }
 
+/* NEW: Received/Returned (Blue) */
+.btn-received-item {
+    background-color: #e0f2fe;
+    color: #075985;
+    border-color: #bae6fd;
+}
+.btn-received-item:hover {
+    background-color: #0284c7;
+    color: white;
+}
+
 .return-badge {
     font-size: 10px;
     padding: 2px 6px;
@@ -162,61 +175,8 @@
     display: inline-block;
 }
 
-/* --- 5. BULK ACTION SIDEBAR --- */
-.bulk-return-wrapper {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px dashed #cbd5e1;
-}
-
-.bulk-btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.btn-bulk {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 13px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-}
-
-.btn-bulk-approve {
-    background-color: #f0fdf4;
-    color: #15803d;
-    border-color: #15803d;
-}
-.btn-bulk-approve:hover {
-    background-color: #15803d;
-    color: white;
-}
-
-.btn-bulk-reject {
-    background-color: #fef2f2;
-    color: #b91c1c;
-    border-color: #b91c1c;
-}
-.btn-bulk-reject:hover {
-    background-color: #b91c1c;
-    color: white;
-}
-
-/* --- 6. GENERAL UTILS --- */
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
+/* --- 5. GENERAL UTILS --- */
+.info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
 .info-label { color: #64748b; }
 .info-val { font-weight: 500; color: #0f172a; }
 .total-row { border-top: 2px solid #e2e8f0; padding-top: 16px; margin-top: 16px; font-size: 18px; font-weight: 700; }
@@ -257,9 +217,15 @@
 .badge-danger { background: #fee2e2; color: #b91c1c; }
 .badge-info { background: #dbeafe; color: #1d4ed8; }
 .badge-warning { background: #fef3c7; color: #b45309; }
+.badge-secondary { background: #f1f5f9; color: #475569; }
 
-a.back-link { display: inline-flex; align-items: center; gap: 4px; color: #64748b; font-weight: 500; text-decoration: none; }
-a.back-link:hover { color: #0f172a; }
+/* Tooltip */
+.note-tooltip-wrapper { position: relative; display: inline-block; margin-left: 8px; }
+.note-trigger-icon { font-size: 20px; color: #64748b; cursor: pointer; vertical-align: middle; }
+.note-trigger-icon:hover { color: #0f172a; }
+.note-tooltip-box { visibility: hidden; opacity: 0; position: absolute; bottom: 130%; right: -10px; width: 220px; background-color: #334155; color: #fff; text-align: left; padding: 10px 12px; border-radius: 6px; font-size: 12px; line-height: 1.4; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: opacity 0.2s, visibility 0.2s; }
+.note-tooltip-box::after { content: ""; position: absolute; top: 100%; right: 14px; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #334155 transparent transparent transparent; }
+.note-tooltip-wrapper:hover .note-tooltip-box { visibility: visible; opacity: 1; }
 
 </style>
 {% endblock extra_css %}
@@ -269,9 +235,6 @@ a.back-link:hover { color: #0f172a; }
     
     <div class="admin-od-header">
         <div>
-            <a href="{% url 'Admin_order' %}" class="back-link">
-                <i class='bx bx-arrow-back'></i> Back to List
-            </a>
             <h1 style="margin-top: 5px; font-size: 24px;">Order #{{ order.order_id }}</h1>
             <span style="color: #666; font-size: 14px;">Placed on {{ order.created_at }}</span>
         </div>
@@ -305,39 +268,51 @@ a.back-link:hover { color: #0f172a; }
                         <tr>
                             <td>
                                 <div class="item-flex">
-                                    {% if item.variant.product.image %}
-                                        <img src="{{ item.variant.product.image.url }}" class="product-thumb">
-                                    {% else %}
-                                        <div class="product-thumb" style="background: #eee;"></div>
-                                    {% endif %}
-                                    <div>
-                                        <div style="font-weight: 500;">{{ item.product_name }}</div>
-                                        <div style="font-size: 12px; color: #666;">
-                                            Size: {{ item.variant.size }} | x{{ item.quantity }}
+                                    {% with variant=item.variant %}
+                                        {% if variant and variant.product and variant.product.image %}
+                                            <img src="{{ variant.product.image.url }}" class="product-thumb">
+                                        {% else %}
+                                            <div class="product-thumb" style="background: #eee;"></div>
+                                        {% endif %}
+                                        <div>
+                                            <div style="font-weight: 500;">{{ item.product_name }}</div>
+                                            <div style="font-size: 12px; color: #666;">
+                                                Size: {% if variant %}{{ variant.size }}{% else %}-{% endif %} | x{{ item.quantity }}
+                                            </div>
                                         </div>
-                                    </div>
+                                    {% endwith %}
                                 </div>
                             </td>
                             <td>₹{{ item.price_at_purchase }}</td>
                             <td>₹{{ item.get_total_price }}</td>
                             
                             <td style="text-align: right;">
+                                
                                 {% if item.status == 'return_requested' %}
-                                    
                                     <div style="display: flex; flex-direction: column; align-items: flex-end;">
                                         <span class="return-badge">Request Pending</span>
-                                        
                                         <div class="action-btn-wrapper">
                                             <button class="btn-action-sm btn-reject-item" 
-                                                    onclick="handleItemReturn('{{ item.id }}', 'reject')"
+                                                    onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'reject')"
                                                     title="Reject Request">
                                                 <i class='bx bx-x'></i> Reject
                                             </button>
-
                                             <button class="btn-action-sm btn-approve-item" 
-                                                    onclick="handleItemReturn('{{ item.id }}', 'approve')"
+                                                    onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'approve')"
                                                     title="Approve Return">
                                                 <i class='bx bx-check'></i> Approve
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                {% elif item.status == 'return_approved' %}
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                        <span class="badge badge-warning" style="font-size: 10px; margin-bottom: 4px;">Awaiting Return</span>
+                                        <div class="action-btn-wrapper">
+                                            <button class="btn-action-sm btn-received-item" 
+                                                    onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'returned')"
+                                                    title="Mark as Received/Returned">
+                                                <i class='bx bx-box'></i> Mark Received
                                             </button>
                                         </div>
                                     </div>
@@ -347,8 +322,19 @@ a.back-link:hover { color: #0f172a; }
                                 {% elif item.status == 'return_rejected' %}
                                     <span class="badge badge-danger">Return Rejected</span>
                                 {% else %}
-                                    <span style="color: #cbd5e1;">-</span>
+                                    <span class="badge badge-secondary" style="opacity: 0.5;">None</span>
                                 {% endif %}
+
+                                {% if item.return_item.return_reason %}
+                                    <div class="note-tooltip-wrapper">
+                                        <i class='bx bx-note note-trigger-icon'></i>
+                                        <div class="note-tooltip-box">
+                                            <strong>Return Reason:</strong><br>
+                                            {{ item.return_item.return_reason }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
                             </td>
                         </tr>
                         {% endfor %}
@@ -382,7 +368,6 @@ a.back-link:hover { color: #0f172a; }
         </div>
 
         <div class="col-right">
-            
             <div class="card" style="border-left: 4px solid #0f172a;">
                 <h3 class="card-title"><i class='bx bx-slider-alt'></i> Manage Order</h3>
                 
@@ -409,43 +394,27 @@ a.back-link:hover { color: #0f172a; }
                     <button type="submit" class="btn-update">Update Status</button>
                 </form>
 
-                {% if has_pending_returns %} 
-                <div class="bulk-return-wrapper">
-                    <label class="action-label">Pending Returns</label>
-                    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px; line-height: 1.4;">
-                        Manage all pending requests at once.
-                    </p>
-                    
-                    <div class="bulk-btn-group">
-                        <button type="button" class="btn-bulk btn-bulk-approve" 
-                                onclick="handleBulkReturn('{{ order.order_id }}', 'approve')">
-                            <i class='bx bx-check-double'></i> Approve All Returns
-                        </button>
-                        
-                        <button type="button" class="btn-bulk btn-bulk-reject" 
-                                onclick="handleBulkReturn('{{ order.order_id }}', 'reject')">
-                            <i class='bx bx-x-circle'></i> Reject All Requests
-                        </button>
-                    </div>
-                </div>
-                {% endif %}
             </div>
 
             <div class="card">
                 <h3 class="card-title">Customer</h3>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    {% if order.user.profile %}
-                        <img src="{{ order.user.profile }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb;">
-                    {% else %}
-                        <div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #e5e7eb;">
-                            <i class='bx bx-user' style="font-size: 20px; color: #6b7280;"></i>
+                {% if order.user %}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        {% if order.user.profile %}
+                            <img src="{{ order.user.profile }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb;">
+                        {% else %}
+                            <div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #e5e7eb;">
+                                <i class='bx bx-user' style="font-size: 20px; color: #6b7280;"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <div style="font-weight: 600;">{{ order.user.first_name }}</div>
+                            <div style="font-size: 13px; color: #666;">{{ order.user.email }}</div>
                         </div>
-                    {% endif %}
-                    <div>
-                        <div style="font-weight: 600;">{{ order.user.first_name }}</div>
-                        <div style="font-size: 13px; color: #666;">{{ order.user.email }}</div>
                     </div>
-                </div>
+                {% else %}
+                    <p style="font-size: 14px; color: #666;">Customer information not available.</p>
+                {% endif %}
             </div>
 
             <div class="card">
@@ -465,8 +434,22 @@ a.back-link:hover { color: #0f172a; }
 {% endblock content %}
 
 {% block extraJs %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script>
-    // 1. Helper: Get CSRF Token
+    // 1. Toastr Config
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof toastr !== 'undefined') {
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "timeOut": "3000"
+            };
+        }
+    });
+
+    // 2. Helper: Get CSRF Token
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -482,110 +465,58 @@ a.back-link:hover { color: #0f172a; }
         return cookieValue;
     }
 
-    // 2. Handle Individual Item (Approve OR Reject)
-    function handleItemReturn(itemId, actionType) {
-        let confirmMsg = actionType === 'approve' ? 'Approve return?' : 'Reject return request?';
+    const csrftoken = getCookie('csrftoken');
+    axios.defaults.headers.common['X-CSRFToken'] = csrftoken;
+
+    // 3. Handle Individual Item (Approve, Reject, OR Return)
+    function handleItemReturn(itemId, OrderId, actionType) {
+        
+        let confirmMsg = "";
+        if (actionType === 'approve') confirmMsg = 'Approve return request?';
+        else if (actionType === 'reject') confirmMsg = 'Reject return request?';
+        else if (actionType === 'returned') confirmMsg = 'Confirm item has been received and mark as returned?';
+        
         if(!confirm(confirmMsg)) return;
 
-        // Ensure this URL matches your backend urls.py
-        // e.g., path('manage-return-item/<int:item_id>/', views.manage_return_item, ...)
-        const url = `/admin_panel/manage-return-item/${itemId}/`; 
-        const csrftoken = getCookie('csrftoken');
+        // Use a placeholder-based URL template
+        let urlTemplate = "{% url 'manage_return_item' 0 'ORDER_ID_PLACEHOLDER' %}";
+        let url = urlTemplate.replace('0', itemId).replace('ORDER_ID_PLACEHOLDER', OrderId);
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 'action': actionType }) 
+        axios.post(url, {
+            action: actionType
         })
-        .then(response => response.json())
-        .then(data => {
+        .then(response => {
+            const data = response.data;
             if (data.status === 'success') {
-                toastr.success(`Return ${actionType}ed successfully`);
+                toastr.success(`Action (${actionType}) completed successfully`);
                 setTimeout(() => location.reload(), 1500);
             } else {
                 toastr.error(data.message || 'Error updating item');
             }
         })
-        .catch(err => {
-            console.error(err);
-            toastr.error('Network error');
+        .catch(error => {
+            console.error(error);
+            toastr.error(error.response?.data?.message || 'Network error');
         });
     }
 
-    // 3. Handle Bulk Actions (Approve All OR Reject All)
-    function handleBulkReturn(orderId, actionType) {
-        let confirmMsg = actionType === 'approve' 
-            ? 'Approve ALL pending returns?' 
-            : 'Reject ALL pending return requests?';
-            
-        if(!confirm(confirmMsg)) return;
-
-        // Ensure this URL matches your backend urls.py
-        // e.g., path('manage-return-all/<int:order_id>/', views.manage_return_all, ...)
-        const url = `/admin_panel/manage-return-all/${orderId}/`; 
-        const csrftoken = getCookie('csrftoken');
-
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 'action': actionType })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                toastr.success(`All returns ${actionType}ed successfully`);
-                setTimeout(() => location.reload(), 1500);
-            } else {
-                toastr.error(data.message || 'Error processing bulk action');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            toastr.error('Network error');
-        });
-    }
-
-    // 4. On Load: Toastr Config & Status Form
+    // 4. Status Form Handler (Existing Logic)
     document.addEventListener('DOMContentLoaded', function() {
-        
-        // Toastr Defaults
-        if (typeof toastr !== 'undefined') {
-            toastr.options = {
-                "closeButton": true,
-                "progressBar": true,
-                "positionClass": "toast-top-right",
-                "timeOut": "3000"
-            };
-        }
-
-        // Standard Order Status Form Listener
         const statusForm = document.getElementById('orderStatusForm');
-
         if (statusForm) {
             statusForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-
                 const formData = new FormData(this);
                 const actionUrl = this.getAttribute('action');
-                
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalBtnText = submitBtn.innerText;
+                
                 submitBtn.innerText = 'Updating...';
                 submitBtn.disabled = true;
 
-                fetch(actionUrl, {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => response.json())
-                .then(data => {
+                axios.post(actionUrl, formData)
+                .then(response => {
+                    const data = response.data;
                     if (data.status === 'success') {
                         toastr.success(data.message || 'Status updated successfully');
                         setTimeout(() => { location.reload(); }, 2000);
@@ -597,7 +528,7 @@ a.back-link:hover { color: #0f172a; }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    toastr.error('A network error occurred');
+                    toastr.error(error.response?.data?.message || 'A network error occurred');
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                 });

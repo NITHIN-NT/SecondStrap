@@ -1,3 +1,4 @@
+import json
 from django.utils.text import slugify
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView, ListView, DetailView
@@ -34,9 +35,12 @@ from .utils import send_html_mail
 
 from accounts.models import CustomUser, EmailOTP
 from products.models import Product, Category, ProductVariant, ProductImage
-from userFolder.order.models import OrderMain,OrderItem,ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES
+from userFolder.order.models import OrderMain,OrderItem,ReturnOrder,ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+
+import logging
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 @never_cache
@@ -656,10 +660,10 @@ class AdminOrderView(ListView):
         return context
 
     
-    
+@login_required
+@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")   
 def admin_order_detailed_view(request,order_id):
     order = get_object_or_404(OrderMain, order_id=order_id)
-    
     context = {
         'order' : order,
         'order_status_choices': ORDER_STATUS_CHOICES, 
@@ -676,12 +680,115 @@ def admin_order_status_update(request,order_id):
     try :
         order_status = request.POST.get('order_status')
         payment_status = request.POST.get('payment_status')
+        if not order_status or not payment_status:
+            return JsonResponse(
+                {"status": "error", "message": "Missing status values"},
+                status=400
+            )
         
         order = get_object_or_404(OrderMain,order_id=order_id)
-    
+        OrderItem.objects.filter(order=order).update(status=order_status)
+            
         order.order_status = order_status
         order.payment_status = payment_status
         order.save()
         return JsonResponse({"status" : 'success' , "message":"Order Status updated !"})
     except Exception as e :
-        return JsonResponse({'status' : 'error' , 'message' : 'Update Failed, Something Went Wrong !!'})
+        logger.exception("Failed to update order status for order %s", order_id)
+        return JsonResponse({'status': 'error', 'message': 'Update failed'})
+    
+@login_required
+@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@transaction.atomic
+def manage_return_request(request,item_id,order_id):
+    if request.method != 'POST':
+        return JsonResponse({"status": "error", "message": "Invalid Request"}, status=405)
+
+    try:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON body"}, status=400)
+
+        action = data.get('action')
+        
+        if action not in {'approve', 'reject', 'returned'}:
+            return JsonResponse({"status": "error", "message": "Invalid action"}, status=400)
+                
+    
+        order = get_object_or_404(OrderMain,order_id=order_id)
+        order_item = get_object_or_404(OrderItem,id=item_id,order__order_id=order_id)
+        product_variant = order_item.variant
+        
+        return_item = ReturnOrder.objects.filter(order__order_id=order_id,item__id = item_id).first()
+        
+        if not return_item:
+            return JsonResponse({"status": "error", "message": "No return request found"}, status=400)
+    
+        # Approve
+        if action == 'approve':
+            if order_item.status != 'return_requested':
+                return JsonResponse({"status": "error", "message": "Item is not in requested state"}, status=400)
+            order_item.status = 'return_approved'
+            return_item.return_status = 'return_approved'
+            
+            order_item.save()
+            return_item.save()
+            
+            if return_item.related_return_count == 1:
+                order.order_status = 'return_approved'
+                order.save()
+            return JsonResponse({"status": "success", "message": "Return approved"})
+
+        # Reject
+        elif action == 'reject':
+            if order_item.status != 'return_requested':
+                return JsonResponse({"status": "error", "message": "Item is not in requested state"}, status=400)
+           
+            order_item.status = 'return_rejected'
+            return_item.return_status = 'return_rejected'
+            order_item.is_returned = False
+            
+            if return_item.related_return_count == 1:
+                order.order_status = 'return_rejected'
+                order.save()
+                
+            order_item.save()
+            return_item.save()
+            
+            return JsonResponse({"status": "success", "message": "Return rejected"})
+        
+        elif action == 'returned':
+            if order_item.status != 'return_approved':
+                return JsonResponse({"status": "error", "message": "Item must be approved before receiving"}, status=400)
+            
+            order_item.status = 'returned'
+            order_item.is_returned = True
+            return_item.return_status = 'returned'
+            
+            refund_amount = order_item.get_total_price
+            current_total = order.total_price 
+            
+            newPrice = current_total - refund_amount
+            
+            order.total_price = newPrice
+            if product_variant :
+                product_variant.stock += order_item.quantity
+                product_variant.save()
+                
+            if return_item.related_return_count == 1:
+                order.order_status = 'returned'
+                order.save()
+
+            order_item.save()
+            return_item.save()
+            order.save()
+            return JsonResponse({'status': 'success', 'message': 'Item marked as Received'})
+            
+        else:
+            return JsonResponse({"status": "error", "message": "Invalid action"}, status=400)
+
+    except Exception as e:
+        print('return execption : ',str(e))  
+        return JsonResponse({"status": "error", "message": "Internal Server Error"}, status=500)
+        

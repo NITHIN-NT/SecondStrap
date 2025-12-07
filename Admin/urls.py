@@ -30,8 +30,9 @@ urlpatterns = [
     path('stock/',StockManagementView.as_view(),name='stock_mangement'),
     
     path('order/',AdminOrderView.as_view(),name='Admin_order'),
-    path('order/<str:order_id>',views.admin_order_detailed_view,name='Admin_order_detailed_view'),
-    path('order/update/<str:order_id>',views.admin_order_status_update,name='order_status_update')
+    path('order/<str:order_id>/',views.admin_order_detailed_view,name='Admin_order_detailed_view'),
+    path('order/update/<str:order_id>/',views.admin_order_status_update,name='order_status_update'),
+    path('order/manage-return/<int:item_id>/<str:order_id>/',views.manage_return_request,name='manage_return_item'),
 ]
 
 if settings.DEBUG:

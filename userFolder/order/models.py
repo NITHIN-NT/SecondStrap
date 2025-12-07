@@ -15,7 +15,9 @@ ORDER_STATUS_CHOICES = [
     ('delivered', 'Delivered'),
     ('cancelled', 'Cancelled'),
     ('returned', 'Returned'),
+    ('return_approved', 'Return Approved'),
     ('return_requested', 'Return Requested'),
+    ('return_rejected', 'Return Rejected'),
     ('partially_cancelled', 'Partially cancelled'), 
     ('return_canceled','Return Canceled'),
 ]
@@ -34,6 +36,7 @@ PAYMENT_STATUS_CHOICES = [
 
 RETURN_CHOICES = [
     ('pending', 'Pending'),
+    ('returned', 'Returned'),
     ('return_requested', 'Return Requested'),
     ('return_approved', 'Return Approved'),
     ('return_rejected', 'Return Rejected'),
@@ -48,7 +51,17 @@ def generate_order_id():
 def generate_return_id():
     suffix = ''.join(random.choices(string.digits,k=8))
     return f"RET-{suffix}"
-    
+
+def get_status_color_value(status):
+    if status in ['delivered','return_approved']:
+        return 'success' 
+    elif status in ['cancelled', 'returned','return_rejected']:
+        return 'danger'  
+    elif status in ['pending', 'return_requested']:
+        return 'warning' 
+    elif status in ['confirmed', 'shipped', 'out_for_delivery']:
+        return 'primary' 
+    return 'secondary'
 class OrderMain(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='orders')
     order_id = models.CharField(max_length=50, unique=True, default=generate_order_id, editable=False)
@@ -89,6 +102,7 @@ class OrderMain(models.Model):
             'cancelled': -1,
             'returned': -2,
             'return_requested': -2,
+            'return_approved' : -2,
             'partially_cancelled': -1,
         }
         return status_map.get(self.order_status, 0)
@@ -116,20 +130,13 @@ class OrderMain(models.Model):
     
     @property
     def get_total_item_count(self):
-        result = self.items.aggregate(total=Sum('quantity'))['total']
+        result = self.items.filter(is_returned=False).aggregate(total=Sum('quantity'))['total']
         return result or 0
     
     @property
     def get_status_color(self):
-        if self.order_status in ['delivered']:
-            return 'success' 
-        elif self.order_status in ['cancelled', 'returned']:
-            return 'danger'  
-        elif self.order_status in ['pending', 'return_requested']:
-            return 'warning' 
-        elif self.order_status in ['confirmed', 'shipped', 'out_for_delivery']:
-            return 'primary' 
-        return 'secondary'
+        return get_status_color_value(self.order_status)
+    
 class OrderItem(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')
@@ -152,15 +159,8 @@ class OrderItem(models.Model):
     
     @property
     def get_status_color(self):
-        if self.status in ['delivered']:
-            return 'success' 
-        elif self.status in ['cancelled', 'returned']:
-            return 'danger'  
-        elif self.status in ['pending', 'return_requested']:
-            return 'warning' 
-        elif self.status in ['confirmed', 'shipped', 'out_for_delivery']:
-            return 'primary' 
-        return 'secondary'
+        return get_status_color_value(self.status)
+
 class ReturnOrder(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE  ,related_name='returns')
     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name='returns')
@@ -174,3 +174,7 @@ class ReturnOrder(models.Model):
 
     def __str__(self):
         return f"{self.return_id} - {self.user.first_name}"
+
+    @property
+    def related_return_count(self):
+        return self.order.returns.count()
