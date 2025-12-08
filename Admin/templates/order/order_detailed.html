@@ -3,10 +3,9 @@
 
 {% block extra_css %}
 <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-<style>
 
-/* --- 1. GENERAL LAYOUT --- */
-.admin-od-wrapper {
+<style>
+    .admin-od-wrapper {
     padding: 30px;
     background-color: #f8fafc;
     min-height: 100vh;
@@ -30,7 +29,8 @@
 
 .admin-od-grid {
     display: grid;
-    grid-template-columns: 1fr 380px; /* Flexible left, Fixed right */
+    grid-template-columns: 1fr 380px;
+    /* Flexible left, Fixed right */
     gap: 24px;
     align-items: start;
 }
@@ -64,7 +64,6 @@
 }
 
 /* --- 3. TABLE STYLING --- */
-/* FIXED: Removed the typo "is" here */
 .admin-table {
     width: 100%;
     border-collapse: separate;
@@ -137,6 +136,7 @@
     color: #166534;
     border-color: #bbf7d0;
 }
+
 .btn-approve-item:hover {
     background-color: #166534;
     color: white;
@@ -148,6 +148,7 @@
     color: #991b1b;
     border-color: #fecaca;
 }
+
 .btn-reject-item:hover {
     background-color: #991b1b;
     color: white;
@@ -159,6 +160,7 @@
     color: #075985;
     border-color: #bae6fd;
 }
+
 .btn-received-item:hover {
     background-color: #0284c7;
     color: white;
@@ -176,13 +178,41 @@
 }
 
 /* --- 5. GENERAL UTILS --- */
-.info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
-.info-label { color: #64748b; }
-.info-val { font-weight: 500; color: #0f172a; }
-.total-row { border-top: 2px solid #e2e8f0; padding-top: 16px; margin-top: 16px; font-size: 18px; font-weight: 700; }
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
 
-.action-group { margin-bottom: 16px; }
-.action-label { display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 6px; }
+.info-label {
+    color: #64748b;
+}
+
+.info-val {
+    font-weight: 500;
+    color: #0f172a;
+}
+
+.total-row {
+    border-top: 2px solid #e2e8f0;
+    padding-top: 16px;
+    margin-top: 16px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.action-group {
+    margin-bottom: 16px;
+}
+
+.action-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 6px;
+}
 
 .form-select {
     width: 100%;
@@ -210,14 +240,44 @@
     cursor: pointer;
     margin-top: 8px;
 }
-.btn-update:hover { background-color: #334155; }
 
-.badge { display: inline-block; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-.badge-success { background: #dcfce7; color: #15803d; }
-.badge-danger { background: #fee2e2; color: #b91c1c; }
-.badge-info { background: #dbeafe; color: #1d4ed8; }
-.badge-warning { background: #fef3c7; color: #b45309; }
-.badge-secondary { background: #f1f5f9; color: #475569; }
+.btn-update:hover {
+    background-color: #334155;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-success {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-info {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.badge-secondary {
+    background: #f1f5f9;
+    color: #475569;
+}
 
 /* Tooltip */
 .note-tooltip-wrapper { position: relative; display: inline-block; margin-left: 8px; }
@@ -229,7 +289,6 @@
 
 </style>
 {% endblock extra_css %}
-
 {% block content %}
 <div class="admin-od-wrapper">
     
@@ -288,53 +347,74 @@
                             
                             <td style="text-align: right;">
                                 
-                                {% if item.status == 'return_requested' %}
-                                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                        <span class="return-badge">Request Pending</span>
-                                        <div class="action-btn-wrapper">
-                                            <button class="btn-action-sm btn-reject-item" 
-                                                    onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'reject')"
-                                                    title="Reject Request">
-                                                <i class='bx bx-x'></i> Reject
-                                            </button>
-                                            <button class="btn-action-sm btn-approve-item" 
-                                                    onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'approve')"
-                                                    title="Approve Return">
-                                                <i class='bx bx-check'></i> Approve
-                                            </button>
+                                {% with ret=item.return_item.all|first %} 
+
+                                    {% if item.status == 'return_requested' %}
+                                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                            <span class="return-badge">Request Pending</span>
+                                            <div class="action-btn-wrapper">
+                                                <button class="btn-action-sm btn-reject-item" 
+                                                        onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'reject')"
+                                                        title="Reject Request">
+                                                    <i class='bx bx-x'></i> Reject
+                                                </button>
+                                                <button class="btn-action-sm btn-approve-item" 
+                                                        onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'approve')"
+                                                        title="Approve Return">
+                                                    <i class='bx bx-check'></i> Approve
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                {% elif item.status == 'return_approved' %}
-                                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                        <span class="badge badge-warning" style="font-size: 10px; margin-bottom: 4px;">Awaiting Return</span>
-                                        <div class="action-btn-wrapper">
-                                            <button class="btn-action-sm btn-received-item" 
-                                                    onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'returned')"
-                                                    title="Mark as Received/Returned">
-                                                <i class='bx bx-box'></i> Mark Received
-                                            </button>
+                                    {% elif item.status == 'return_approved' %}
+                                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                            <span class="badge badge-warning" style="font-size: 10px; margin-bottom: 4px;">Awaiting Return</span>
+                                            <div class="action-btn-wrapper">
+                                                <button class="btn-action-sm btn-received-item" 
+                                                        onclick="handleItemReturn('{{ item.id }}','{{ order.order_id }}', 'returned')"
+                                                        title="Mark as Received/Returned">
+                                                    <i class='bx bx-box'></i> Mark Received
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                {% elif item.status == 'returned' %}
-                                    <span class="badge badge-success">Returned</span>
-                                {% elif item.status == 'return_rejected' %}
-                                    <span class="badge badge-danger">Return Rejected</span>
-                                {% else %}
-                                    <span class="badge badge-secondary" style="opacity: 0.5;">None</span>
-                                {% endif %}
+                                    {% elif item.status == 'returned' %}
+                                        <span class="badge badge-success">Returned</span>
+                                    {% elif item.status == 'return_rejected' %}
+                                        <span class="badge badge-danger">Return Rejected</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary" style="opacity: 0.5;">None</span>
+                                    {% endif %}
 
-                                {% if item.return_item.return_reason %}
-                                    <div class="note-tooltip-wrapper">
-                                        <i class='bx bx-note note-trigger-icon'></i>
-                                        <div class="note-tooltip-box">
-                                            <strong>Return Reason:</strong><br>
-                                            {{ item.return_item.return_reason }}
+                                    {% if ret and ret.return_reason or ret.return_note %}
+                                        <div class="note-tooltip-wrapper">
+                                            
+                                            {% if ret.return_note %}
+                                                <i class='bx bx-notepad note-trigger-icon' style="color: #3b82f6;"></i>
+                                            {% else %}
+                                                <i class='bx bx-info-circle note-trigger-icon'></i>
+                                            {% endif %}
+                                            
+                                            <div class="note-tooltip-box">
+                                                {% if ret.return_reason %}
+                                                    <div style="margin-bottom: 6px;">
+                                                        <strong style="color: #94a3b8; font-size: 10px; text-transform: uppercase;">User Reason:</strong><br>
+                                                        {{ ret.return_reason }}
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if ret.return_note %}
+                                                    {% if ret.return_reason %}<hr style="border-color: #475569; margin: 4px 0;">{% endif %}
+                                                    <div>
+                                                        <strong style="color: #94a3b8; font-size: 10px; text-transform: uppercase;">Note:</strong><br>
+                                                        <span style="color: #e2e8f0; font-style: italic;">"{{ ret.return_note }}"</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                    </div>
-                                {% endif %}
+                                    {% endif %}
 
+                                {% endwith %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -478,7 +558,7 @@
         
         if(!confirm(confirmMsg)) return;
 
-        // Use a placeholder-based URL template
+        // NOTE: Ensure 'manage_return_request' matches your urls.py name exactly.
         let urlTemplate = "{% url 'manage_return_item' 0 'ORDER_ID_PLACEHOLDER' %}";
         let url = urlTemplate.replace('0', itemId).replace('ORDER_ID_PLACEHOLDER', OrderId);
 
@@ -500,7 +580,7 @@
         });
     }
 
-    // 4. Status Form Handler (Existing Logic)
+    // 4. Status Form Handler
     document.addEventListener('DOMContentLoaded', function() {
         const statusForm = document.getElementById('orderStatusForm');
         if (statusForm) {

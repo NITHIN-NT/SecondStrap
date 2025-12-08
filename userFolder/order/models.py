@@ -18,8 +18,18 @@ ORDER_STATUS_CHOICES = [
     ('return_approved', 'Return Approved'),
     ('return_requested', 'Return Requested'),
     ('return_rejected', 'Return Rejected'),
+    ('partially_returned', 'Partially Returned'), 
     ('partially_cancelled', 'Partially cancelled'), 
     ('return_canceled','Return Canceled'),
+]
+ADMIN_ORDER_STATUS_CHOICES = [
+    ('pending', 'Pending'),
+    ('confirmed', 'Confirmed'),
+    ('shipped', 'Shipped'),
+    ('out_for_delivery', 'Out for delivery'),
+    ('delivered', 'Delivered'),
+    ('cancelled', 'Cancelled'),
+    ('returned', 'Returned'),
 ]
 
 PAYMENT_CHOICES = [
@@ -53,9 +63,9 @@ def generate_return_id():
     return f"RET-{suffix}"
 
 def get_status_color_value(status):
-    if status in ['delivered','return_approved']:
+    if status in ['delivered', 'return_approved', 'partially_returned', 'returned']:
         return 'success' 
-    elif status in ['cancelled', 'returned','return_rejected']:
+    elif status in ['cancelled', 'return_rejected']: # Removed 'returned' from here
         return 'danger'  
     elif status in ['pending', 'return_requested']:
         return 'warning' 
@@ -94,16 +104,21 @@ class OrderMain(models.Model):
     
     def get_progress_status(self):
         status_map = {
-            'pending': 0,             
-            'confirmed': 1,           
-            'shipped': 2,             
-            'out_for_delivery': 3,    
-            'delivered': 4,           
+            'pending': 0,
+            'confirmed': 1,
+            'shipped': 2,
+            'out_for_delivery': 3,
+            'delivered': 4,
+        
             'cancelled': -1,
             'returned': -2,
             'return_requested': -2,
             'return_approved' : -2,
-            'partially_cancelled': -1,
+            'return_rejected': 4, 
+            'return_canceled': 4, 
+
+            'partially_cancelled': 1,
+            'partially_returned': 4  
         }
         return status_map.get(self.order_status, 0)
     
@@ -136,7 +151,6 @@ class OrderMain(models.Model):
     @property
     def get_status_color(self):
         return get_status_color_value(self.order_status)
-    
 class OrderItem(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')
@@ -167,6 +181,9 @@ class ReturnOrder(models.Model):
     
     item = models.ForeignKey(OrderItem,on_delete=models.CASCADE,null=True,blank=True,related_name='return_item')
     return_id = models.CharField(max_length=50, unique=True, default=generate_return_id, editable=False)
+    quantity = models.PositiveIntegerField(default=1)
+    
+    refund_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0.00)
     return_reason = models.TextField()
     return_status = models.CharField(max_length=50,choices=RETURN_CHOICES,default='pending')
     return_note = models.TextField(null=True,blank=True)
