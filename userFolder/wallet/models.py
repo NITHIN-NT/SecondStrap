@@ -2,6 +2,9 @@ from django.db import models
 from django.conf import settings
 from decimal import Decimal
 from userFolder.order.models import OrderMain
+from django.utils import timezone
+import random 
+import string
 
 class TransactionType(models.TextChoices):
     CREDIT = 'CR', 'Credit' 
@@ -12,6 +15,11 @@ class TransactionStatus(models.TextChoices):
     COMPLETED = 'CP', 'Completed'
     FAILED = 'FL', 'Failed'
     REFUNDED = 'RF', 'Refunded'
+    
+def generate_transaction_id():
+    date = timezone.now().strftime("%Y%m%d")
+    suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+    return f"TRC-{date}-{suffix}"
 class Wallet(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='wallet')
     balance = models.DecimalField(max_digits=10,decimal_places=2,default=Decimal(0.00),verbose_name='Current Balance')
@@ -23,12 +31,12 @@ class Wallet(models.Model):
         verbose_name_plural = "Wallets"
 
     def __str__(self):
-        return f"Wallet for {self.user.first_name} | Balance: {self.balance}"
+        return f"Wallet for {self.user.first_name}"
     
     
 class Transaction(models.Model):
     wallet = models.ForeignKey(Wallet,on_delete=models.CASCADE,related_name='transactions',verbose_name='Wallet')
-    transaction_id = models.CharField(max_length=100,unique=True,verbose_name='Transaction ID')
+    transaction_id = models.CharField(max_length=100,unique=True,verbose_name='Transaction ID',default=generate_transaction_id,editable=False)
     transaction_type = models.CharField(max_length=2,choices=TransactionType.choices,verbose_name='Type')
     amount = models.DecimalField(max_digits=10,decimal_places=2,verbose_name='Amount')
     description = models.CharField(max_length=255,blank=True,null=True)

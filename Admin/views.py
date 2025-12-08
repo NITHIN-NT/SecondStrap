@@ -36,6 +36,7 @@ from .utils import send_html_mail
 from accounts.models import CustomUser, EmailOTP
 from products.models import Product, Category, ProductVariant, ProductImage
 from userFolder.order.models import OrderMain,OrderItem,ReturnOrder,ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES,ADMIN_ORDER_STATUS_CHOICES
+from userFolder.wallet.models import *
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 
@@ -786,7 +787,8 @@ def manage_return_request(request,item_id,order_id):
             order_item.is_returned = True
             
             return_item.return_status = 'returned'
-            return_item.refund_amount = order_item.price_at_purchase * order_item.quantity
+            refund_amount = order_item.price_at_purchase * order_item.quantity
+            return_item.refund_amount = refund_amount
             
             if product_variant :
                 product_variant.stock = F('stock') + order_item.quantity
@@ -799,7 +801,31 @@ def manage_return_request(request,item_id,order_id):
                 order.order_status = 'partially_returned'
             else:
                 order.order_status = 'returned'
-
+                
+            
+            
+            try:
+                # Refunding the amount to the Wallet
+                wallet_user = order.user
+                wallet,created = Wallet.objects.get_or_create(
+                    user=wallet_user
+                )
+                
+                Wallet.objects.filter(pk=wallet.pk).update(
+                    balance = F('balance') + refund_amount
+                )
+                
+                Transaction.objects.create(
+                    wallet=wallet,
+                    transaction_type=TransactionType.CREDIT,
+                    amount=return_item.refund_amount,
+                    description=f"Refund for Item: {order_item.variant.product.name if order_item.variant else order_item.product.name}",
+                    status=TransactionStatus.COMPLETED,
+                    related_order = order
+                )
+            except Exception as E:
+                print(f"Error processing refund: {E}")
+                
             order_item.save()
             return_item.save()
             order.save()
