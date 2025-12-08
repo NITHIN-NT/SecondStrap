@@ -8,8 +8,8 @@ from products.models import *
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.decorators.http import require_POST
-
-
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
 # Create your views here.
 class CartView(LoginRequiredMixin, ListView):
     template_name = "cart/cart.html"
@@ -31,10 +31,9 @@ class CartView(LoginRequiredMixin, ListView):
 
         return context
 
-
 @require_POST
+@transaction.atomic
 def cart_item_add(request):
-
     # Check if the user is logged in
     if not request.user.is_authenticated:
         return JsonResponse(
@@ -42,7 +41,7 @@ def cart_item_add(request):
             status=401,
         )
 
-    #  JSON data from the request body
+    # JSON data from the request body
     try:
         data = json.loads(request.body)
         product_id = data.get("product_id")
@@ -50,13 +49,15 @@ def cart_item_add(request):
         quantity = int(data.get("quantity", 1))  # Default quantity = 1
     except (ValueError, TypeError, json.JSONDecodeError):
         return JsonResponse(
-            {"status": "error", "message": "Invalid data sent."}, status=400
+            {"status": "error", "message": "Invalid data sent."},
+            status=400,
         )
 
     # Ensure product ID is provided
     if not product_id:
         return JsonResponse(
-            {"status": "error", "message": "Invalid data sent ."}, status=400
+            {"status": "error", "message": "Invalid data sent."},
+            status=400,
         )
 
     # Get the product
@@ -80,6 +81,7 @@ def cart_item_add(request):
                 status=400,
             )
         cleaned_size = ""
+
     # Check if enough stock is available
     if variant.stock < quantity:
         return JsonResponse(
@@ -94,9 +96,7 @@ def cart_item_add(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
 
     # Get or create the cart item for the chosen variant
-    item, created = CartItems.objects.get_or_create(
-        cart=cart, variant=variant, size=cleaned_size, defaults={"quantity": quantity}
-    )
+    item, created = CartItems.objects.get_or_create(cart=cart,variant=variant,size=cleaned_size,defaults={"quantity": quantity})
 
     # If the item already exists, increase the quantity
     if not created:
@@ -107,8 +107,9 @@ def cart_item_add(request):
             return JsonResponse(
                 {
                     "status": "error",
-                    "message": f"Cannot add more that {variant.stock} item(s) to cart .",
-                }
+                    "message": f"Cannot add more than {variant.stock} item(s) to cart.",
+                },
+                status=400,
             )
 
         item.quantity = new_quantity

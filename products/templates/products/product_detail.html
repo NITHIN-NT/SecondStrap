@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block title %}
     {{ product.name }}
 {% endblock title %}
+
 {% block extra_styles %}
     <link rel="stylesheet" href="{% static 'css/products/product_detail.css' %}">
 {% endblock extra_styles %}
+
 {% block content %}
     <div class="product-detail-page-wrapper">
         <div class="product-detail-container">
+            <!-- PRODUCT GALLERY -->
             <div class="product-gallery">
                 <div class="gallery-main img-zoom-container">
                     <span class="product-offer-tag">30% OFF</span>
@@ -25,13 +29,21 @@
                     {% endfor %}
                 </div>
             </div>
+            <form style="display:none;">
+                {% csrf_token %}
+            </form>
+
+            <!-- IMAGE MODAL -->
             <div id="imageModal" class="image-modal">
                 <span class="close-modal">&times;</span>
                 <img class="modal-content" id="modalImage">
             </div>
+
+            <!-- PRODUCT INFO -->
             <div class="product-info">
                 <h1>{{ product.name }}</h1>
                 <input type="text" id="product-id" value="{{ product.id }}" hidden>
+
                 <div class="product-review-summary">
                     <div class="stars">
                         <i class='bx bxs-star'></i>
@@ -42,11 +54,14 @@
                     </div>
                     <span class="review-count">(128 reviews)</span>
                 </div>
+
                 <div class="product-price-container">
                     <del id="base-price-display">₹ {{ product.base_price }}</del>
                     <span class="offer-price" id="offer-price-display">₹ {{ product.offer_price }}</span>
                 </div>
+
                 <div class="product-options">
+                    <!-- SIZE OPTIONS -->
                     <div class="option-group">
                         <label class="option-label">
                             <strong>Size:</strong> <span id="selected-size"></span>
@@ -62,10 +77,10 @@
                                 </button>
                             {% endfor %}
                         </div>
-                        
                         <p id="size-stock-global" class="size-stock" aria-live="polite"></p>
                     </div>
 
+                    <!-- QUANTITY OPTIONS -->
                     <div class="option-group">
                         <label for="quantity-display" class="quantity-label option-label">
                             <strong>Quantity</strong>
@@ -82,19 +97,25 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ACTION BUTTONS -->
                 <div class="action-buttons">
                     <button class="btn btn-outline" id="addToCartBtn">Add to Cart</button>
                     <button class="btn btn-solid" id="buyNowBtn">Buy Now</button>
                 </div>
+
                 <div class="secondary-actions">
                     <a href="#" class="action-link"><i class='bx bx-heart'></i> <span>Add to Wishlist</span></a>
                     <a href="#" class="action-link"><i class='bx bx-share'></i> <span>Share</span></a>
                 </div>
+
+                <!-- ACCORDIONS -->
                 <br>
                 <details class="info-accordion description-accordion">
                     <summary class="info-accordion-header">Description</summary>
                     <div class="info-accordion-content">{{ product.description|linebreaks }}</div>
                 </details>
+
                 <details class="info-accordion">
                     <summary class="info-accordion-header">Available Offers</summary>
                     <div class="info-accordion-content">
@@ -114,6 +135,7 @@
                         </ul>
                     </div>
                 </details>
+
                 <details class="info-accordion">
                     <summary class="info-accordion-header">Discount Coupons</summary>
                     <div class="info-accordion-content">
@@ -138,6 +160,7 @@
             </div>
         </div>
 
+        <!-- CUSTOMER REVIEWS -->
         <div class="customer-reviews-container">
             <h2>Customer Reviews</h2>
             <div class="reviews-summary">
@@ -154,6 +177,7 @@
                 </div>
                 <button class="btn btn-outline" id="btn-write-review">Write a Review</button>
             </div>
+
             <div class="review-list">
                 <div class="review-item">
                     <div class="review-header">
@@ -171,6 +195,7 @@
                         Excellent quality shirt! The fit is perfect and the material feels very premium. Exactly as described. Highly recommend.
                     </p>
                 </div>
+
                 <div class="review-item">
                     <div class="review-header">
                         <span class="review-author">Arjun</span>
@@ -190,6 +215,7 @@
             </div>
         </div>
 
+        <!-- RELATED PRODUCTS -->
         <div class="related-products-container">
             <h2>You Might Also Like</h2>
             <div class="related-products-grid">
@@ -229,9 +255,39 @@
         </div>
     </div>
 {% endblock content %}
+
 {% block extra_script %}
+    <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script>
+    // --- Fallback for toastr if not globally loaded (prevents JS errors) ---
+    if (typeof toastr === 'undefined') {
+        window.toastr = {
+            success: function(msg){ console.log('SUCCESS:', msg); },
+            error: function(msg){ console.error('ERROR:', msg); },
+            info: function(msg){ console.info('INFO:', msg); },
+            warning: function(msg){ console.warn('WARN:', msg); }
+        };
+    }
+
+    // CSRF helper (if not already defined in base.html)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
     document.addEventListener('DOMContentLoaded', function() {
         // --- Thumbnail Switcher ---
         const mainImage = document.getElementById('main-product-image');
@@ -254,36 +310,55 @@
         const increaseBtn = document.getElementById('btn-increase');
         const quantityDisplay = document.getElementById('quantity-display');
         const addToCartBtn = document.getElementById('addToCartBtn');
-        const buyNowBtn = document.getElementById('buyNowBtn')
+        const buyNowBtn = document.getElementById('buyNowBtn');
         const stockWarning = document.getElementById('stock-warning');
         const globalStockLabel = document.getElementById('size-stock-global');
-        // NEW: Select the gallery container
-        const galleryContainer = document.querySelector('.gallery-main');
-        
+        const galleryMain = document.querySelector('.gallery-main');
+        const galleryContainer = galleryMain;
+        const productIdInput = document.getElementById('product-id');
+
         let quantity = 1;
         const USER_MAX_LIMIT = 10;
         let currentStockLimit = 10;
 
         function updateQuantityDisplay() {
-            // Safety Check
-            if (quantity > currentStockLimit) quantity = currentStockLimit > 0 ? currentStockLimit : 1;
+            if (quantity > currentStockLimit) {
+                quantity = currentStockLimit > 0 ? currentStockLimit : 1;
+            }
             if (quantity < 1) quantity = 1;
 
             quantityDisplay.textContent = `${quantity} ${quantity === 1 ? 'item' : 'items'}`;
             decreaseBtn.disabled = quantity <= 1;
-            
-            // Disable increase if we hit stock limit or user limit
             increaseBtn.disabled = quantity >= currentStockLimit;
         }
 
-        // --- Updated Stock Info Logic with Red Alert on Gallery ---
+        // --- Helper: Get data for Add to Cart / Buy Now ---
+        function getActionData() {
+            if (!productIdInput) {
+                toastr.error("Something went wrong. Please refresh and try again.");
+                return null;
+            }
+
+            const activeSizeBtn = document.querySelector('.btn-size.active');
+            const size = activeSizeBtn ? activeSizeBtn.dataset.size : null;
+
+            if (!size) {
+                toastr.error("Please select a size.");
+                return null;
+            }
+
+            return {
+                product_id: productIdInput.value,
+                size: size,
+                quantity: quantity,
+            };
+        }
+
+        // --- Stock Info Logic, with red alert on gallery when stock low ---
         function updateStockInfo(button) {
             const stock = parseInt(button.dataset.stock) || 0;
-            
-            // Limit is minimum of User Limit (10) OR Actual Stock
             currentStockLimit = Math.min(USER_MAX_LIMIT, stock);
 
-            // Helper to set the global label text & classes
             function setStockLabel(text, cls) {
                 if (!globalStockLabel) return;
                 globalStockLabel.textContent = text;
@@ -291,51 +366,45 @@
                 if (cls) globalStockLabel.classList.add(cls);
             }
 
-            // === RED ALERT LOGIC (GALLERY CONTAINER) ===
-            // If stock is between 1 and 4, add the alert class to the gallery container
             if (galleryContainer) {
-                 if (stock > 0 && stock < 5) {
+                if (stock > 0 && stock < 5) {
                     galleryContainer.classList.add('stock-alert');
                 } else {
                     galleryContainer.classList.remove('stock-alert');
                 }
             }
-            // =======================
 
-            // UI Handling for Out of Stock
             if (stock === 0) {
-                if(addToCartBtn) {
+                if (addToCartBtn) {
                     addToCartBtn.disabled = true;
                     addToCartBtn.textContent = "Out of Stock";
-                    addToCartBtn.classList.add('disabled-btn'); 
+                    addToCartBtn.classList.add('disabled-btn');
                 }
-                if(buyNowBtn) buyNowBtn.disabled = true; // Disable buy now too
-                
+                if (buyNowBtn) buyNowBtn.disabled = true;
+
                 quantityDisplay.textContent = "0 items";
                 decreaseBtn.disabled = true;
                 increaseBtn.disabled = true;
-                if(stockWarning) stockWarning.style.display = 'none';
+                if (stockWarning) stockWarning.style.display = 'none';
                 setStockLabel('Out of Stock', 'low-stock');
             } else {
-                if(addToCartBtn) {
+                if (addToCartBtn) {
                     addToCartBtn.disabled = false;
                     addToCartBtn.textContent = "Add to Cart";
                     addToCartBtn.classList.remove('disabled-btn');
                 }
-                if(buyNowBtn) buyNowBtn.disabled = false; // Enable buy now
-                
-                // Reset Quantity to 1 if coming from out of stock or high number
+                if (buyNowBtn) buyNowBtn.disabled = false;
+
                 if (quantity > currentStockLimit || quantity === 0) {
                     quantity = 1;
                 }
                 updateQuantityDisplay();
 
-                // set label text & class depending on stock level
                 if (stock > 10) {
                     setStockLabel('In stock', 'in-stock');
                 } else if (stock >= 5) {
                     setStockLabel('Limited Stock', 'limited-stock');
-                } else { // stock between 1 and 4
+                } else {
                     setStockLabel(`Only ${stock} available`, 'low-stock');
                 }
             }
@@ -360,7 +429,7 @@
             if (quantity > 1) {
                 quantity--;
                 updateQuantityDisplay();
-                if(stockWarning) stockWarning.style.display = 'none';
+                if (stockWarning) stockWarning.style.display = 'none';
             }
         });
 
@@ -369,7 +438,7 @@
                 quantity++;
                 updateQuantityDisplay();
             } else {
-                if(stockWarning) {
+                if (stockWarning) {
                     stockWarning.textContent = `Max limit reached (${currentStockLimit})`;
                     stockWarning.style.display = 'inline';
                     setTimeout(() => stockWarning.style.display = 'none', 3000);
@@ -385,14 +454,12 @@
             if (defaultBtn.dataset.basePrice) basePriceDisplay.textContent = `₹ ${defaultBtn.dataset.basePrice}`;
             updateStockInfo(defaultBtn);
         } else {
-             // If no default active, initialize with safely defaults
-             if(addToCartBtn) addToCartBtn.disabled = true; 
-             if(buyNowBtn) buyNowBtn.disabled = true;
-             if (globalStockLabel) globalStockLabel.textContent = '';
+            if (addToCartBtn) addToCartBtn.disabled = true;
+            if (buyNowBtn) buyNowBtn.disabled = true;
+            if (globalStockLabel) globalStockLabel.textContent = '';
         }
 
-        // --- Image Zoom & Modal (Existing) ---
-        const galleryMain = document.querySelector('.gallery-main');
+        // --- Image Zoom & Modal ---
         if (galleryMain && mainImage) {
             galleryMain.addEventListener('mousemove', function(e) {
                 const rect = galleryMain.getBoundingClientRect();
@@ -428,66 +495,38 @@
             if (e.target === modal) modal.style.display = 'none';
         });
 
-        // --- AJAX Helpers ---
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        const csrftoken = getCookie('csrftoken');
-        const productIdInput = document.getElementById('product-id');
-
-        // Helper function for common data retrieval and validation
-        function getActionData() {
-            const productId = productIdInput.value;
-            const activeSizeBtn = document.querySelector('.btn-size.active');
-            const size = activeSizeBtn ? activeSizeBtn.dataset.size : null;
-            const currentQuantity = quantity;
-
-            if (!size) {
-                toastr.error("Please select a size.");
-                return null;
-            }
-            
-            // Double check stock before sending
-            const stock = parseInt(activeSizeBtn.dataset.stock) || 0;
-            if (currentQuantity > stock || stock === 0) {
-                 toastr.error("Selected quantity exceeds available stock.");
-                 return null;
-            }
-            return {
-                product_id: productId,
-                size: size,
-                quantity: currentQuantity
-            };
-        }
-
-        // Helper function for common error handling
+        // --- ERROR HANDLING FOR AXIOS ---
         function handleAxiosError(error) {
+            console.error("Cart Add Error:", error);
+
             if (error.response) {
-                if (error.response.status === 401) {
-                    toastr.error(error.response.data.message || "Please log in to continue.");
-                    // Redirect to login page
+                const status = error.response.status;
+                const serverMessage = error.response.data?.message;
+
+                if (status === 401) {
+                    toastr.error(serverMessage || "Please log in to continue.");
                     setTimeout(function() {
                         window.location.href = "{% url 'login' %}?next={{ request.path }}";
                     }, 1500);
                     return;
                 }
-                toastr.error(error.response.data?.message || "An error occurred. Please check the console.");
+
+                if (status === 400) {
+                    toastr.error(serverMessage || "Invalid request. Please select a valid size and quantity.");
+                    return;
+                }
+
+                if (status >= 500) {
+                    toastr.error("Server Error: We encountered an issue. Please try again.");
+                    return;
+                }
+
+                toastr.error(serverMessage || "Something went wrong. Please try again.");
             } else {
-                toastr.error("Network error. Please try again.");
+                toastr.error("Network error. Please check your internet connection and try again.");
             }
         }
-        
+
         // --- Add To Cart Logic ---
         if (addToCartBtn && productIdInput) {
             addToCartBtn.addEventListener('click', function() {
@@ -501,17 +540,18 @@
                 )
                 .then(function(response) {
                     toastr.success(response.data.message || "Item added to the Cart");
-                    // Optionally update cart count UI here
+                    // TODO: update cart count UI here if needed
                 })
                 .catch(handleAxiosError);
             });
         }
-        if(buyNowBtn && productIdInput){
-            buyNowBtn.addEventListener('click',() =>{
+
+        // --- Buy Now Logic (placeholder) ---
+        if (buyNowBtn && productIdInput) {
+            buyNowBtn.addEventListener('click', () => {
                 toastr.info("Function not implemented. To purchase, please add the item to your cart first.");
-            })
+            });
         }
     });
-
     </script>
 {% endblock extra_script %}
