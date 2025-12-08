@@ -28,6 +28,7 @@ class SecureUserMixin(LoginRequiredMixin):
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
+
 class ProfileView(SecureUserMixin, TemplateView):
     template_name = 'userprofile/profile.html'
 
@@ -301,7 +302,10 @@ class ProfileOrderView(SecureUserMixin, ListView):
     paginate_by = 10  
 
     def get_queryset(self):
-        return OrderMain.objects.filter(user=self.request.user).order_by('-created_at')
+        if self.request.user.is_authenticated:
+            queryset = OrderMain.objects.filter(user=self.request.user).order_by('-created_at')
+            return queryset
+        return OrderMain.objects.none()
 
 class ProfileWalletView(SecureUserMixin, TemplateView):
     template_name = "userprofile/wallet.html"

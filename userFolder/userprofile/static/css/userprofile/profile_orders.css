@@ -60,7 +60,7 @@
 
 .view-all-link {
     text-decoration: none;
-    color: #007bff;
+    color: #000000;
     font-weight: 500;
     font-size: 0.9rem;
     transition: color 0.3s ease;
@@ -115,4 +115,92 @@
 .bg-secondary {
     background-color: #E2E3E5 !important;
     color: #383D41 !important;
+}
+
+/* ==================== PAGINATION STYLES ==================== */
+
+.pagination-container {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 10px;
+}
+
+.pagination-list {
+    display: flex;
+    justify-content: center;
+    /* Center the pagination links */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.page-item {
+    margin: 0 4px;
+    /* Space between links */
+}
+
+.page-link {
+    display: block;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #333;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: #fff;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.page-link i {
+    font-size: 1rem;
+    vertical-align: middle;
+}
+
+/* Hover and Focus */
+.page-link:hover:not(.disabled) {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+    color: #000000;
+}
+
+/* Active Page */
+.page-item.active .page-link {
+    background-color: #000000;
+    /* Primary Blue */
+    border-color: #000000;
+    color: #ffffff;
+    pointer-events: none;
+    /* Disable clicking the current page */
+}
+
+/* Disabled State (For Previous/Next on the first/last page) */
+.page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #dee2e6;
+    cursor: default;
+    opacity: 0.7;
+    /* Visually indicate disability */
+}
+
+.page-item.disabled .page-link:hover {
+    background-color: #fff;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+/* Style for Previous/Next links with icons */
+.page-item:first-child .page-link,
+.page-item:last-child .page-link {
+    display: flex;
+    align-items: center;
+}
+
+.page-item:first-child .page-link i {
+    margin-right: 5px;
+}
+
+.page-item:last-child .page-link i {
+    margin-left: 5px;
 }
