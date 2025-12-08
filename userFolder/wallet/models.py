@@ -42,4 +42,4 @@ class Transaction(models.Model):
         verbose_name_plural = "Transactions"
 
     def __str__(self):
-        return f"{self.transaction_type} {self.amount} for {self.wallet.user.username}"
+        return f"{self.transaction_type} {self.amount} for {self.wallet.user.first_name}"

@@ -14,11 +14,19 @@
         <div class="wallet-info">
             <h2>Wallet</h2>
             <p>Available Balance</p>
-            <span class="balance">₹ 200.00</span>
+            <span class="balance">
+                {% if wallet %}
+                    ₹ {{ wallet.balance|floatformat:2 }} 
+                {% else %}
+                    ₹ 0.00 (Wallet Not Active)
+                {% endif %}
+            </span>
         </div>
-        <a href="#" class="add-money-btn">
-            <i class='bx bx-plus'></i> Add Money
-        </a>
+        {% if wallet %}
+            <a href="#" class="add-money-btn"> 
+                <i class='bx bx-plus'></i> Add Money
+            </a>
+        {% endif %}
     </div>
 </div>
 
@@ -32,68 +40,53 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Details</th> 
                         <th>Amount</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>2023-10-15</td>
-                        <td>Added money to wallet</td>
-                        <td>
-                            <span class="amount amount-credit">
-                                <i class='bx bx-up-arrow-alt'></i> ₹ 500.00
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status status-completed">
-                                <i class='bx bx-check-circle'></i> Completed
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>2023-10-14</td>
-                        <td>Purchase: Order #12345</td>
-                        <td>
-                            <span class="amount amount-debit">
-                                <i class='bx bx-down-arrow-alt'></i> ₹ 150.00
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status status-completed">
-                                <i class='bx bx-check-circle'></i> Completed
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>2023-10-10</td>
-                        <td>Refund: Order #12300</td>
-                        <td>
-                            <span class="amount amount-credit">
-                                <i class='bx bx-up-arrow-alt'></i> ₹ 100.00
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status status-completed">
-                                <i class='bx bx-check-circle'></i> Completed
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>2023-10-05</td>
-                        <td>Purchase: Order #12280</td>
-                        <td>
-                            <span class="amount amount-debit">
-                                <i class='bx bx-down-arrow-alt'></i> ₹ 250.00
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status status-completed">
-                                <i class='bx bx-check-circle'></i> Completed
-                            </span>
-                        </td>
-                    </tr>
+                    {% if wallet %}
+                        {% for transaction in wallet.transactions.all %}
+                            {% with type_class=transaction.transaction_type|lower %}
+                            <tr>
+                                <td> {{ transaction.timestamp|date:"M d, Y" }}</td>
+                                <td>{{ transaction.get_transaction_type_display }}</td>
+                                <td>{{ transaction.description|default:"Wallet Activity" }}</td>
+
+                                <td>
+                                    <span class="amount amount-{{ type_class }}">
+                                        {% if transaction.transaction_type == 'CR' %}
+                                            <i class='bx bx-up-arrow-alt'></i> 
+                                        {% else %}
+                                            <i class='bx bx-down-arrow-alt'></i> 
+                                        {% endif %}
+                                        ₹ {{ transaction.amount|floatformat:2 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {# Display the human-readable status #}
+                                    <span class="status status-{{ transaction.status|lower }}">
+                                        <i class='bx bx-check-circle'></i> {{ transaction.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px;">
+                                    No transaction history available.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">
+                                Wallet service is currently unavailable or not active for your account.
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
