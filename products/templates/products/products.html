@@ -114,7 +114,7 @@
                         {% if product.total_stock <= 0 %}
                         <!-- OUT OF STOCK CARD WITH DIAGONAL RIBBONS -->
                         <div class="product-card out-of-stock">
-                            <a href="#">
+                            <a href="{% url 'Product_card_view' product.slug %}">
                                 <div class="product-image-placeholder" style="background-image: url({{product.image.url}}); background-size: cover;">
                                     <p>{% if product.stock == 0 %}
                                             Out of stock

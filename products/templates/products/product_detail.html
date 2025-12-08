@@ -60,16 +60,6 @@
                                         data-stock="{{ size.stock }}">
                                     {{ size.size }}
                                 </button>
-                                {% comment %} When i do this i got the stock in every product  {% endcomment %}
-                                {% comment %} <p>
-                                    {% if size.stock > 10 %}
-                                        In Stock
-                                    {% elif size.stock > 5 and size.stock <= 10 %}
-                                        Limited stock
-                                    {% elif size.stock < 5 %}
-                                        only {{size.stock}} available
-                                    {% endif %}
-                                </p> {% endcomment %}
                             {% endfor %}
                         </div>
                         
