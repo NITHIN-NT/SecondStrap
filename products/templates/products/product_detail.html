@@ -84,7 +84,7 @@
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-outline" id="addToCartBtn">Add to Cart</button>
-                    <button class="btn btn-solid">Buy Now</button>
+                    <button class="btn btn-solid" id="buyNowBtn">Buy Now</button>
                 </div>
                 <div class="secondary-actions">
                     <a href="#" class="action-link"><i class='bx bx-heart'></i> <span>Add to Wishlist</span></a>
@@ -254,6 +254,7 @@
         const increaseBtn = document.getElementById('btn-increase');
         const quantityDisplay = document.getElementById('quantity-display');
         const addToCartBtn = document.getElementById('addToCartBtn');
+        const buyNowBtn = document.getElementById('buyNowBtn')
         const stockWarning = document.getElementById('stock-warning');
         const globalStockLabel = document.getElementById('size-stock-global');
         // NEW: Select the gallery container
@@ -308,6 +309,8 @@
                     addToCartBtn.textContent = "Out of Stock";
                     addToCartBtn.classList.add('disabled-btn'); 
                 }
+                if(buyNowBtn) buyNowBtn.disabled = true; // Disable buy now too
+                
                 quantityDisplay.textContent = "0 items";
                 decreaseBtn.disabled = true;
                 increaseBtn.disabled = true;
@@ -319,6 +322,8 @@
                     addToCartBtn.textContent = "Add to Cart";
                     addToCartBtn.classList.remove('disabled-btn');
                 }
+                if(buyNowBtn) buyNowBtn.disabled = false; // Enable buy now
+                
                 // Reset Quantity to 1 if coming from out of stock or high number
                 if (quantity > currentStockLimit || quantity === 0) {
                     quantity = 1;
@@ -382,6 +387,7 @@
         } else {
              // If no default active, initialize with safely defaults
              if(addToCartBtn) addToCartBtn.disabled = true; 
+             if(buyNowBtn) buyNowBtn.disabled = true;
              if (globalStockLabel) globalStockLabel.textContent = '';
         }
 
@@ -422,7 +428,7 @@
             if (e.target === modal) modal.style.display = 'none';
         });
 
-        // --- Add To Cart (Axios) ---
+        // --- AJAX Helpers ---
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -440,53 +446,72 @@
         const csrftoken = getCookie('csrftoken');
         const productIdInput = document.getElementById('product-id');
 
-        if (addToCartBtn && productIdInput) {
-            addToCartBtn.addEventListener('click', function() {
-                const productId = productIdInput.value;
-                const activeSizeBtn = document.querySelector('.btn-size.active');
-                const size = activeSizeBtn ? activeSizeBtn.dataset.size : null;
-                const currentQuantity = quantity;
+        // Helper function for common data retrieval and validation
+        function getActionData() {
+            const productId = productIdInput.value;
+            const activeSizeBtn = document.querySelector('.btn-size.active');
+            const size = activeSizeBtn ? activeSizeBtn.dataset.size : null;
+            const currentQuantity = quantity;
 
-                if (!size) {
-                    toastr.error("Please select a size.");
+            if (!size) {
+                toastr.error("Please select a size.");
+                return null;
+            }
+            
+            // Double check stock before sending
+            const stock = parseInt(activeSizeBtn.dataset.stock) || 0;
+            if (currentQuantity > stock || stock === 0) {
+                 toastr.error("Selected quantity exceeds available stock.");
+                 return null;
+            }
+            return {
+                product_id: productId,
+                size: size,
+                quantity: currentQuantity
+            };
+        }
+
+        // Helper function for common error handling
+        function handleAxiosError(error) {
+            if (error.response) {
+                if (error.response.status === 401) {
+                    toastr.error(error.response.data.message || "Please log in to continue.");
+                    // Redirect to login page
+                    setTimeout(function() {
+                        window.location.href = "{% url 'login' %}?next={{ request.path }}";
+                    }, 1500);
                     return;
                 }
-                
-                // Double check stock before sending
-                const stock = parseInt(activeSizeBtn.dataset.stock) || 0;
-                if (currentQuantity > stock || stock === 0) {
-                     toastr.error("Selected quantity exceeds available stock.");
-                     return;
-                }
+                toastr.error(error.response.data?.message || "An error occurred. Please check the console.");
+            } else {
+                toastr.error("Network error. Please try again.");
+            }
+        }
+        
+        // --- Add To Cart Logic ---
+        if (addToCartBtn && productIdInput) {
+            addToCartBtn.addEventListener('click', function() {
+                const data = getActionData();
+                if (!data) return;
 
                 axios.post(
                     "{% url 'add_cart' %}",
-                    {
-                        product_id: productId,
-                        size: size,
-                        quantity: currentQuantity
-                    },
+                    data,
                     { headers: { 'X-CSRFToken': csrftoken } }
                 )
                 .then(function(response) {
                     toastr.success(response.data.message || "Item added to the Cart");
+                    // Optionally update cart count UI here
                 })
-                .catch(function(error) {
-                    if (error.response) {
-                        if (error.response.status === 401) {
-                            toastr.error(error.response.data.message || "Please log in to continue.");
-                            setTimeout(function() {
-                                window.location.href = "{% url 'login' %}?next={{ request.path }}";
-                            }, 1500);
-                            return;
-                        }
-                        toastr.error(error.response.data?.message || "Something Went Wrong !!");
-                    } else {
-                        toastr.error("Network error. Please try again.");
-                    }
-                });
+                .catch(handleAxiosError);
             });
         }
+        if(buyNowBtn && productIdInput){
+            buyNowBtn.addEventListener('click',() =>{
+                toastr.info("Function not implemented. To purchase, please add the item to your cart first.");
+            })
+        }
     });
+
     </script>
 {% endblock extra_script %}
