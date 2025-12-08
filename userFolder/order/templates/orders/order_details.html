@@ -74,7 +74,8 @@
                         {% endif %}
                     </div>
                     <div class="status-text">
-                        <h3>{{ order.get_order_status }}</h3>
+                        <!-- use *_display provided by Django choices -->
+                        <h3>{{ order.get_order_status_display }}</h3>
                         
                         {% if order.get_progress_status == 4 %}
                             <p>Delivered on {{ order.updated_at|date:"M d, Y" }}</p>
@@ -151,34 +152,50 @@
             <h3 class="od-card-title">Items in Your Order</h3>
             {% for order_item in order.items.all %}
                 <div class="item-row">
-                    {% if order_item.variant.product.image %}
-                        <img src="{{ order_item.variant.product.image.url }}" alt="Product" class="item-img">
-                    {% else %}
-                        <div class="item-img" style="background: #eee;"></div>
-                    {% endif %}
+                    {% with variant=order_item.variant %}
+                        {% if variant and variant.product and variant.product.image %}
+                            <img src="{{ variant.product.image.url }}" alt="Product" class="item-img">
+                        {% else %}
+                            <div class="item-img" style="background: #eee;"></div>
+                        {% endif %}
+                    {% endwith %}
                     
                     <div class="item-details">
                         <span class="item-name">{{ order_item.product_name }}
                             {% if order_item.status != 'pending' %}
-                            <span class="badge bg-{{ order_item.get_status_color}}">
-                                {{ order_item.get_status_display }}
-                            </span>
+                                <span class="badge bg-{{ order_item.get_status_color }}">
+                                    {{ order_item.get_status_display }}
+                                </span>
                             {% endif %}
                         </span> 
                         
                         <div class="item-meta"> 
-                            {% if order_item.variant.size %}Size: {{ order_item.variant.size }} • {% endif %}
+                            {% if order_item.variant and order_item.variant.size %}
+                                Size: {{ order_item.variant.size }} • 
+                            {% endif %}
                             Qty: {{ order_item.quantity }}
                             
-                            {% if order_item.status == 'returned' %}
+                            {% if order_item.items.status == 'returned' %}
                                 <span style="color: #ea580c; font-weight: 600; margin-left: 10px;">(Returned)</span>
                             {% endif %}
                         </div>
                     </div>
                     
                     <div class="item-price-group">
-                        <span class="item-unit-price">₹{{ order_item.price_at_purchase }}</span>
-                        <span class="item-total-price">₹{{ order_item.get_total_price }}</span>
+                        {% if order_item.status == 'return_approved' %}
+                           <del>
+                               <span class="item-unit-price">₹{{ order_item.price_at_purchase }}</span>
+                            </del> 
+                        {% else %}
+                            <span class="item-unit-price">₹{{ order_item.price_at_purchase }}</span>
+                        {% endif %}
+                        {% if order_item.status == 'return_approved' %}
+                            <del>
+                                <span class="item-total-price">₹{{ order_item.get_total_price }}</span>
+                            </del>
+                        {% else %}
+                            <span class="item-total-price">₹{{ order_item.get_total_price }}</span>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}
@@ -231,12 +248,13 @@
 
         {% if order.order_status != 'cancelled' and order.order_status != 'returned' %}
             <div class="od-bottom-actions">
-                
-                {% if order.has_return_requested %}
-                    <button type='button' onclick="openCancelReturnModal()" class="btn-action btn-return-cancel"> 
-                        <i class='bx bx-x-circle'></i> Cancel Return Request
-                    </button>
-
+                {% if order.has_return_requested or order.order_status == 'return_rejected'%}
+                    <a href="{% url 'cancel_return_order_view' order.order_id %}">
+                        <button type='button' class="btn-action btn-return-cancel"> 
+                            <i class='bx bx-x-circle'></i> 
+                            Cancel Return
+                        </button>
+                    </a>
                 {% elif order.order_status == 'delivered' and order.payment_status == 'paid' %}
                     {% if not order.is_return_period_expired %}
                         <div class="action-note">
@@ -255,9 +273,11 @@
                     {% endif %}
 
                 {% elif order.order_status == 'pending' or order.order_status == 'confirmed' or order.order_status == 'processing' %}
-                    <button type="button" onclick="openCancelOrderModal()" class="btn-action btn-cancel-full">
-                        <i class='bx bx-x-circle'></i>Cancel Order
-                    </button>
+                    <a href="#">
+                        <button onclick="confirmCancel()" class="btn-action btn-cancel-full">
+                            <i class='bx bx-x-circle'></i>Cancel Order
+                        </button>
+                    </a>
                 {% endif %}
             </div>
         {% endif %}
@@ -324,10 +344,21 @@
                                        onchange="toggleReturnReason('{{ item.id }}')">
                                 
                                 <label for="check_{{ item.id }}" class="item-label">
-                                    <img src="{{ item.variant.product.image.url }}" alt="img" class="sm-thumb">
+                                    {% with variant=item.variant %}
+                                        {% if variant and variant.product and variant.product.image %}
+                                            <img src="{{ variant.product.image.url }}" alt="img" class="sm-thumb">
+                                        {% else %}
+                                            <div class="sm-thumb" style="background: #eee;"></div>
+                                        {% endif %}
+                                    {% endwith %}
                                     <div class="sm-info">
                                         <span class="sm-name">{{ item.product_name }}</span>
-                                        <span class="sm-meta">Size: {{ item.variant.size }} | Qty: {{ item.quantity }}</span>
+                                        <span class="sm-meta">
+                                            {% if item.variant and item.variant.size %}
+                                                Size: {{ item.variant.size }} |
+                                            {% endif %}
+                                            Qty: {{ item.quantity }}
+                                        </span>
                                     </div>
                                     <span class="sm-price">₹{{ item.price_at_purchase }}</span>
                                 </label>
@@ -412,6 +443,7 @@
 </div>
 
 {% endblock content %}
+
 {% block extra_script %}
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="{% static "js/order/order.js" %}"></script>
