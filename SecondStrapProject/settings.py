@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'userFolder.cart',
     'userFolder.checkout',
     'userFolder.order',
+    'userFolder.wallet',
     'products',
     'Admin',
     'accounts',
