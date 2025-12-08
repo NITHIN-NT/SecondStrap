@@ -146,7 +146,7 @@ class OrderMain(models.Model):
     
     @property
     def get_total_item_count(self):
-        result = self.items.filter(is_returned=False).aggregate(total=Sum('quantity'))['total']
+        result = self.items.aggregate(total=Sum('quantity'))['total']
         return result or 0
     
     @property

@@ -796,9 +796,9 @@ def manage_return_request(request,item_id,order_id):
             active_items_exist = order.items.filter(is_returned=False).exists()
             
             if not active_items_exist:
-                order.order_status = 'returned'
-            else:
                 order.order_status = 'partially_returned'
+            else:
+                order.order_status = 'returned'
 
             order_item.save()
             return_item.save()
