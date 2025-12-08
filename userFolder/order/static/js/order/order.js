@@ -22,7 +22,7 @@ function closeCancelReturnModal() {
     document.body.style.overflow = 'auto';
 }
 
-// 3. NEW: Cancel Order Modal
+// 3. Cancel Order Modal
 function openCancelOrderModal() {
     document.getElementById('cancelOrderModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -39,16 +39,16 @@ window.onclick = function (event) {
     const cancelReturnModal = document.getElementById('cancelReturnModal');
     const cancelOrderModal = document.getElementById('cancelOrderModal');
 
-    if (event.target == returnModal) {
+    if (event.target === returnModal) {
         closeReturnModal();
     }
-    if (event.target == cancelReturnModal) {
+    if (event.target === cancelReturnModal) {
         closeCancelReturnModal();
     }
-    if (event.target == cancelOrderModal) {
+    if (event.target === cancelOrderModal) {
         closeCancelOrderModal();
     }
-}
+};
 
 // --- TAB SWITCHING LOGIC ---
 function setReturnMode(mode, btnElement) {
@@ -103,91 +103,95 @@ function toggleReturnReason(itemId) {
     }
 }
 
-// --- AXIOS SUBMISSION LOGIC (Only for the main Return Form) ---
-document.getElementById('returnForm').addEventListener('submit', function (e) {
-    e.preventDefault();
+// --- AXIOS SUBMISSION LOGIC (Return Form) ---
+const returnForm = document.getElementById('returnForm');
 
-    const mode = document.getElementById('return_mode').value;
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const url = this.action;
+if (returnForm) {
+    returnForm.addEventListener('submit', function (e) {
+        e.preventDefault();
 
-    let payload = [];
+        const mode = document.getElementById('return_mode').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const url = this.action;
 
-    if (mode === 'all') {
-        // --- GATHER DATA FOR 'ALL' MODE ---
-        const globalReason = document.getElementById('global_reason').value;
-        const globalNote = document.getElementById('global_note').value;
+        let payload = [];
 
-        if (!globalReason) {
-            toastr.error("Please select a reason for returning the entire order.");
-            return;
-        }
+        if (mode === 'all') {
+            // --- GATHER DATA FOR 'ALL' MODE ---
+            const globalReason = document.getElementById('global_reason').value;
+            const globalNote = document.getElementById('global_note').value;
 
-        const checkboxes = document.querySelectorAll('.item-checkbox');
-        checkboxes.forEach(cb => {
-            payload.push({
-                item_id: cb.value,
-                reason: globalReason,
-                note: globalNote
-            });
-        });
-
-    } else {
-        // --- GATHER DATA FOR 'INDIVIDUAL' MODE ---
-        const checkedBoxes = document.querySelectorAll('input[name="selected_items"]:checked');
-
-        if (checkedBoxes.length === 0) {
-            toastr.error("Please select at least one item to return.");
-            return;
-        }
-
-        let valid = true;
-        checkedBoxes.forEach(cb => {
-            const id = cb.value;
-            const reason = document.getElementById('reason_input_' + id).value;
-            const note = document.getElementById('note_input_' + id).value;
-
-            if (!reason) { valid = false; }
-
-            payload.push({
-                item_id: id,
-                reason: reason,
-                note: note
-            });
-        });
-
-        if (!valid) {
-            toastr.error("Please select a reason for all selected items.");
-            return;
-        }
-    }
-
-    // --- SEND DATA VIA AXIOS ---
-    axios.post(url, { returns: payload }, {
-        headers: {
-            'X-CSRFToken': csrfToken,
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(function (response) {
-            toastr.info("Return request submitted successfully.");
-
-            // Wait 1.5s for toastr to show, then reload
-            setTimeout(function () {
-                window.location.reload();
-            }, 1500);
-        })
-        .catch(function (error) {
-            console.error('Error:', error);
-
-            let errorMessage = "An unexpected error occurred.";
-            if (error.response && error.response.data && error.response.data.message) {
-                errorMessage = error.response.data.message;
+            if (!globalReason) {
+                toastr.error("Please select a reason for returning the entire order.");
+                return;
             }
-            toastr.error(errorMessage);
-        });
-});
 
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(cb => {
+                payload.push({
+                    item_id: cb.value,
+                    reason: globalReason,
+                    note: globalNote
+                });
+            });
+
+        } else {
+            // --- GATHER DATA FOR 'INDIVIDUAL' MODE ---
+            const checkedBoxes = document.querySelectorAll('input[name="selected_items"]:checked');
+
+            if (checkedBoxes.length === 0) {
+                toastr.error("Please select at least one item to return.");
+                return;
+            }
+
+            let valid = true;
+            checkedBoxes.forEach(cb => {
+                const id = cb.value;
+                const reason = document.getElementById('reason_input_' + id).value;
+                const note = document.getElementById('note_input_' + id).value;
+
+                if (!reason) { valid = false; }
+
+                payload.push({
+                    item_id: id,
+                    reason: reason,
+                    note: note
+                });
+            });
+
+            if (!valid) {
+                toastr.error("Please select a reason for all selected items.");
+                return;
+            }
+        }
+
+        // --- SEND DATA VIA AXIOS ---
+        axios.post(url, { returns: payload }, {
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(function (response) {
+                toastr.info("Return request submitted successfully.");
+
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1500);
+            })
+            .catch(function (error) {
+                console.error('Error:', error);
+
+                let errorMessage = "An unexpected error occurred.";
+                if (error.response && error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                toastr.error(errorMessage);
+            });
+    });
+}
+
+// --- AXIOS SUBMISSION LOGIC (Cancel Order Form) ---
 const cancelOrderForm = document.getElementById('cancelOrderForm');
 
 if (cancelOrderForm) {
@@ -197,7 +201,6 @@ if (cancelOrderForm) {
         const url = this.action;
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        // Send Post Request
         axios.post(url, {}, {
             headers: {
                 'X-CSRFToken': csrfToken,
@@ -207,18 +210,15 @@ if (cancelOrderForm) {
             .then(function (response) {
                 const data = response.data;
 
-                // Check the 'status' key from your Django View JsonResponse
                 if (data.status === "success") {
                     toastr.info(data.message);
 
-                    // Wait 1.5s then reload to show the "Cancelled" status
                     setTimeout(function () {
                         window.location.reload();
                     }, 1000);
                 } else {
-                    // If status is 'error' (e.g., order already shipped)
                     toastr.error(data.message);
-                    closeCancelOrderModal(); // Optional: close modal on error
+                    closeCancelOrderModal();
                 }
             })
             .catch(function (error) {

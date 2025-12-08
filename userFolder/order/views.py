@@ -13,7 +13,9 @@ from .utils import render_to_pdf
 from django.http import JsonResponse
 import json
 from django.db import transaction
+from django.views.decorators.cache import never_cache
 
+@never_cache
 @login_required(login_url='login')
 def order(request):
     if request.method != 'POST':
@@ -145,6 +147,8 @@ def order(request):
     
     return render(request, 'orders/order_success.html', context)
 
+@never_cache
+@login_required
 def order_details_view(request,order_id):
     user = request.user
         
@@ -163,6 +167,8 @@ def order_details_view(request,order_id):
     print(order.has_return_requested)
     return render(request,'orders/order_details.html',context)
 
+@never_cache
+@login_required
 def download_invoice_view(request, order_id):
     order = get_object_or_404(OrderMain, order_id=order_id)
 
@@ -186,6 +192,7 @@ def download_invoice_view(request, order_id):
 
 @login_required
 @require_POST
+@never_cache
 def return_order_view(request, order_id):
     try: 
         data = json.loads(request.body)
@@ -256,6 +263,7 @@ def return_order_view(request, order_id):
         return JsonResponse({'status': 'error', 'message': 'Something went wrong'}, status=500)
 
 @login_required
+@never_cache
 def cancel_return_order_view(request, order_id):
     order = get_object_or_404(OrderMain, order_id=order_id, user=request.user)
     return_items = ReturnOrder.objects.filter(order=order, return_status='return_requested')
@@ -288,6 +296,7 @@ def cancel_return_order_view(request, order_id):
     return redirect('order_details', order_id=order_id)
 
 @login_required
+@never_cache
 def cancel_order_view(request,order_id):
     order = get_object_or_404(OrderMain,order_id=order_id,user=request.user)
     
@@ -308,8 +317,8 @@ def cancel_order_view(request,order_id):
         order.order_status = 'cancelled'
         order.save()
         
-        return JsonResponse({"status": "success", "message": "Order cancelled successfully"})
+        return JsonResponse({"status": "success", "message": "Order cancelled successfully"},status=200)
     except Exception as e :
         print(str(e))
-        return JsonResponse({"status" :"error","message" : "sorry something went wrong while canceling the order."})
+        return JsonResponse({"status" :"error","message" : "sorry something went wrong while canceling the order."},status=400)
     

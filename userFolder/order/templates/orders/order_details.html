@@ -273,12 +273,11 @@
                     {% endif %}
 
                 {% elif order.order_status == 'pending' or order.order_status == 'confirmed' or order.order_status == 'processing' %}
-                    <a href="#">
-                        <button onclick="confirmCancel()" class="btn-action btn-cancel-full">
-                            <i class='bx bx-x-circle'></i>Cancel Order
-                        </button>
-                    </a>
+                    <button type="button" onclick="openCancelOrderModal()" class="btn-action btn-cancel-full">
+                        <i class='bx bx-x-circle'></i>Cancel Order
+                    </button>
                 {% endif %}
+
             </div>
         {% endif %}
 
