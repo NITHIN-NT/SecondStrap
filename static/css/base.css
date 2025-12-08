@@ -8,11 +8,12 @@
 /* ================================================= */
 /* ==== FONT FAMILY: BARLOW CONDENSED (DEFAULT) ==== */
 /* ================================================= */
-
 body {
     font-family: "Barlow Condensed", sans-serif;
     font-weight: 400;
     font-style: normal;
+    /* ✅ NEW: Add padding to body to prevent content hiding under fixed header/carousel */
+    padding-top: 120px;
 }
 
 input,
@@ -50,12 +51,12 @@ img {
     width: 100%;
     background-color: #fff;
     border-bottom: 1px solid #eaeaea;
-
-    /* Fixed below offer bar */
+    /* ✅ UPDATED: Fixed position */
     position: fixed;
-    top: 40px; /* height of offer bar */
+    top: 40px;
+    /* Carousel height */
     left: 0;
-    z-index: 901;
+    z-index: 899;
 }
 
 .navbar {
@@ -108,8 +109,7 @@ img {
 /* ==================== MAIN CONTENT ==================== */
 .main-content {
     flex-grow: 1;
-    /* 40 (offer) + 80 (navbar) + 20 buffer */
-    padding-top: 140px;
+    padding-top: 20px;
     padding-bottom: 20px;
     min-height: 47vh;
 }
@@ -210,23 +210,24 @@ img {
     padding-right: 40px;
 }
 
-
 /* ==================== OFFER CAROUSEL ==================== */
 .offer-carousel {
     background-color: #000;
     color: #fff;
     overflow: hidden;
     white-space: nowrap;
-    position: fixed;      /* fixed at very top */
-    top: 0;
-    left: 0;
+    position: relative;
     width: 100%;
     height: 40px;
     display: flex;
     align-items: center;
     font-size: 0.95rem;
     font-weight: 500;
-    z-index: 900;         /* below header, above content */
+    /* ✅ UPDATED: Fixed position */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 900;
 }
 
 .offer-track {
@@ -443,9 +444,14 @@ img {
         margin-right: 50px;
     }
 
-    /* Adjust main content for smaller header/offer combo */
-    .main-content {
-        padding-top: 120px; /* 35 + 70 + buffer */
+    /* ✅ NEW: Adjust body padding for mobile (35px carousel + 70px header = 105px) */
+    body {
+        padding-top: 105px;
+    }
+
+    /* ✅ NEW: Adjust fixed header position for mobile (35px carousel height) */
+    .header {
+        top: 35px;
     }
 }
 
@@ -457,7 +463,6 @@ img {
     opacity: 1 !important;
     font-family: inherit;
     /* Inherits "Barlow Condensed" from body */
-
     /* --- Shape & Shadow (Your Request) --- */
     padding: 12px 18px 12px 12px;
     margin-bottom: 10px;
@@ -466,7 +471,6 @@ img {
     /* "dropbox" shadow */
     border: none;
     /* Remove old border */
-
     /* --- Color Indicator (Your Request) --- */
     border-left: 5px solid #cccccc;
     /* Default border color */
@@ -513,13 +517,13 @@ img {
     /* Default progress bar */
 }
 
-/* This rule moves the entire toast container down (below fixed header) */
+/* This rule moves the entire toast container down */
 #toast-container.toast-top-right {
-    top: 140px !important; /* aligns with main content start */
+    /* ✅ ADJUSTED: Moved toast below the fixed header (40px carousel + 80px header + 10px gap) */
+    top: 130px !important;
 }
 
 /* --- Style Variations (Color as Indication) --- */
-
 /* Success */
 #toast-container>.toast-success {
     border-left-color: #4CAF50;
@@ -573,7 +577,6 @@ img {
 }
 
 /* ==================== COMPACT / SMALL SWEETALERT STYLE ==================== */
-
 /* 1. The Container - Small & Tight */
 div:where(.swal2-container) div:where(.swal2-popup) {
     font-family: "Barlow Condensed", sans-serif !important;
