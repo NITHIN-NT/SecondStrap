@@ -39,7 +39,8 @@ def order(request):
             variant_ids = [item.variant.id for item in cart_items]
             
             locked_variants = ProductVariant.objects.filter(id__in=variant_ids).select_for_update()
-            variant_map = {v.id: v for v in locked_variants}
+            variant_map = {variant.id: variant for variant in locked_variants}
+            print("variant Map : ",variant_map)
             
             calculated_total_price = 0
             

@@ -226,8 +226,11 @@ def admin_reset(request):
         form = AdminSetNewPassword()
     return render(request, "adminAuth/reset-password.html", {"form": form})
 
-
+@never_cache
 def admin_logout(request):
+    if not request.user.is_authenticated and not request.user.is_superuser:
+        return redirect('admin_login')
+ 
     logout(request)
     return redirect("admin_login")
 
