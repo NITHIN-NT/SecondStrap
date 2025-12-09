@@ -256,9 +256,7 @@ class AdminHome(LoginRequiredMixin, TemplateView):
         context["total_users"] = CustomUser.objects.count()
         context["total_products"] = Product.objects.count()
         context["total_orders"] = OrderMain.objects.count()
-        context["total_revenue"] = OrderMain.objects.aggregate(
-            total_revenue=Sum("final_price")
-        )
+        context["total_revenue"] = OrderMain.objects.aggregate(total_revenue=Sum("final_price"))
         context["recent_orders"] = OrderMain.objects.all()[:2]
 
         return context

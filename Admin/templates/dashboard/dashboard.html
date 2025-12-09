@@ -19,7 +19,9 @@
             <div class="stat-card-header">
                 <span>Total Users</span>
                 <div class="stat-icon-wrapper">
-                    <i class="fa-solid fa-users"></i>
+                    <a href="{% url 'admin_user' %}">
+                        <i class="fa-solid fa-users"></i>
+                    </a>
                 </div>
             </div>
             <h2 class="stat-card-value">{{ total_users }}</h2>
@@ -30,7 +32,9 @@
             <div class="stat-card-header">
                 <span>Total Products</span>
                 <div class="stat-icon-wrapper">
-                    <i class="fa-solid fa-box"></i>
+                    <a href="{% url "admin_products" %}">
+                        <i class="fa-solid fa-box"></i>
+                    </a>
                 </div>
             </div>
             <h2 class="stat-card-value">{{ total_products }}</h2>
@@ -41,7 +45,9 @@
             <div class="stat-card-header">
                 <span>Total Orders</span>
                 <div class="stat-icon-wrapper">
-                    <i class="fa-solid fa-cart-shopping"></i>
+                    <a href="{% url "Admin_order" %}">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </a>
                 </div>
             </div>
             <h2 class="stat-card-value">{{ total_orders }}</h2>
@@ -71,7 +77,7 @@
             </div>
         </div>
 
-        <div class="card">
+        {% comment %} <div class="card">
             <div class="card-header">
                 <h3>Top Selling Products</h3>
             </div>
@@ -97,7 +103,7 @@
                     <span class="product-item-count">75</span>
                 </div>
             </div>
-        </div>
+        </div> {% endcomment %}
     </div> 
 
     <div class="card orders-table">
@@ -112,6 +118,7 @@
                     <th>Date</th>
                     <th>Status</th>
                     <th>Total</th>
+                    <th>View</th>
                 </tr>
             </thead>
             <tbody>
@@ -126,6 +133,10 @@
                         </span>
                     </td>
                     <td>₹{{ recent_order.final_price }}</td>
+                    <td data-label="Action">
+                        <a href="{% url 'Admin_order_detailed_view' recent_order.order_id %}" title="View Details" style="color: #4b5563; text-decoration: underline;">
+                            View Details
+                        </a></td>
                 </tr>
                 {% endfor %}
             </tbody>
