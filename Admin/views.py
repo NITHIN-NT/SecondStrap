@@ -40,6 +40,8 @@ from userFolder.wallet.models import *
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 
+from django.db.models.functions import TruncMonth
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -236,13 +238,29 @@ class AdminHome(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["total_users"] = CustomUser.objects.all().count()
-        context["total_products"] = Product.objects.all().count()
-        """
-            Total orders is fake you need to add when you create the orders
-        """
-        context["total_orders"] = "02"
-        context["total_revenue"] = "02"
+        
+        qs = (
+            OrderMain.objects
+            .annotate(month=TruncMonth("created_at"))
+            .values("month")
+            .annotate(total=Sum("final_price"))
+            .order_by("month")
+        )
+
+        labels = [row["month"].strftime("%b") for row in qs]   # Jan, Feb, ...
+        data = [float(row["total"] or 0) for row in qs]
+
+        context["sales_labels"] = json.dumps(labels)
+        context["sales_data"] = json.dumps(data)
+
+        context["total_users"] = CustomUser.objects.count()
+        context["total_products"] = Product.objects.count()
+        context["total_orders"] = OrderMain.objects.count()
+        context["total_revenue"] = OrderMain.objects.aggregate(
+            total_revenue=Sum("final_price")
+        )
+        context["recent_orders"] = OrderMain.objects.all()[:2]
+
         return context
 
 

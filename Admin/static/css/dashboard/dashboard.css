@@ -1,17 +1,18 @@
 /*
  * STYLES FOR: dashboard.css
- * (Updated for 100% screenshot match)
  */
 
 /* --- Page Header --- */
 .page-header {
     margin-bottom: 24px;
 }
+
 .page-header h1 {
-    font-size: 1.5rem; /* Adjusted size */
+    font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-text-primary);
 }
+
 .page-header p {
     color: var(--color-text-secondary);
     font-size: 0.9rem;
@@ -27,27 +28,26 @@
 
 .stat-card {
     background-color: var(--color-card-bg);
-    padding: 20px; /* Adjusted padding */
+    padding: 20px;
     border-radius: 8px;
     border: 1px solid var(--color-border);
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Subtle shadow */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .stat-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Align to top */
+    align-items: flex-start;
     color: var(--color-text-secondary);
     font-weight: 500;
     font-size: 0.9rem;
 }
 
-/* NEW: Style for the icon background */
 .stat-icon-wrapper {
     width: 40px;
     height: 40px;
-    border-radius: 50%; /* It's a circle in the screenshot */
-    background-color: #f3f4f6;  /* Tailwind gray-100 */
+    border-radius: 50%;
+    background-color: #f3f4f6;
     color: var(--color-text-secondary);
     display: grid;
     place-items: center;
@@ -55,7 +55,7 @@
 }
 
 .stat-card-value {
-    font-size: 2.125rem; /* 34px */
+    font-size: 2.125rem;
     font-weight: 600;
     color: var(--color-text-primary);
     margin-top: 16px;
@@ -63,7 +63,7 @@
 
 .stat-card-footer {
     font-size: 0.85rem;
-    color: var(--color-green-text); /* Matched green */
+    color: var(--color-green-text);
     font-weight: 500;
     margin-top: 8px;
 }
@@ -71,12 +71,12 @@
 /* --- Two-Column Layout for Charts --- */
 .dashboard-row {
     display: grid;
-    grid-template-columns: 2.5fr 1fr; /* Closer to screenshot ratio */
+    grid-template-columns: 2.5fr 1fr;
     gap: 24px;
     margin-top: 32px;
 }
 
-/* --- Generic Content Card (for charts/tables) --- */
+/* --- Generic Content Card --- */
 .card {
     background-color: var(--color-card-bg);
     border-radius: 8px;
@@ -97,51 +97,54 @@
     color: var(--color-text-primary);
 }
 
-/* --- Main Chart Placeholder --- */
+/* --- CHART CONTAINER (IMPORTANT FOR CANVAS) --- */
 .chart-container {
+    position: relative;
     width: 100%;
     height: 350px;
-    /* This placeholder mimics the screenshot's chart BG */
-    background-color: #f9fafb; /* var(--color-main-bg) */
-    border-radius: 6px;
-    display: grid;
-    place-items: center;
-    color: #9ca3af;
-    font-size: 0.9rem;
-    /* content: 'Chart.js canvas would render here'; */
-}
-.chart-container:before {
-    content: 'Sales chart placeholder';
 }
 
+/* Canvas must fill the container */
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
 
-/* UPDATED: Top Selling Products List */
+/* Remove previous placeholder overlay */
+.chart-container::before {
+    content: none !important;
+}
+
+/* --- Top Selling Products List --- */
 .product-list {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Spacing between items */
+    gap: 20px;
 }
+
 .product-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.9rem;
 }
+
 .product-item-name {
-    color: #374151; /* Tailwind gray-700 */
+    color: #374151;
     font-weight: 500;
 }
+
 .product-item-count {
-    color: #111827; /* Tailwind gray-900 */
+    color: #111827;
     font-weight: 600;
 }
-
 
 /* --- Recent Orders Table --- */
 .orders-table {
     margin-top: 32px;
 }
-/* Use the .card-header style for the table title */
+
 .orders-table .card-header {
     border-bottom: none;
     margin-bottom: 0;
@@ -158,7 +161,7 @@
     padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid var(--color-border);
-    font-size: 0.875rem; /* 14px */
+    font-size: 0.875rem;
     vertical-align: middle;
 }
 
@@ -166,13 +169,12 @@
     background-color: var(--color-main-bg);
     color: var(--color-text-secondary);
     font-weight: 600;
-    padding: 12px 16px;
 }
 
 .data-table td {
     color: var(--color-text-secondary);
 }
-/* Make customer name and order ID darker */
+
 .data-table td:first-child,
 .data-table td:nth-child(2) {
     color: var(--color-text-primary);
@@ -183,40 +185,64 @@
     border-bottom: none;
 }
 
-/* --- Status Pills --- */
-.status {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 0.8rem;
+/* --- Status Badges --- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
     font-weight: 600;
-    display: inline-block;
-}
-.status-delivered {
-    background-color: var(--color-status-delivered-bg);
-    color: var(--color-status-delivered-text);
-}
-.status-processing {
-    background-color: var(--color-status-processing-bg);
-    color: var(--color-status-processing-text);
+    text-transform: capitalize;
 }
 
-/* --- Responsive Adjustments --- */
+/* Green */
+.status-delivered,
+.status-paid {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* Blue */
+.status-shipped,
+.status-out_for_delivery,
+.status-confirmed,
+.status-razorpay,
+.status-wallet {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* Yellow */
+.status-pending,
+.status-return_requested {
+    background-color: #fef9c3;
+    color: #854d0e;
+}
+
+/* Red */
+.status-cancelled,
+.status-failed,
+.status-returned,
+.status-partially_cancelled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Gray */
+.status-cod {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+/* --- Responsive --- */
 @media (max-width: 992px) {
     .dashboard-row {
-        grid-template-columns: 1fr; /* Stack chart and list */
-    }
-    .topbar-search input {
-        width: 200px;
+        grid-template-columns: 1fr;
     }
 }
+
 @media (max-width: 768px) {
-    .sidebar {
-        /* You would add logic to hide/show sidebar on mobile */
-        display: none;
-    }
-    .topbar {
-        padding: 16px;
-    }
     .content-area {
         padding: 16px;
     }

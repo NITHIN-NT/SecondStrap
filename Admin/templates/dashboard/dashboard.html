@@ -22,7 +22,7 @@
                     <i class="fa-solid fa-users"></i>
                 </div>
             </div>
-            <h2 class="stat-card-value">{{total_users}}</h2>
+            <h2 class="stat-card-value">{{ total_users }}</h2>
             <p class="stat-card-footer">+12% from last month</p>
         </div>
         
@@ -33,7 +33,7 @@
                     <i class="fa-solid fa-box"></i>
                 </div>
             </div>
-            <h2 class="stat-card-value">{{total_products}}</h2>
+            <h2 class="stat-card-value">{{ total_products }}</h2>
             <p class="stat-card-footer">+5% from last month</p>
         </div>
         
@@ -44,7 +44,7 @@
                     <i class="fa-solid fa-cart-shopping"></i>
                 </div>
             </div>
-            <h2 class="stat-card-value">{{total_orders}}</h2>
+            <h2 class="stat-card-value">{{ total_orders }}</h2>
             <p class="stat-card-footer">+15% from last month</p>
         </div>
 
@@ -55,20 +55,20 @@
                     <i class="fa-solid fa-dollar-sign"></i>
                 </div>
             </div>
-            <h2 class="stat-card-value">₹{{total_revenue}}</h2>
+            <h2 class="stat-card-value">₹{{ total_revenue.total_revenue }}</h2>
             <p class="stat-card-footer">+18% from last month</p>
         </div>
     </div>
 
 
     <div class="dashboard-row">
-        
         <div class="card">
             <div class="card-header">
                 <h3>Sales Overview</h3>
             </div>
             <div class="chart-container">
-                </div>
+                <canvas id="salesChart"></canvas>
+            </div>
         </div>
 
         <div class="card">
@@ -98,7 +98,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
 
     <div class="card orders-table">
         <div class="card-header">
@@ -115,22 +115,77 @@
                 </tr>
             </thead>
             <tbody>
+                {% for recent_order in recent_orders %}
                 <tr>
-                    <td>ORD-1001</td>
-                    <td>John Doe</td>
-                    <td>2025-05-15</td>
-                    <td><span class="status status-delivered">Delivered</span></td>
-                    <td>₹129.99</td>
+                    <td>{{ recent_order.order_id }}</td>
+                    <td>{{ recent_order.user }}</td>
+                    <td>{{ recent_order.created_at }}</td>
+                    <td>    
+                        <span class="status-badge status-{{ recent_order.order_status }}">
+                            {{ recent_order.get_order_status_display }}
+                        </span>
+                    </td>
+                    <td>₹{{ recent_order.final_price }}</td>
                 </tr>
-                <tr>
-                    <td>ORD-1002</td>
-                    <td>Jane Smith</td>
-                    <td>2025-05-16</td>
-                    <td><span class="status status-processing">Processing</span></td>
-                    <td>₹89.99</td>
-                </tr>
-                </tbody>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
-
 {% endblock content %}
+{% block extraJs %}
+{# ---- CHART.JS (inline so we know it runs) ---- #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    console.log('labels from Django:', {{ sales_labels|safe }});
+    console.log('data from Django:', {{ sales_data|safe }});
+
+    const labels = {{ sales_labels|safe }};
+    const data = {{ sales_data|safe }};
+
+    const canvas = document.getElementById('salesChart');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    fill: true,
+                    tension: 0.4,
+                    borderColor: '#000000',
+                    backgroundColor: 'rgba(0,0,0,0.10)',
+                    pointRadius: 4,          // 👈 make the point visible
+                    pointHoverRadius: 6,
+                    borderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            borderDash: [4, 4],
+                            color: '#e5e7eb'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            borderDash: [4, 4],
+                            color: '#e5e7eb'
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+
+{% endblock extraJs %}
