@@ -1,0 +1,71 @@
+{# templates/payment/razorpay_checkout.html #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Processing Payment{% endblock %}
+
+{% block content %}
+<div class="checkout-wrapper">
+    <div class="summary-card">
+        <h2>Redirecting to payment...</h2>
+        <p>Amount: ₹{{ amount_display }} ({{ currency }})</p>
+        <button id="rzp-button">Pay Now</button>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        "key": "{{ razorpay_key_id }}",
+        "amount": "{{ amount_paise }}",
+        "currency": "{{ currency }}",
+        "name": "SecondStrap",
+        "description": "Order Payment",
+        "order_id": "{{ razorpay_order_id }}",
+        "handler": function (response){
+            var form = document.createElement('form');
+            form.method = "POST";
+            form.action = "{% url 'razorpay_callback' %}";
+
+            var csrfInput = document.createElement('input');
+            csrfInput.type = "hidden";
+            csrfInput.name = "csrfmiddlewaretoken";
+            csrfInput.value = "{{ csrf_token }}";
+            form.appendChild(csrfInput);
+
+            var fields = {
+                "razorpay_payment_id": response.razorpay_payment_id,
+                "razorpay_order_id": response.razorpay_order_id,
+                "razorpay_signature": response.razorpay_signature,
+            };
+
+            for (var key in fields) {
+                if (fields.hasOwnProperty(key)) {
+                    var input = document.createElement('input');
+                    input.type = "hidden";
+                    input.name = key;
+                    input.value = fields[key];
+                    form.appendChild(input);
+                }
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        },
+        "prefill": {
+            "name": "{{ user.get_full_name }}",
+            "email": "{{ user.email }}",
+            "contact": "{{ address.phone_number }}"
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+
+    var rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button').onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+    };
+</script>
+{% endblock %}

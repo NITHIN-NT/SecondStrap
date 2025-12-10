@@ -4,6 +4,8 @@ import os
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+import razorpay
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,6 +14,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 '''
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))  # .env should be in project root (same as manage.py)
+
+'''
+    RAZORPAY INTEGRATION
+'''
+RAZORPAY_KEY_ID = env('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = env('RAZORPAY_KEY_SECRET')
+RAZORPAY_CALLBACK_URL = env('RAZORPAY_CALLBACK_URL')
+RAZORPAY_CURRENCY = "INR"
+
 
 '''
     SECURITY
@@ -57,6 +68,7 @@ INSTALLED_APPS = [
     'userFolder.checkout',
     'userFolder.order',
     'userFolder.wallet',
+    'userFolder.payment',
     'products',
     'Admin',
     'accounts',

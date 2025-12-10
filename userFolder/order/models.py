@@ -86,7 +86,12 @@ class OrderMain(models.Model):
 
     payment_method = models.CharField(max_length=50, choices=PAYMENT_CHOICES, blank=True, null=True)
     payment_status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES, default='pending')
-    payment_id = models.CharField(max_length=150, null=True, blank=True)
+    
+    razorpay_order_id = models.CharField(max_length=255,null=True,blank=True)
+    razorpay_payment_id = models.CharField(max_length=255, null=True, blank=True)
+    razorpay_signature = models.CharField(max_length=255,null=True,blank=True)
+    
+    is_paid = models.BooleanField(default=False)
     
     order_status = models.CharField(max_length=150, choices=ORDER_STATUS_CHOICES, default='pending')
     
