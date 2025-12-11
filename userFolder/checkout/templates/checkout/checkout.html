@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
 <style>
-    /* Truck Animation Keyframes */
+    /* Truck Animation Keyframes (No changes) */
     @keyframes drive {
         0% { transform: translateY(0) rotate(0deg); }
         25% { transform: translateY(-1px) rotate(-1deg); }
@@ -23,7 +23,7 @@
         100% { opacity: 0; transform: translate(-15px, 2px) scale(1.5); }
     }
 
-    /* Container for the loading state */
+    /* Container for the loading state (No changes) */
     .btn-loading-content {
         display: none; /* Hidden by default */
         align-items: center;
@@ -31,13 +31,13 @@
         gap: 10px;
     }
 
-    /* The Truck Icon Style */
+    /* The Truck Icon Style (No changes) */
     .truck-icon {
         font-size: 1.4rem;
         animation: drive 0.4s infinite linear;
     }
 
-    /* When button has .loading class */
+    /* When button has .loading class (No changes) */
     .place-order-btn.loading .btn-original-text {
         display: none;
     }
@@ -51,6 +51,18 @@
         opacity: 0.9;
         /* Optional: Change background slightly to indicate processing */
         filter: brightness(0.95); 
+    }
+
+    /* 🛑 CRITICAL FIX: Ensure the body is locked correctly and its height is managed 
+       when the modal is open, which is essential for Lenis compatibility. */
+    body.modal-open {
+        overflow: hidden !important; 
+        height: 100vh !important; 
+        /* Use fixed positioning to lock the background page entirely */
+        position: fixed !important; 
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
     }
 </style>
 {% endblock %}
@@ -217,7 +229,8 @@
 </div>
 
 <div id="addressModal" class="modal-overlay" aria-hidden="true">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="addressModalTitle">
+    {# CRITICAL FIX: Added data-lenis-prevent attribute #}
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="addressModalTitle" data-lenis-prevent>
         <div class="modal-header">
             <h3 id="addressModalTitle">Add New Address</h3> 
             <button class="close-modal-btn" id="closeAddressModalBtn" aria-label="Close">&times;</button>

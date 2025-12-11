@@ -395,11 +395,12 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 100vh; /* Use vh for reliable height calculation */
     background: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     justify-content: center;
     align-items: center;
+    overflow-y: scroll; /* Allow the overlay to scroll if needed, though modal-content should handle it */
 }
 
 .modal-overlay.active {
@@ -412,8 +413,16 @@ body {
     border-radius: 12px;
     width: 100%;
     max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
+    
+    /* 🛑 CRITICAL FIX: Ensure defined height and overflow for internal scrolling */
+    max-height: 90vh; 
+    overflow-y: auto; 
+    
+    /* ✅ NEW: Apply browser-level smooth scroll for programmatic/anchor scrolling */
+    scroll-behavior: smooth; 
+    
+    overscroll-behavior: contain; 
+    -webkit-overflow-scrolling: touch; 
 }
 
 .modal-header {
@@ -421,6 +430,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    /* Use flex or block context for header */
 }
 
 .close-modal-btn {
