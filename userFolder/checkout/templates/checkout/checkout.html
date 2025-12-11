@@ -454,7 +454,14 @@
                 const rzp = new Razorpay(options);
                 rzp.on('payment.failed', function (resp) {
                     placeOrderBtn.classList.remove('loading');
-                    toastr.error('Payment failed. Please try again.');
+                    let errorReason = 'Please try again or select a different method.';
+                    if (resp.error && resp.error.description) {
+                        errorReason = resp.error.description;
+                    }
+                    
+                    // Show a detailed error
+                    toastr.error(`Payment failed: ${errorReason}`);
+                    window.location.href = "{% url 'checkout' %}";
                 });
 
                 rzp.open();

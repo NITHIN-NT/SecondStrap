@@ -153,7 +153,7 @@ def razorpay_callback(request):
         client.utility.verify_payment_signature(verification_data)
     except razorpay.errors.SignatureVerificationError:
         messages.error(request, "Payment verification failed.")
-        return redirect('checkout')
+        return render(request,'orders/order_error.html')
     
     try:
         with transaction.atomic():
