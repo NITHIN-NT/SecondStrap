@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import * 
 from userFolder.order.views import *
+from userFolder.wallet.views import *
 urlpatterns = [
     path('',ProfileView.as_view(),name = 'profile_view_user'),
     path('address/',ProfileAddressView.as_view(),name = 'profile_address'),

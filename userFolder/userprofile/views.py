@@ -21,7 +21,7 @@ from .models import Address
 from django.db import IntegrityError
 from django.contrib.auth import update_session_auth_hash
 from userFolder.order.models import OrderMain
-from userFolder.wallet.models import Wallet,Transaction
+
 # Create your views here.
 
 class SecureUserMixin(LoginRequiredMixin):
@@ -306,15 +306,6 @@ class ProfileOrderView(SecureUserMixin, ListView):
             queryset = OrderMain.objects.filter(user=self.request.user).order_by('-created_at')
             return queryset
         return OrderMain.objects.none()
-
-class ProfileWalletView(SecureUserMixin, TemplateView):
-    template_name = "userprofile/wallet.html"
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        wallet, created = Wallet.objects.get_or_create(user=self.request.user)
-        user_wallet = Wallet.objects.select_related('user').prefetch_related('transactions').get(user=self.request.user)
-        context['wallet'] = user_wallet
-        return context
 
 @never_cache
 @login_required

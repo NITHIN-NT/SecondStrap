@@ -1,10 +1,10 @@
-{% extends "./profile_base.html" %}
+{% extends "userprofile/profile_base.html" %}
 {% load static %}
 
 {% block title %}My Wallet{% endblock %}
 
 {% block profile_extra_style %}
-    <link rel="stylesheet" href="{% static 'css/userprofile/wallet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/wallet/wallet.css' %}">
 {% endblock profile_extra_style %}
 
 {% block profile_content %}
