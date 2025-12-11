@@ -148,6 +148,16 @@
         .lenis.lenis-stopped {
           overflow: hidden;
         }
+        .modal-body-scrollable {
+            /* Define a maximum height for the scrollable area */
+            max-height: 80vh; /* Example: 80% of the viewport height */
+            
+            /* VERY IMPORTANT: This tells the browser to show scrollbars if content is too tall */
+            overflow-y: auto; 
+            
+            /* Ensure the browser respects the content flow inside the modal */
+            overscroll-behavior: contain; 
+        }
     </style>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>

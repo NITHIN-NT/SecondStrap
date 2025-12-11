@@ -1,0 +1,314 @@
+/* --- Light Theme Variables (Matching the main wallet style) --- */
+:root {
+    --primary-white: #ffffff;
+    --secondary-light: #f8f9fa;
+    /* Light background for sections/cards */
+    --primary-blue: #0d6efd;
+    /* Your Add Money button color */
+    --text-dark: #333;
+    --text-mid: #666;
+    --border-light: #e0e0e0;
+    --highlight-green: #28a745;
+    /* Success/Credit color */
+}
+
+/* --- Modal Overlay & Container --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    /* Lighter semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-overlay .container {
+    background: var(--primary-white);
+    width: 100%;
+    max-width: 450px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    color: var(--text-dark);
+    max-height: 90vh;
+    overflow-y: auto;
+    font-family: inherit;
+    /* Inherit font from parent */
+}
+
+/* --- Header Section --- */
+header {
+    margin-bottom: 20px;
+}
+
+.back-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-mid);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: var(--primary-blue);
+}
+
+.back-link i {
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    color: var(--text-dark);
+}
+
+header p {
+    font-size: 0.9rem;
+    color: var(--text-mid);
+    margin: 0;
+}
+
+/* --- Balance Card (Now light background, strong border) --- */
+.balance-card {
+    background: var(--secondary-light);
+    /* Light gray background */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    margin-bottom: 20px;
+}
+
+.balance-card .label {
+    font-size: 0.8rem;
+    color: var(--text-mid);
+    margin-bottom: 5px;
+}
+
+.balance-card .amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.balance-card .wallet-icon {
+    font-size: 2rem;
+    color: var(--primary-blue);
+}
+
+/* --- Select Amount Buttons --- */
+.section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 20px 0 10px 0;
+}
+
+.amount-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.amount-options button {
+    background: var(--primary-white);
+    color: var(--text-dark);
+    border: 1px solid var(--border-light);
+    padding: 12px 0;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.amount-options button:hover:not(.selected) {
+    border-color: var(--primary-blue);
+}
+
+.amount-options button.selected {
+    background: var(--primary-blue);
+    /* Selected state is the primary blue */
+    color: var(--primary-white);
+    border: 1px solid var(--primary-blue);
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 100, 255, 0.2);
+}
+
+/* --- Custom Amount Input --- */
+.custom-amount-section input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    background: var(--primary-white);
+    color: var(--text-dark);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
+
+.custom-amount-section input[type="text"]::placeholder {
+    color: var(--text-mid);
+}
+
+.custom-amount-section input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+/* --- Payment Method Cards --- */
+.payment-card {
+    background: var(--primary-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.payment-card:hover {
+    border-color: var(--primary-blue);
+}
+
+.payment-card.selected-method {
+    border: 2px solid var(--highlight-green);
+    /* Green border for selection */
+    background: var(--secondary-light);
+}
+
+.payment-card .method-icon {
+    font-size: 1.5rem;
+    margin-right: 15px;
+    color: var(--primary-blue);
+}
+
+.payment-card .method-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+.payment-card .method-desc {
+    font-size: 0.8rem;
+    color: var(--text-mid);
+}
+
+.payment-card .check-icon {
+    font-size: 1.2rem;
+    color: var(--highlight-green);
+}
+
+.payment-card:not(.selected-method) .check-icon {
+    display: none;
+}
+
+/* --- Summary Section --- */
+.summary-section {
+    padding: 15px 0;
+    border-top: 1px solid var(--border-light);
+    margin-top: 20px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.summary-item span:first-child {
+    color: var(--text-mid);
+}
+
+.summary-item span:last-child {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.summary-item.total {
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+
+.summary-item.total span {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+/* --- Footer --- */
+footer {
+    padding-top: 10px;
+}
+
+.add-to-wallet-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary-blue);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 15px;
+}
+
+.add-to-wallet-btn:hover {
+    background: #0b5ed7;
+    /* Darker blue on hover */
+}
+
+.security-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-mid);
+}
+
+.security-info i {
+    margin-right: 5px;
+    font-size: 0.9rem;
+    color: var(--text-mid);
+}
+
+/* --- Mobile Adjustment for Modal --- */
+@media (max-width: 480px) {
+    .modal-overlay .container {
+        border-radius: 0;
+        /* Full width/height on very small screens */
+        max-width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+
+    .amount-options {
+        grid-template-columns: repeat(2, 1fr);
+        /* Two columns on mobile */
+    }
+}

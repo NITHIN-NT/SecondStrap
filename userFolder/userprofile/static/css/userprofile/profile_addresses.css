@@ -181,10 +181,8 @@
     background-color: #fff;
     padding: 2rem;
     border-radius: 12px;
-    width: 95%;
-    max-width: 550px;
-    max-height: 80vh;
-    overflow-y: auto;
+    width: 75%;
+    max-width: 460px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     position: relative;
 
@@ -198,6 +196,37 @@
     opacity: 1;
 }
 
+/* --- NEW SCROLLABLE BODY (WITH HIDDEN SCROLLBAR) --- */
+.modal-scroll-body {
+    /* Limit the height and enable native scrolling */
+    max-height: calc(85vh - 200px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    /* Add padding/margin to separate the scrollable area from the header and footer */
+    margin-bottom: 1.5rem;
+    margin-top: -0.5rem;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+
+    /* HIDE SCROLLBAR STYLES: */
+    /* 1. For Internet Explorer and Edge */
+    -ms-overflow-style: none;
+
+    /* 2. For Firefox */
+    scrollbar-width: none;
+}
+
+/* 3. For Chrome, Safari, and Opera (Webkit) */
+.modal-scroll-body::-webkit-scrollbar {
+    display: none;
+    width: 0 !important;
+    height: 0;
+}
+
+/* --------------------------------------------------- */
+
+
 /* General modal header style for both modals */
 .modal-header {
     display: flex;
@@ -205,7 +234,7 @@
     align-items: center;
     border-bottom: 1px solid #eee;
     padding-bottom: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .modal-header h3 {
@@ -380,6 +409,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* Resetting/Normalizing padding for better look */
     padding: 1rem 0.5rem;
     border: 1px solid #ced4da;
     border-radius: 8px;
@@ -438,11 +468,11 @@
     font-size: 0.95rem;
 }
 
-/* --- Modal Action Buttons (General, overridden for delete modal) --- */
+/* --- Modal Action Buttons (General/Desktop View) --- */
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    /* Default for Add/Edit */
+    /* Default for Add/Edit: buttons to the right */
     gap: 1rem;
     margin-top: 2rem;
     padding-top: 1rem;
@@ -474,8 +504,9 @@
 }
 
 .save-btn:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+    background-color: #222;
+    /* Changed hover color to a darker gray for consistency */
+    border-color: #222;
 }
 
 /* Container for edit + delete icons */
@@ -508,6 +539,13 @@
 
 @media (max-width: 576px) {
 
+    /* --- MOBILE MODAL ADJUSTMENT --- */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        padding: 1.25rem;
+    }
+
     .form-row {
         flex-direction: column;
         gap: 0;
@@ -518,15 +556,29 @@
     }
 
     .radio-icon-label {
-        flex-basis: 100%;
-        min-width: unset;
-    }
-
-    .modal-content {
-        padding: 1.5rem;
+        /* Adjusted flex-basis for better layout on small screens */
+        flex-basis: 30%;
+        min-width: 90px;
     }
 
     .address-card {
         padding: 1rem;
     }
+
+    /* --- MOBILE BUTTON FIX --- */
+    .modal-actions {
+        /* Stack buttons vertically */
+        flex-direction: column;
+        gap: 0.75rem;
+        /* Ensure buttons are flush with the sides of the content */
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .modal-actions button {
+        width: 100%;
+        /* Make buttons full width */
+    }
+
+    /* --- END MOBILE BUTTON FIX --- */
 }
