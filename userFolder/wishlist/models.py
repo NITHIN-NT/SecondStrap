@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from products.models import ProductVariant
+from products.models import ProductVariant,Product
 # Create your models here.
 class Wishlist(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='wishlist')
@@ -13,8 +13,8 @@ class Wishlist(models.Model):
     
 class WishlistItem(models.Model):
     wishlist = models.ForeignKey(Wishlist,on_delete=models.CASCADE,related_name='items')
-    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name="wishlist_items")
-    size = models.CharField(max_length=10, blank=True)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name="wishlist_items",null=True,blank=True)
     item_added = models.DateTimeField(auto_now_add=True, auto_created=True)
     class Meta:
-        unique_together = ('wishlist', 'variant', 'size')
+        unique_together = ('wishlist', 'variant')
