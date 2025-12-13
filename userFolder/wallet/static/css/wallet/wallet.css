@@ -233,6 +233,7 @@
 }
 .amount-input {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* --- Quick Amounts Buttons --- */
