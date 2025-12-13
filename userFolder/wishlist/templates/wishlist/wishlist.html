@@ -4,20 +4,70 @@
 {% block title %}Your Wishlist{% endblock %}
 
 {% block extra_styles %}
-    <link rel="stylesheet" href="{% static 'css/wishlist/wishlist.css' %}">
-{% endblock extra_styles %}
-
+<link rel="stylesheet" href="{% static 'css/wishlist/wishlist.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="wishlist-empty-container">
-    <h2 class="barlow-condensed-semibold">Your Wishlist</h2>
-    <p>Your wishlist is currently empty.</p>
-    
-    {% if user.is_authenticated %}
-        <a href="{% url "products_page_user" %}" class="btn-dark">Continue Shopping</a>
-    {% else %}
-        <a href="{% url "login" %}" class="btn-dark">Login Continue</a>   
-    {% endif %}
-    
+<div class="wishlist-wrapper">
+    <div class="wishlist-card">
+        <h2 class="wishlist-title">Your Wishlist</h2>
+
+        {% if wishlist_items %}
+            <!-- PRODUCTS EXIST -->
+             <hr>
+            {% for item in wishlist_items %}
+                <div class="wishlist-item">
+                    <div class="item-left">
+                        <div class="item-image-wrapper">
+                            {% if not item.product.is_active %}
+                                <span class="stock-badge">NOT AVAILABLE</span>
+                            {% elif item.variant.stock <= 0 %}
+                                <span class="stock-badge">OUT OF STOCK</span>
+                            {% endif %}
+                            <a href="{% if  item.product.is_active and item.variant.stock > 0 %}{% url "Product_card_view" item.product.slug %}{% endif %}">
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                            </a>
+                        </div>
+
+                        <div class="item-info">
+                            <h3>{{ item.product.name }}</h3>
+                            <p>
+                                Size • {{ item.variant.size }}
+                            </p>
+                            <button class="btn-outline" {% if not item.product.is_active or item.variant.stock <= 0 %}disabled{% endif %}>
+                                Add to cart
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="item-right">
+                        <span class="price">₹ {{ item.variant.offer_price }}</span>
+                        <del><span>₹ {{item.variant.base_price}}</span></del>
+                    </div>
+                </div>
+
+                {% if not forloop.last %}
+                    <hr>
+                {% endif %}
+            {% endfor %}
+
+        {% else %}
+            <!-- EMPTY STATE -->
+            <div class="wishlist-empty">
+                <p>Your wishlist is currently empty.</p>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'products_page_user' %}" class="btn-dark">
+                        Continue Shopping
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn-dark">
+                        Login to Continue
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    </div>
 </div>
-{% endblock content %}
+{% endblock %}

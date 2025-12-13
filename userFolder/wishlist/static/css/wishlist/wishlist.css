@@ -1,67 +1,155 @@
-.wishlist-empty-container {
+.wishlist-wrapper {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    /* Centers content horizontally */
-    text-align: center;
-
-    /* Adds the large vertical spacing */
-    padding: 120px 0;
+    justify-content: center;
+    padding: 60px 16px;
 }
 
-.wishlist-empty-container h2 {
-    font-size: 2.2rem;
+.wishlist-card {
+    width: 100%;
+    max-width: 1100px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.wishlist-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 32px;
     color: #111;
-    margin-bottom: 16px;
 }
 
-.wishlist-empty-container p {
+/* PRODUCT ITEM */
+.wishlist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 0;
+}
+
+.item-left {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.item-left img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.item-info h3 {
     font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.item-info p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 14px;
+}
+
+.btn-outline {
+    padding: 10px 22px;
+    border: 1.5px solid #000;
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    background: #000;
+    color: #fff;
+}
+
+.item-right {
+    text-align: right;
+}
+
+.price {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.total {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 6px;
+    display: block;
+}
+
+/* EMPTY STATE */
+.wishlist-empty {
+    text-align: center;
+    padding: 80px 0;
+}
+
+.wishlist-empty p {
+    font-size: 1.05rem;
     color: #555;
     margin-bottom: 30px;
 }
 
-/*
-  This is the style for the black "Continue Shopping" button.
-  You can reuse this .btn-dark class elsewhere.
-*/
 .btn-dark {
-    display: inline-block;
-    background-color: #000;
+    background: #000;
     color: #fff;
     padding: 14px 32px;
+    text-decoration: none;
     font-size: 0.9rem;
     font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: none;
 }
 
 .btn-dark:hover {
-    background-color: #333;
+    background: #333;
 }
 
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+}
 
-@media (max-width: 768px) {
-    .wishlist-empty-container {
-        /* Reduce padding on smaller screens */
-        padding: 60px 0;
-    }
+/* Image wrapper */
+.item-image-wrapper {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    border-radius: 8px;
+    overflow: hidden;
+}
 
-    .wishlist-empty-container h2 {
-        font-size: 1.8rem;
-    }
+.item-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
 
-    .wishlist-empty-container p {
-        font-size: 1rem;
-        margin-bottom: 24px;
-    }
+/* OUT OF STOCK ribbon */
+.stock-badge {
+    position: absolute;
+    top: 8px;
+    left: -26px;
+    background: #000;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 32px;
+    text-transform: uppercase;
+    transform: rotate(-35deg);
+    letter-spacing: 0.5px;
+    z-index: 2;
+    pointer-events: none;
+}
 
-    .btn-dark {
-        padding: 12px 28px;
-        font-size: 0.85rem;
-    }
+/* Optional: slightly dim out-of-stock image */
+.item-image-wrapper:has(.stock-badge) img {
+    opacity: 0.75;
 }
