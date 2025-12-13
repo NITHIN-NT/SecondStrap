@@ -10,13 +10,15 @@
 {% block content %}
 <div class="wishlist-wrapper">
     <div class="wishlist-card">
-        <h2 class="wishlist-title">Your Wishlist</h2>
 
         {% if wishlist_items %}
-            <!-- PRODUCTS EXIST -->
-             <hr>
+            <h2 class="wishlist-title">Your Wishlist</h2>
+            <hr>
+
             {% for item in wishlist_items %}
                 <div class="wishlist-item">
+
+                    <!-- LEFT -->
                     <div class="item-left">
                         <div class="item-image-wrapper">
                             {% if not item.product.is_active %}
@@ -24,26 +26,42 @@
                             {% elif item.variant.stock <= 0 %}
                                 <span class="stock-badge">OUT OF STOCK</span>
                             {% endif %}
-                            <a href="{% if  item.product.is_active and item.variant.stock > 0 %}{% url "Product_card_view" item.product.slug %}{% endif %}">
+
+                            <a href="{% if item.product.is_active and item.variant.stock > 0 %}{% url 'Product_card_view' item.product.slug %}{% endif %}">
                                 <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
                             </a>
                         </div>
 
                         <div class="item-info">
-                            <h3>{{ item.product.name }}</h3>
-                            <p>
-                                Size • {{ item.variant.size }}
-                            </p>
-                            <button class="btn-outline" {% if not item.product.is_active or item.variant.stock <= 0 %}disabled{% endif %}>
+                            <div class="item-header">
+                                <h3>{{ item.product.name }}</h3>
+                                <a href="#"
+                                   class="remove"
+                                   data-item-id="{{ item.id }}"
+                                   data-variant-id="{{ item.variant.id }}">
+                                    🗑️ Remove
+                                </a>
+                            </div>
+
+                            <p>Size • {{ item.variant.size }}</p>
+
+                            <button
+                                class="btn-outline add-to-cart-btn"
+                                data-variant-id="{{ item.variant.id }}"
+                                data-size="{{ item.variant.size }}"
+                                {% if not item.product.is_active or item.variant.stock <= 0 %}disabled{% endif %}
+                            >
                                 Add to cart
                             </button>
                         </div>
                     </div>
 
+                    <!-- RIGHT -->
                     <div class="item-right">
                         <span class="price">₹ {{ item.variant.offer_price }}</span>
-                        <del><span>₹ {{item.variant.base_price}}</span></del>
+                        <del>₹ {{ item.variant.base_price }}</del>
                     </div>
+
                 </div>
 
                 {% if not forloop.last %}
@@ -52,8 +70,9 @@
             {% endfor %}
 
         {% else %}
-            <!-- EMPTY STATE -->
+            <!-- EMPTY STATE (MATCHES CART) -->
             <div class="wishlist-empty">
+                <h2>Your Wishlist</h2>
                 <p>Your wishlist is currently empty.</p>
 
                 {% if user.is_authenticated %}
@@ -71,3 +90,80 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_script %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buttons = document.querySelectorAll(".add-to-cart-btn");
+
+    buttons.forEach(button => {
+        button.addEventListener("click", function () {
+
+            const variantId = this.dataset.variantId;
+            const size = this.dataset.size;
+
+            axios.post("{% url 'add_to_cart' %}", {
+                variant_id: variantId,
+                size: size
+            }, {
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                console.log(response.data);
+                toastr.success(response.data.message || "Item added to cart.");
+                setTimeout(()=>{
+                    location.reload()
+                },3000)
+            })
+            .catch(error => {
+                console.error(error);
+                toastr.error(error.response.data || "Something went wrong.");
+            });
+
+        });
+    });
+    const removeButtons = document.querySelectorAll(".remove");
+
+    removeButtons.forEach(button => {
+        button.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            const itemId = this.dataset.itemId;
+            const variantId = this.dataset.variantId;
+
+            axios.post("{% url 'remove_from_wishlist' %}", {
+                item_id: itemId,
+                variant_id: variantId
+            }, {
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                toastr.success(response.data.message || "Removed from wishlist");
+
+                // Smooth remove from UI
+                const wishlistItem = this.closest(".wishlist-item");
+                if (wishlistItem) {
+                    wishlistItem.remove();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                toastr.error(
+                    error.response?.data?.message || "Failed to remove item"
+                );
+            });
+        });
+    });
+
+});
+</script>
+
+{% endblock extra_script %}

@@ -1,155 +1,228 @@
+/* =========================
+   PAGE WRAPPER
+========================= */
 .wishlist-wrapper {
     display: flex;
     justify-content: center;
-    padding: 60px 16px;
+    padding: 40px;
 }
 
 .wishlist-card {
-    width: 100%;
-    max-width: 1100px;
-    background: #fff;
-    border-radius: 10px;
-    padding: 32px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    width: 75%;
+    padding: 25px;
+    border-radius: 12px;
 }
 
 .wishlist-title {
-    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 26px;
     font-weight: 600;
-    margin-bottom: 32px;
-    color: #111;
 }
 
-/* PRODUCT ITEM */
+/* =========================
+   WISHLIST ITEM ROW
+========================= */
 .wishlist-item {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
     align-items: center;
-    padding: 28px 0;
+    padding: 24px 0;
 }
 
+/* =========================
+   LEFT SECTION
+========================= */
 .item-left {
     display: flex;
-    gap: 20px;
-    align-items: center;
+    gap: 18px;
+    align-items: flex-start;
 }
 
-.item-left img {
-    width: 90px;
-    height: 90px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.item-info h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-
-.item-info p {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 14px;
-}
-
-.btn-outline {
-    padding: 10px 22px;
-    border: 1.5px solid #000;
-    background: transparent;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-outline:hover {
-    background: #000;
-    color: #fff;
-}
-
-.item-right {
-    text-align: right;
-}
-
-.price {
-    display: block;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.total {
-    font-size: 0.9rem;
-    color: #666;
-    margin-top: 6px;
-    display: block;
-}
-
-/* EMPTY STATE */
-.wishlist-empty {
-    text-align: center;
-    padding: 80px 0;
-}
-
-.wishlist-empty p {
-    font-size: 1.05rem;
-    color: #555;
-    margin-bottom: 30px;
-}
-
-.btn-dark {
-    background: #000;
-    color: #fff;
-    padding: 14px 32px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.btn-dark:hover {
-    background: #333;
-}
-
-hr {
-    border: none;
-    border-top: 1px solid #eee;
-}
-
-/* Image wrapper */
+/* IMAGE */
 .item-image-wrapper {
     position: relative;
     width: 90px;
     height: 90px;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
+    border: 1px solid #eee;
+    flex-shrink: 0;
 }
 
 .item-image-wrapper img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* STOCK BADGE */
+.stock-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: #000;
+    color: #fff;
+    font-size: 10px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    z-index: 2;
+}
+
+/* =========================
+   PRODUCT INFO
+========================= */
+.item-info {
+    flex: 1;
+    position: relative;
+    padding-right: 90px;
+    /* space for remove */
+}
+
+/* NAME + REMOVE FIX */
+.item-header {
     display: block;
 }
 
-/* OUT OF STOCK ribbon */
-.stock-badge {
-    position: absolute;
-    top: 8px;
-    left: -26px;
-    background: #000;
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 4px 32px;
-    text-transform: uppercase;
-    transform: rotate(-35deg);
-    letter-spacing: 0.5px;
-    z-index: 2;
-    pointer-events: none;
+.item-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    line-height: 1.35;
 }
 
-/* Optional: slightly dim out-of-stock image */
-.item-image-wrapper:has(.stock-badge) img {
-    opacity: 0.75;
+/* REMOVE (FIXED POSITION) */
+.remove {
+    font-size: 13px;
+    color: #888;
+    text-decoration: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.remove:hover {
+    color: #e74c3c;
+}
+
+/* SIZE TEXT */
+.item-info p {
+    margin: 4px 0 12px;
+    font-size: 14px;
+    color: #777;
+}
+
+/* ADD TO CART BUTTON */
+.btn-outline {
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: 1px solid #111;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-outline:hover {
+    background: #f5f5f5;
+}
+
+.btn-outline:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* =========================
+   RIGHT SECTION (PRICE)
+========================= */
+.item-right {
+    text-align: right;
+}
+
+.item-right .price {
+    font-size: 17px;
+    font-weight: 600;
+    display: block;
+}
+
+.item-right del {
+    display: block;
+    font-size: 13px;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* =========================
+   DIVIDER
+========================= */
+.wishlist-card hr {
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+/* =========================
+   EMPTY STATE (MATCH CART)
+========================= */
+.wishlist-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 0;
+}
+
+.wishlist-empty h2 {
+    font-size: 2.2rem;
+    color: #111;
+    margin-bottom: 16px;
+}
+
+.wishlist-empty p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.wishlist-empty .btn-dark {
+    background: #000;
+    color: #fff;
+    padding: 14px 32px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.wishlist-empty .btn-dark:hover {
+    background: #333;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 900px) {
+    .wishlist-card {
+        width: 100%;
+    }
+
+    .wishlist-item {
+        grid-template-columns: 1fr;
+        row-gap: 16px;
+    }
+
+    .item-right {
+        text-align: left;
+    }
+
+    .item-info {
+        padding-right: 0;
+    }
+
+    .remove {
+        position: static;
+        margin-bottom: 6px;
+    }
 }
