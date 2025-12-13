@@ -12,7 +12,6 @@
 {% block content %}
     <div class="product-detail-page-wrapper">
         <div class="product-detail-container">
-            <!-- PRODUCT GALLERY -->
             <div class="product-gallery">
                 <div class="gallery-main img-zoom-container">
                     <span class="product-offer-tag">30% OFF</span>
@@ -33,13 +32,11 @@
                 {% csrf_token %}
             </form>
 
-            <!-- IMAGE MODAL -->
             <div id="imageModal" class="image-modal">
                 <span class="close-modal">&times;</span>
                 <img class="modal-content" id="modalImage">
             </div>
 
-            <!-- PRODUCT INFO -->
             <div class="product-info">
                 <h1>{{ product.name }}</h1>
                 <input type="text" id="product-id" value="{{ product.id }}" hidden>
@@ -61,7 +58,6 @@
                 </div>
 
                 <div class="product-options">
-                    <!-- SIZE OPTIONS -->
                     <div class="option-group">
                         <label class="option-label">
                             <strong>Size:</strong> <span id="selected-size"></span>
@@ -72,15 +68,14 @@
                                         data-size="{{ size.size }}"
                                         data-offer-price="{{ size.offer_price }}"
                                         data-base-price="{{ size.base_price }}"
-                                        data-stock="{{ size.stock }}">
-                                    {{ size.size }}
+                                        data-stock="{{ size.stock }}"
+                                        data-variant-id="{{ size.id }}"> {{ size.size }}
                                 </button>
                             {% endfor %}
                         </div>
                         <p id="size-stock-global" class="size-stock" aria-live="polite"></p>
                     </div>
 
-                    <!-- QUANTITY OPTIONS -->
                     <div class="option-group">
                         <label for="quantity-display" class="quantity-label option-label">
                             <strong>Quantity</strong>
@@ -98,18 +93,17 @@
                     </div>
                 </div>
 
-                <!-- ACTION BUTTONS -->
                 <div class="action-buttons">
                     <button class="btn btn-outline" id="addToCartBtn">Add to Cart</button>
-                    <button class="btn btn-solid" id="buyNowBtn">Buy Now</button>
+                    <button class="btn btn-solid" id="addToWishlistBtn">
+                        <i class='bx bx-heart'></i> <span>Add to Wishlist</span>
+                    </button>
                 </div>
 
-                <div class="secondary-actions">
-                    <a href="#" class="action-link"><i class='bx bx-heart'></i> <span>Add to Wishlist</span></a>
+                <div class="secondary-actions">   
                     <a href="#" class="action-link"><i class='bx bx-share'></i> <span>Share</span></a>
                 </div>
 
-                <!-- ACCORDIONS -->
                 <br>
                 <details class="info-accordion description-accordion">
                     <summary class="info-accordion-header">Description</summary>
@@ -160,7 +154,6 @@
             </div>
         </div>
 
-        <!-- CUSTOMER REVIEWS -->
         <div class="customer-reviews-container">
             <h2>Customer Reviews</h2>
             <div class="reviews-summary">
@@ -215,7 +208,6 @@
             </div>
         </div>
 
-        <!-- RELATED PRODUCTS -->
         <div class="related-products-container">
             <h2>You Might Also Like</h2>
             <div class="related-products-grid">
@@ -257,7 +249,6 @@
 {% endblock content %}
 
 {% block extra_script %}
-    <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script>
@@ -310,13 +301,14 @@
         const increaseBtn = document.getElementById('btn-increase');
         const quantityDisplay = document.getElementById('quantity-display');
         const addToCartBtn = document.getElementById('addToCartBtn');
+        const addToWishlistBtn = document.getElementById('addToWishlistBtn'); 
         const buyNowBtn = document.getElementById('buyNowBtn');
         const stockWarning = document.getElementById('stock-warning');
         const globalStockLabel = document.getElementById('size-stock-global');
         const galleryMain = document.querySelector('.gallery-main');
         const galleryContainer = galleryMain;
         const productIdInput = document.getElementById('product-id');
-
+        
         let quantity = 1;
         const USER_MAX_LIMIT = 10;
         let currentStockLimit = 10;
@@ -332,8 +324,8 @@
             increaseBtn.disabled = quantity >= currentStockLimit;
         }
 
-        // --- Helper: Get data for Add to Cart / Buy Now ---
-        function getActionData() {
+        // --- Helper: Get data for Add to Cart / Wishlist ---
+        function getActionData(forWishlist = false) {
             if (!productIdInput) {
                 toastr.error("Something went wrong. Please refresh and try again.");
                 return null;
@@ -341,17 +333,26 @@
 
             const activeSizeBtn = document.querySelector('.btn-size.active');
             const size = activeSizeBtn ? activeSizeBtn.dataset.size : null;
+            const variantId = activeSizeBtn ? activeSizeBtn.dataset.variantId : null; // Added variant ID
 
-            if (!size) {
+            if (!size || !variantId) {
                 toastr.error("Please select a size.");
                 return null;
             }
-
-            return {
-                product_id: productIdInput.value,
-                size: size,
-                quantity: quantity,
-            };
+            
+            // For Cart, return all details
+            if (!forWishlist) {
+                return {
+                    product_id: productIdInput.value,
+                    size: size,
+                    quantity: quantity,
+                };
+            } else {
+                // For Wishlist, only the variant ID is strictly necessary
+                return {
+                    variant_id: variantId,
+                };
+            }
         }
 
         // --- Stock Info Logic, with red alert on gallery when stock low ---
@@ -372,6 +373,11 @@
                 } else {
                     galleryContainer.classList.remove('stock-alert');
                 }
+            }
+
+            // Also manage the state of the Wishlist button based on stock 
+            if (addToWishlistBtn) {
+                 addToWishlistBtn.disabled = stock === 0;
             }
 
             if (stock === 0) {
@@ -410,7 +416,7 @@
             }
         }
 
-        // --- Size Click Logic ---
+        // --- Size Click Logic (Removed Wishlist URL update) ---
         sizeButtons.forEach(button => {
             button.addEventListener('click', function() {
                 sizeButtons.forEach(btn => btn.classList.remove('active'));
@@ -452,12 +458,16 @@
             if (selectedSize) selectedSize.textContent = defaultBtn.dataset.size;
             if (defaultBtn.dataset.offerPrice) offerPriceDisplay.textContent = `₹ ${defaultBtn.dataset.offerPrice}`;
             if (defaultBtn.dataset.basePrice) basePriceDisplay.textContent = `₹ ${defaultBtn.dataset.basePrice}`;
+            
             updateStockInfo(defaultBtn);
         } else {
             if (addToCartBtn) addToCartBtn.disabled = true;
             if (buyNowBtn) buyNowBtn.disabled = true;
             if (globalStockLabel) globalStockLabel.textContent = '';
+            if (addToWishlistBtn) addToWishlistBtn.disabled = true; // Disable if no size/variant exists
         }
+        // --- End Initialization ---
+
 
         // --- Image Zoom & Modal ---
         if (galleryMain && mainImage) {
@@ -496,8 +506,8 @@
         });
 
         // --- ERROR HANDLING FOR AXIOS ---
-        function handleAxiosError(error) {
-            console.error("Cart Add Error:", error);
+        function handleAxiosError(error, actionName) {
+            console.error(actionName + " Error:", error);
 
             if (error.response) {
                 const status = error.response.status;
@@ -527,10 +537,10 @@
             }
         }
 
-        // --- Add To Cart Logic ---
+        // --- Add To Cart Logic (UNCHANGED) ---
         if (addToCartBtn && productIdInput) {
             addToCartBtn.addEventListener('click', function() {
-                const data = getActionData();
+                const data = getActionData(false);
                 if (!data) return;
 
                 axios.post(
@@ -542,7 +552,38 @@
                     toastr.success(response.data.message || "Item added to the Cart");
                     // TODO: update cart count UI here if needed
                 })
-                .catch(handleAxiosError);
+                .catch(function(error) {
+                    handleAxiosError(error, "Cart Add");
+                });
+            });
+        }
+        
+        // --- Add To Wishlist Logic ---
+        if (addToWishlistBtn) {
+            addToWishlistBtn.addEventListener('click', function() {
+                const data = getActionData(true);
+                if (!data) return;
+                
+                // Disable button to prevent double-click
+                addToWishlistBtn.disabled = true;
+                
+                axios.post(
+                    "{% url 'add_to_wishlist' %}", // Assumes you create a new AJAX-specific URL
+                    data,
+                    { headers: { 'X-CSRFToken': csrftoken } }
+                )
+                .then(function(response) {
+                    toastr.success(response.data.message || "Item added to your Wishlist");
+                    // Optional: Change icon/text to "Added to Wishlist"
+                })
+                .catch(function(error) {
+                    handleAxiosError(error, "Wishlist Add");
+                })
+                .finally(function() {
+                    
+                    addToWishlistBtn.disabled = false;
+                    // Note: If you have existing stock checks in updateStockInfo, the button might get re-disabled there on size change.
+                });
             });
         }
 
