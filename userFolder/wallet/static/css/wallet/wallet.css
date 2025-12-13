@@ -134,6 +134,166 @@
     color: #28a745;
     /* Green */
 }
+/* --- Modal Background (Full Screen Overlay) --- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top of everything */
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+    backdrop-filter: blur(2px); /* Gives a modern, soft background effect */
+}
+
+/* --- Modal Content (The White Box) --- */
+.modal-content {
+    background-color: #fefefe;
+    /* Centering the modal */
+    margin: 10% auto; /* 10% from the top and centered horizontally */
+    width: 90%; /* Responsive width */
+    max-width: 400px; /* Maximum width for a clean look */
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 24px;
+    position: relative; /* For positioning the close button relative to the content */
+}
+
+/* --- Modal Header and Close Button --- */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    font-size: 1.5em; /* 24px or similar */
+    font-weight: 600; /* Semi-bold */
+    margin: 0;
+    color: #333;
+}
+
+.close-btn {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1; /* Aligns the 'x' vertically */
+    cursor: pointer;
+    padding: 0 4px; /* Makes it easier to click */
+    transition: color 0.2s;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: #000;
+    text-decoration: none;
+    outline: none;
+}
+
+/* --- Input Area Styling --- */
+.input-label {
+    display: block;
+    font-size: 1em; /* 16px */
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.amount-input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+    font-size: 1.2em; /* Larger font for the amount */
+    font-weight: 500;
+    color: #333;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.amount-input:focus {
+    border-color: #007bff; /* Example focus color */
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); /* Soft focus ring */
+}
+
+.amount-input::placeholder {
+    color: #b0b0b0; /* Light gray placeholder */
+    font-weight: 400;
+}
+
+/* Hide default number input arrows in some browsers */
+.amount-input::-webkit-inner-spin-button, 
+.amount-input::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+  margin: 0;
+}
+.amount-input {
+  -moz-appearance: textfield;
+}
+
+/* --- Quick Amounts Buttons --- */
+.quick-amounts {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px; /* Space between buttons */
+    margin-bottom: 30px;
+}
+
+.quick-btn {
+    flex-grow: 1;
+    padding: 10px 0; /* Padding top/bottom and zero left/right */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    color: #333;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.quick-btn:hover {
+    background-color: #eee;
+    border-color: #ccc;
+}
+
+/* Optional: Style for the selected quick button (implement in JS) */
+.quick-btn.selected {
+    background-color: #e6f0ff; /* Light blue */
+    border-color: #007bff; /* Primary color border */
+    color: #007bff;
+    font-weight: 600;
+}
+
+/* --- Proceed Button (Footer) --- */
+.proceed-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    
+    /* Default (Disabled) Style - Matches the image */
+    background-color: #ccc; 
+    color: #fff;
+}
+
+.proceed-btn:not([disabled]) {
+    /* Active Style (When amount is valid) */
+    background-color: #007bff; /* Use your primary theme color */
+    color: white;
+}
+
+.proceed-btn:not([disabled]):hover {
+    background-color: #0056b3; /* Darker hover effect */
+}
 
 /* --- Mobile Adjustments --- */
 @media (max-width: 576px) {

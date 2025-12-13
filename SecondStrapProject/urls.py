@@ -17,7 +17,8 @@ urlpatterns = [
     path("cart/checkout/", include("userFolder.checkout.urls")),
     path("order/",include("userFolder.order.urls")),
     path("profile/", include("userFolder.userprofile.urls"), name="userprofile"),
-    path('payment/', include('userFolder.payment.urls')),  
+    path('payment/', include('userFolder.payment.urls')),
+    path('wallet/',include("userFolder.wallet.urls")),
     path("superuser/", include("Admin.urls")),
 ]
 

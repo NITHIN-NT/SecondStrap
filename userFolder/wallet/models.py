@@ -12,7 +12,7 @@ class TransactionType(models.TextChoices):
 
 class TransactionStatus(models.TextChoices):
     PENDING = 'PD', 'Pending'
-    COMPLETED = 'CP', 'Completed'
+    COMPLETED = 'COMP', 'Completed'
     FAILED = 'FL', 'Failed'
     REFUNDED = 'RF', 'Refunded'
     
@@ -37,11 +37,12 @@ class Wallet(models.Model):
 class Transaction(models.Model):
     wallet = models.ForeignKey(Wallet,on_delete=models.CASCADE,related_name='transactions',verbose_name='Wallet')
     transaction_id = models.CharField(max_length=100,unique=True,verbose_name='Transaction ID',default=generate_transaction_id,editable=False)
-    transaction_type = models.CharField(max_length=2,choices=TransactionType.choices,verbose_name='Type')
+    transaction_type = models.CharField(max_length=6,choices=TransactionType.choices,verbose_name='Type')
     amount = models.DecimalField(max_digits=10,decimal_places=2,verbose_name='Amount')
     description = models.CharField(max_length=255,blank=True,null=True)
-    status = models.CharField(max_length=2,choices=TransactionStatus.choices,default=TransactionStatus.PENDING)
+    status = models.CharField(max_length=6,choices=TransactionStatus.choices,default=TransactionStatus.PENDING)
     related_order = models.ForeignKey(OrderMain,on_delete=models.SET_NULL,null=True,blank=True)
+    payment_id = models.CharField(max_length=450,null=True,blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
