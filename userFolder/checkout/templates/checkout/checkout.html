@@ -157,6 +157,18 @@
                             <p class="sub-text">Pay upon arrival</p>
                         </div>
                     </div>
+                    <div class="selection-card">
+                        <div class="card-radio">
+                            <input type="radio" name="payment_method" id="pay_wallet" value="wallet">
+                        </div>
+                        <div class="card-content">
+                            <div class="payment-row">
+                                <i class='bx bx-wallet'></i>
+                                <strong>Wallet</strong>
+                            </div>
+                            <p class="sub-text">Pay with Wallet</p>
+                        </div>
+                    </div>
                 </div>
             </form>
         </section>
@@ -350,12 +362,13 @@
 
         const codRadio  = document.getElementById('pay_cod');
         const upiRadio  = document.getElementById('pay_upi');
-        const cardRadio = document.getElementById('pay_card');
+        const walletRadio = document.getElementById('pay_wallet');
 
         const addressRadios = document.querySelectorAll('input[name="selected_address"]');
 
         const codUrl = "{% url 'order' %}";  // your existing COD view
         const createOrderUrl = "{% url 'create_razorpay_order' %}";  // new API
+        const walletUrl = "{% url 'pay_using_wallet' %}"; 
 
         const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
 
@@ -367,7 +380,7 @@
                 return;
             }
 
-            if (!codRadio.checked && !upiRadio.checked && !cardRadio.checked) {
+            if (!codRadio.checked && !upiRadio.checked && !walletRadio.checked) {
                 e.preventDefault();
                 toastr.error('Please select a payment method.');
                 return;
@@ -378,6 +391,12 @@
                 form.action = codUrl;
                 placeOrderBtn.classList.add('loading');
                 return;  // allow normal submit
+            }
+
+            if(walletRadio.checked){
+                form.action = walletUrl;
+                placeOrderBtn.classList.add('loading');
+                return;
             }
 
             // ONLINE (UPI or card) → prevent normal submit, use Razorpay modal
