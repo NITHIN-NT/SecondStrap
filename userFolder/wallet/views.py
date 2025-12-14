@@ -304,3 +304,10 @@ def pay_using_wallet(request):
         print(f"Order email failed: {e}")
 
     return render(request, 'orders/order_success.html', {'order': order})
+
+@require_POST
+@never_cache
+@login_required
+@transaction.atomic
+def deduct_amount_from_wallet(request):
+    pass
