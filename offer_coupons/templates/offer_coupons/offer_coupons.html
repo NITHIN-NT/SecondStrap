@@ -1,0 +1,270 @@
+{% extends "adminbase.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/offer_coupons/offer_coupons.css' %}">
+{% endblock extra_css %}
+
+
+{% block content %}
+<div class="offers-page-container">
+
+    <div class="offers-card">
+        
+        <div class="offers-sticky-header">
+            <div class="offers-header">
+                <h1>Offers & Promotions</h1>
+                <p>Manage discounts and promotional offers</p>
+            </div>
+            
+            <div class="card-header-main">
+                <a href="{% url "manage_offer_view" %}">
+                    <button class="create-offer-btn">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Create Offer</span>
+                    </button>
+                </a>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Offer Name</th>
+                        <th>Code</th>
+                        <th>Type</th>
+                        <th>Target</th>
+                        <th>Discount</th>
+                        <th>Valid Period</th>
+                        <th class="text-center">Limit</th>
+                        <th class="text-center">Used Count</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Summer Collection Sale</td>
+                        <td>SUMMER25</td>
+                        <td>Percentage</td>
+                        <td>All Products</td>
+                        <td>25%</td>
+                        <td>2023-06-01 to 2023-06-30</td>
+                        <td class="text-center">500</td>
+                        <td class="text-center">345</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-file-lines"></i> View
+                            </button>
+                            <button class="action-btn edit-btn" title="Edit Offer">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Offer">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>2</td>
+                        <td>Fragrance Week</td>
+                        <td>SCENT20</td>
+                        <td>Percentage</td>
+                        <td>Fragrances & Cologne</td>
+                        <td>20%</td>
+                        <td>2023-01-15 to 2023-01-22</td>
+                        <td class="text-center">100</td>
+                        <td class="text-center">98</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-file-lines"></i> View
+                            </button>
+                            <button class="action-btn edit-btn" title="Edit Offer">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Offer">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>3</td>
+                        <td>Free Shipping</td>
+                        <td>FREESHIP</td>
+                        <td>Free Shipping</td>
+                        <td>Orders above ₹75</td>
+                        <td>Free Shipping</td>
+                        <td>2023-05-15 to 2023-12-31</td>
+                        <td class="text-center">∞</td>
+                        <td class="text-center">1254</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-file-lines"></i> View
+                            </button>
+                            <button class="action-btn edit-btn" title="Edit Offer">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Offer">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>4</td>
+                        <td>Grooming Bundle</td>
+                        <td>GROOM30</td>
+                        <td>Bundle Deal</td>
+                        <td>Shaving & Grooming</td>
+                        <td>30% off when buying 3+ items</td>
+                        <td>2023-06-01 to 2023-09-15</td>
+                        <td class="text-center">N/A</td>
+                        <td class="text-center">60</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-file-lines"></i> View
+                            </button>
+                            <button class="action-btn edit-btn" title="Edit Offer">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Offer">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>5</td>
+                        <td>Suit & Shirt Combo</td>
+                        <td>FORMAL25</td>
+                        <td>Bundle Deal</td>
+                        <td>Suits & Shirts</td>
+                        <td>25% off shirt with suit purchase</td>
+                        <td>2023-09-01 to 2023-11-30</td>
+                        <td class="text-center">200</td>
+                        <td class="text-center">15</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-file-lines"></i> View
+                            </button>
+                            <button class="action-btn edit-btn" title="Edit Offer">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Offer">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>6</td>
+                        <td>New Customer Discount</td>
+                        <td>WELCOME15</td>
+                        <td>Percentage</td>
+                        <td>New Customers Only</td>
+                        <td class="text-center">15%</td>
+                        <td>2023-01-01 to 2023-12-31</td>
+                        <td class="text-center">∞</td>
+                        <td class="text-center">459</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-file-lines"></i> View
+                            </button>
+                            <button class="action-btn edit-btn" title="Edit Offer">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Offer">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>7</td>
+                        <td>Free Gift with Purchase</td>
+                        <td>GIFT4U</td>
+                        <td>Gift with Purchase</td>
+                        <td>Orders above ₹100</td>
+                        <td>Free travel grooming kit</td>
+                        <td>2023-08-15 to 2023-09-30</td>
+                        <td class="text-center">N/A</td>
+                        <td class="text-center">120</td>
+                        <td><span class="status-badge active">Active</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-file-lines"></i> View
+                            </button>
+                            <button class="action-btn edit-btn" title="Edit Offer">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Offer">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td>8</td>
+                        <td>Flash Sale - 24hrs Only</td>
+                        <td>FLASH50</td>
+                        <td>Percentage</td>
+                        <td>All Products</td>
+                        <td>50%</td>
+                        <td>2023-06-01 to 2023-06-02</td>
+                        <td class="text-center">100</td>
+                        <td class="text-center">100</td>
+                        <td><span class="status-badge expired">Expired</span></td>
+                        <td class="action-buttons">
+                            <button class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-file-lines"></i> View
+                            </button>
+                            <button class="action-btn edit-btn" title="Edit Offer">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button class="action-btn delete-btn" title="Delete Offer">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    
+                </tbody>
+                
+                <tfoot>
+                    <tr>
+                        <td colspan="11" class="footer-count">
+                            Total Active Offers: 7
+                        </td>
+                    </tr>
+                </tfoot>
+
+            </table>
+        </div>
+        
+        <div class="offers-pagination">
+            <div class="pagination-info">Showing 1 to 8 of 24 results</div>
+            <div class="pagination-controls">
+                <button class="pagination-btn disabled">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button class="pagination-page active">1</button>
+                <button class="pagination-page">2</button>
+                <button class="pagination-page">3</button>
+                <button class="pagination-btn">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+{% endblock content %}

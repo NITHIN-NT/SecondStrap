@@ -1,0 +1,162 @@
+/* ===== Page Wrapper ===== */
+.offers-page-container {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ===== Card ===== */
+.offers-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* 🔑 Prevent side overflow */
+}
+
+/* ===== Sticky Header Inside Card ===== */
+.offers-sticky-header {
+    background-color: #ffffff;
+    padding: 24px;
+
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.offers-header h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.offers-header p {
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+.create-offer-btn {
+    margin-top: 16px;
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ===== Table Wrapper (ONLY TABLE SCROLLS) ===== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    /* 🔑 horizontal scroll */
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+/* ===== Table ===== */
+table {
+    width: 100%;
+    min-width: 1200px;
+    /* prevents squishing */
+    font-size: 0.85rem;
+}
+
+thead {
+    background-color: #f9fafb;
+}
+
+th,
+td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+th {
+    font-weight: 600;
+    color: #374151;
+}
+
+/* ===== Status Badge ===== */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.expired {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* ===== Action Buttons ===== */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #f3f4f6;
+}
+
+.action-btn:hover {
+    background-color: #e5e7eb;
+}
+
+/* ===== Footer ===== */
+tfoot td {
+    padding: 14px;
+    font-weight: 500;
+}
+
+/* ===== Pagination ===== */
+.offers-pagination {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--color-border);
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.pagination-btn,
+.pagination-page {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background-color: #f3f4f6;
+}
+
+.pagination-page.active {
+    background-color: #2563eb;
+    color: #ffffff;
+}

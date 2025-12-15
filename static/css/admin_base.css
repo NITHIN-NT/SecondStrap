@@ -3,7 +3,6 @@
 
 /* ===== Global Resets & Variables ===== */
 :root {
-    /* ... (all your color variables are still here) ... */
     --color-sidebar-bg: #000000;
     --color-sidebar-text: #d1d5db;
     --color-sidebar-border: #374151;
@@ -23,6 +22,7 @@
     --color-status-processing-text: #1e40af;
 }
 
+/* ===== Reset ===== */
 * {
     margin: 0;
     padding: 0;
@@ -30,11 +30,12 @@
     font-family: 'Inter', sans-serif;
 }
 
+html,
 body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* 🔒 prevent body scroll */
     background-color: var(--color-main-bg);
-    color: var(--color-text-primary);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -55,25 +56,25 @@ button {
 /* ===== Main Layout Container ===== */
 .admin-container {
     display: flex;
-    /* min-height is still good */
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
 }
 
-/* ===== Sidebar ===== */
+/* ===== Sidebar (FIXED) ===== */
 .sidebar {
     width: 260px;
+    height: 100vh;
     background-color: var(--color-sidebar-bg);
     color: var(--color-sidebar-text);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
 
-    /* === CHANGE #1: STICKY LOGOUT FIX === */
-    /* This forces the sidebar to be exactly the height
-       of the screen and stick to the left side */
-    height: 100vh;
-    position: sticky;
+    position: fixed; /* 🔒 fixed sidebar */
     top: 0;
-    /* === END OF CHANGE #1 === */
+    left: 0;
+    overflow: hidden;
 }
 
 .sidebar-header {
@@ -90,13 +91,7 @@ button {
 .sidebar-nav {
     flex-grow: 1;
     padding: 16px 0;
-
-    /* === CHANGE #2: STICKY LOGOUT FIX === */
-    /* This makes ONLY the nav list scrollable
-       if it has too many items. The header and
-       footer will stay in place. */
     overflow-y: auto;
-    /* === END OF CHANGE #2 === */
 }
 
 .sidebar-nav li a {
@@ -108,9 +103,8 @@ button {
     border-radius: 6px;
     font-size: 0.9rem;
     font-weight: 500;
-    transition: background-color 0.2s, color 0.2s;
     color: #ffffff;
-    /* Make all links white */
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .sidebar-nav li a i {
@@ -132,10 +126,6 @@ button {
 .sidebar-footer {
     padding: 16px 12px;
     border-top: 1px solid var(--color-sidebar-border);
-    /* This footer will now be "stuck" to the
-       bottom of the screen thanks to the
-       flex-grow on sidebar-nav and the 100vh
-       height on .sidebar */
 }
 
 .sidebar-footer a {
@@ -155,12 +145,15 @@ button {
 
 /* ===== Main Content Wrapper ===== */
 .main-wrapper {
+    margin-left: 260px; /* 🔑 offset fixed sidebar */
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
 }
 
-/* ===== Topbar ===== */
+/* ===== Topbar (FIXED) ===== */
 .topbar {
     background-color: var(--color-card-bg);
     border-bottom: 1px solid var(--color-border);
@@ -169,13 +162,25 @@ button {
     justify-content: space-between;
     align-items: center;
     height: 70px;
-    /* This makes the topbar sticky as well,
-       so your main content scrolls under it */
-    position: sticky;
+
+    position: fixed; /* 🔒 fixed navbar */
     top: 0;
-    z-index: 10;
+    left: 260px;
+    right: 0;
+    z-index: 100;
 }
 
+/* ===== Main Content Area (ONLY SCROLLABLE AREA) ===== */
+.content-area {
+    flex-grow: 1;
+    padding: 32px;
+
+    margin-top: 70px; /* 🔑 navbar height */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ===== Topbar Elements (UNCHANGED) ===== */
 .topbar-search {
     position: relative;
     color: var(--color-text-secondary);
@@ -240,10 +245,10 @@ button {
     font-size: 0.9rem;
 }
 
-/* ===== Main Content Area ===== */
-.content-area {
-    flex-grow: 1;
-    padding: 32px;
+/* ===== Overflow Safety ===== */
+img,
+table {
+    max-width: 100%;
 }
 
 /* ==================== TOASTR.JS STYLES (NEW CLEAN STYLE) ==================== */

@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .views import AdminProductsView,AdminCategoryView,AdminUserView,AdminHome,StockManagementView,AdminOrderView
+from offer_coupons.views import *
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -33,6 +34,9 @@ urlpatterns = [
     path('order/<str:order_id>/',views.admin_order_detailed_view,name='Admin_order_detailed_view'),
     path('order/update/<str:order_id>/',views.admin_order_status_update,name='order_status_update'),
     path('order/manage-return/<int:item_id>/<str:order_id>/',views.manage_return_request,name='manage_return_item'),
+    
+    path('offer-coupons/',offers_view,name='offers_view'),
+    path('manage-offer/',manage_offer_view,name='manage_offer_view')
 ]
 
 if settings.DEBUG:
