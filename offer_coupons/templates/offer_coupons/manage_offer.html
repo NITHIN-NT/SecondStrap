@@ -2,128 +2,134 @@
 {% load static %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/offer_coupons/manage_offer.css' %}">
+<link rel="stylesheet" href="{% static 'css/offer_coupons/manage_offer.css' %}">
 {% endblock extra_css %}
+
 {% block content %}
 <a href="{% url 'offers_view' %}" class="btn-back">← Back to Offers</a>
+<div class="offer-desktop-wrapper">
 <div class="offer-card">
     <div class="offer-header">
         <h2>Create New Offer</h2>
     </div>
 
-    <form method="post" id="offerForm">
-        {% csrf_token %}
+    <form method="post" id="offerForm" onsubmit="attachSelected()">
+    {% csrf_token %}
 
-        <!-- BASIC INFO -->
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Offer Name</label>
-                <input type="text" name="offer_name" placeholder="Summer Collection Sale" required>
-            </div>
-
-            <div class="form-group">
-                <label>Coupon Code</label>
-                <input type="text" name="coupon_code" placeholder="SUMMER25" required>
-            </div>
-
-            <div class="form-group">
-                <label>Discount Type</label>
-                <select name="discount_type">
-                    <option value="percentage">Percentage Discount</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Target Type</label>
-                <select name="target_type" id="targetType">
-                    <option value="all">All Products</option>
-                    <option value="category">Specific Categories</option>
-                    <option value="product">Individual Products</option>
-                    <option value="order">Order Amount Threshold</option>
-                </select>
-            </div>
+    <!-- BASIC INFO -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Offer Name</label>
+            <input type="text" name="name" required>
         </div>
 
-        <!-- CATEGORY TARGET -->
-        <div id="categorySection" class="conditional-section">
-            <label>Select Categories</label>
-            <div class="checkbox-grid">
-                {% for category in categories %}
-                <label>
-                    <input type="checkbox" name="categories" value="{{ category.id }}">
-                    {{ category.name }}
-                </label>
-                {% endfor %}
-            </div>
+        <div class="form-group">
+            <label>Coupon Code</label>
+            <input type="text" name="code" required>
         </div>
 
-        <!-- PRODUCT TARGET -->
-        <div id="productSection" class="conditional-section">
-            <label>Select Products</label>
-            <div class="checkbox-grid">
-                {% for product in products %}
-                <label>
-                    <input type="checkbox" name="products" value="{{ product.id }}">
-                    {{ product.name }}
-                </label>
-                {% endfor %}
-            </div>
+        <div class="form-group">
+            <label>Offer Type</label>
+            <select name="offer_type" id="offerType" required>
+                <option value="">-- Select --</option>
+                <option value="product">Product Offer</option>
+                <option value="category">Category Offer</option>
+                <option value="amount_threshold">Order Amount Offer</option>
+            </select>
         </div>
 
-        <!-- ORDER AMOUNT TARGET -->
-        <div id="orderSection" class="conditional-section">
-            <div class="form-group">
-                <label>Minimum Order Amount</label>
-                <input type="number" name="min_order" placeholder="0.00" step="0.01">
-            </div>
+        <div class="form-group">
+            <label>Discount Type</label>
+            <select name="discount_type" required>
+                <option value="percentage">Percentage</option>
+                <option value="fixed_amount">Fixed Amount</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- PRODUCT SEARCH -->
+    <div id="productSection" class="conditional-section">
+        <label>Search Products</label>
+        <input type="text" id="productSearch" placeholder="Type product name...">
+        <ul id="productResults" class="search-results"></ul>
+
+        <h4>Selected Products</h4>
+        <ul id="selectedProducts"></ul>
+    </div>
+
+    <!-- CATEGORY SEARCH -->
+    <div id="categorySection" class="conditional-section">
+        <label>Search Categories</label>
+        <input type="text" id="categorySearch" placeholder="Type category name...">
+        <ul id="categoryResults" class="search-results"></ul>
+
+        <h4>Selected Categories</h4>
+        <ul id="selectedCategories"></ul>
+    </div>
+
+    <!-- ORDER AMOUNT -->
+    <div id="amountSection" class="conditional-section">
+        <div class="form-group">
+            <label>Minimum Order Amount</label>
+            <input type="number" name="min_order_amount" step="0.01">
+        </div>
+    </div>
+
+    <!-- DISCOUNT -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Discount Value</label>
+            <input type="number" name="discount_value" step="0.01" required>
         </div>
 
-        <!-- DISCOUNT + DATES -->
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Discount Percentage</label>
-                <div class="percent-input">
-                    <input type="number" name="discount" placeholder="25" min="1" max="100" required>
-                    <span>%</span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Start Date</label>
-                <input type="date" name="start_date" required>
-            </div>
-
-            <div class="form-group">
-                <label>End Date</label>
-                <input type="date" name="end_date" required>
-            </div>
+        <div class="form-group">
+            <label>Usage Limit</label>
+            <input type="number" name="usage_limit" value="0">
         </div>
 
-        <!-- DESCRIPTION -->
-        <div class="form-group full-width">
-            <label>Description</label>
-            <textarea name="description" rows="3" placeholder="Describe the offer details..."></textarea>
+        <div class="form-group">
+            <label>Per User Limit</label>
+            <input type="number" name="per_user_limit" value="1">
+        </div>
+    </div>
+
+    <!-- DATES -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Start Date</label>
+            <input type="datetime-local" name="start_date" required>
         </div>
 
-        <!-- FEATURE -->
-        <div class="checkbox-inline">
-            <input type="checkbox" name="featured">
-            <span>Feature on Homepage</span>
+        <div class="form-group">
+            <label>End Date</label>
+            <input type="datetime-local" name="end_date">
         </div>
+    </div>
 
-        <!-- ACTIONS -->
-        <div class="form-actions">
-            <div class="action-right">
-                <a href="{% url 'offers_view' %}" class="btn-cancel">Cancel</a>
-                <button type="submit" class="btn-primary">Save Offer</button>
-            </div>
-        </div>
+    <!-- DESCRIPTION -->
+    <div class="form-group full-width">
+        <label>Description</label>
+        <textarea name="description"></textarea>
+    </div>
+    <br>
 
-    </form>
+    <input type="hidden" name="products" id="productsInput">
+    <input type="hidden" name="categories" id="categoriesInput">
+
+    <button type="submit" class="btn-primary">Save Offer</button>
+</form>
+
+</div>
 </div>
 {% endblock %}
 
-
 {% block extraJs %}
+<script>
+    window.PRODUCT_SEARCH_URL = "{% url 'search_products' %}";
+    window.CATEGORY_SEARCH_URL = "{% url 'search_categories' %}";
+</script>
+
 <script src="{% static 'js/offer_coupons/manage_offer.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 {% endblock %}

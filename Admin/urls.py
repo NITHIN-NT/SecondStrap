@@ -36,7 +36,9 @@ urlpatterns = [
     path('order/manage-return/<int:item_id>/<str:order_id>/',views.manage_return_request,name='manage_return_item'),
     
     path('offer-coupons/',offers_view,name='offers_view'),
-    path('offer-coupons/manage-offer/',manage_offer_view,name='manage_offer_view')
+    path('offer-coupons/manage-offer/',manage_offer_view,name='manage_offer_view'),
+    path('offer-coupons/manage-offer/products/search/',search_products,name='search_products'),
+    path('offer-coupons/manage-offer/categories/search/',search_category,name='search_categories'),
 ]
 
 if settings.DEBUG:

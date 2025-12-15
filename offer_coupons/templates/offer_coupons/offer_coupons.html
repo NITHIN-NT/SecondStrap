@@ -34,12 +34,14 @@
                     <tr>
                         <th>ID</th>
                         <th>Offer Name</th>
+                        <th>Description</th>
                         <th>Code</th>
                         <th>Offer Type</th>
                         <th>Discount Type</th>
                         <th>Discount</th>
                         <th>Valid Period</th>
                         <th class="text-center">Limit</th>
+                        <th class="text-center">Per user Limit</th>
                         <th class="text-center">Used</th>
                         <th>Status</th>
                         <th class="text-center">Actions</th>
@@ -51,6 +53,7 @@
                     <tr>
                         <td>{{ offer.id }}</td>
                         <td>{{ offer.name }}</td>
+                        <td>{{offer.description}}</td>
                         <td>{{ offer.code }}</td>
 
                         <!-- TextChoices Display -->
@@ -73,8 +76,9 @@
                             {{ offer.end_date|date:"Y-m-d" }}
                         </td>
 
-                        <td class="text-center">{{ offer.limit }}</td>
-                        <td class="text-center">{{ offer.used }}</td>
+                        <td class="text-center">{{ offer.usage_limit }}</td>
+                        <td class="text-center">{{ offers_used }}</td>
+                        <td class="text-center">{{offer.per_user_limit}}</td>
 
                         <!-- Status -->
                         <td>
@@ -106,7 +110,7 @@
 
                     {% empty %}
                     <tr>
-                        <td colspan="11" class="text-center">
+                        <td colspan="13" class="text-center">
                             No offers available.
                         </td>
                     </tr>
@@ -115,7 +119,7 @@
 
                 <tfoot>
                     <tr>
-                        <td colspan="11" class="footer-count">
+                        <td colspan="13" class="footer-count">
                             Total Active Offers: {{ total_active_offers }}
                         </td>
                     </tr>
