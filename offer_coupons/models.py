@@ -43,11 +43,8 @@ class Offer(models.Model):
     def __str__(self):
         return f"{self.name} ({self.code})"
 
-    def total_used(self):
-        return self.usages.filter(is_active=True).count()
-
 class OfferUsage(models.Model):
-    offer = models.ForeignKey(Offer,on_delete=models.CASCADE,related_name="usages")
+    offer = models.ForeignKey(Offer,on_delete=models.PROTECT,related_name="usages")
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     order = models.ForeignKey(OrderMain,on_delete=models.CASCADE)
 
@@ -62,3 +59,5 @@ class OfferUsage(models.Model):
 
     def __str__(self):
         return f"{self.offer.code} - {self.user}"
+
+    
