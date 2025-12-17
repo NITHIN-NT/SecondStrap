@@ -42,7 +42,6 @@
                         <th>Valid Period</th>
                         <th class="text-center">Limit</th>
                         <th class="text-center">Per user Limit</th>
-                        <th class="text-center">Used</th>
                         <th>Status</th>
                         <th>Display</th>
                         <th class="text-center">Actions</th>
@@ -78,7 +77,6 @@
                         </td>
 
                         <td class="text-center">{{ offer.usage_limit }}</td>
-                        <td class="text-center">{{ offers_used }}</td>
                         <td class="text-center">{{offer.per_user_limit}}</td>
 
                         <!-- Status -->
@@ -106,18 +104,17 @@
                                 <i class="fa-solid fa-pen-to-square"></i>Edit
                             </a>
 
-                            <a href="#"
-                               class="action-btn delete-btn"
-                               title="Delete"
-                               onclick="return confirm('Are you sure you want to delete this offer?');">
-                                <i class="fa-solid fa-trash-can"></i>Delete
+                            <a href="#" 
+                                class="action-btn delete-btn" 
+                                onclick="showDeleteModal(event, {{ offer.id }})">
+                                    <i class="fa-solid fa-trash-can"></i> Delete
                             </a>
                         </td>
                     </tr>
 
                     {% empty %}
                     <tr>
-                        <td colspan="13" class="text-center">
+                        <td colspan="14" class="text-center">
                             No offers available.
                         </td>
                     </tr>
@@ -126,7 +123,7 @@
 
                 <tfoot>
                     <tr>
-                        <td colspan="13" class="footer-count">
+                        <td colspan="14" class="footer-count">
                             Total Active Offers: {{ total_active_offers }}
                         </td>
                     </tr>
@@ -176,4 +173,85 @@
 
     </div>
 </div>
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this offer?</p>
+        <div class="modal-actions">
+            <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+            <button id="confirmDeleteBtn" class="btn-danger">Delete Permanently</button>
+        </div>
+    </div>
+</div>
 {% endblock content %}
+{% block extraJs %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+// 1. Toastr Configuration
+toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "timeOut": "2000",
+};
+
+// 2. Configure Axios to handle CSRF automatically for all requests
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function showDeleteModal(event, offerId) {
+    event.preventDefault();
+    const modal = document.getElementById('deleteModal');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    modal.style.display = 'flex';
+    
+    // Assign the click event to call executeDelete with the ID
+    confirmBtn.onclick = function() { executeDelete(offerId); };
+}
+
+function executeDelete(offerId) {
+    axios.post('{% url "Offer_delete_view" %}', {
+        id: offerId
+    })
+    .then(response => {
+        if (response.data.status === "success") {
+            toastr.success(response.data.message);
+            closeModal();
+
+            // Find the specific row by searching the ID column
+            // We look for the <td> that exactly matches the offerId
+            $('table.offers-table tbody tr').each(function() {
+                const firstColText = $(this).find('td:first').text().trim();
+                if (firstColText == offerId) {
+                    $(this).fadeOut(500, function() { 
+                        $(this).remove(); 
+                        
+                        // Optional: Refresh if table is empty to show "No offers available"
+                        if ($('table.offers-table tbody tr').length === 0) {
+                            window.location.reload();
+                        }
+                    });
+                }
+            });
+        } else {
+            toastr.error(response.data.message || 'Error deleting offer.');
+        }
+    })
+    .catch(error => {
+        toastr.error('An error occurred on the server.');
+        console.error('Delete Error:', error);
+        closeModal();
+    });
+}
+</script>
+{% endblock extraJs %}
+
+
