@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from autoslug import AutoSlugField
+from decimal import Decimal
 
 
 def product_image_upload_to(instance, filename):
@@ -92,3 +93,20 @@ class ProductVariant(models.Model):
     def clean(self):
         if self.offer_price is not None and self.offer_price >= self.base_price:
             raise ValidationError("Offer price must be less than base price.")
+        
+    def get_offer_price(self, offer=None):
+        """
+        Returns the price after applying the offer discount
+        """
+        price = self.base_price
+
+        if offer and offer.active:
+            if offer.discount_type == "percentage":
+                discount = (price * offer.discount_value) / Decimal("100")
+                price -= discount
+
+            elif offer.discount_type == "fixed_amount":
+                price -= offer.discount_value
+
+        return max(price, Decimal("0.00")) 
+        # To avoid mixing Decimal with int or float, which causes bugs and precision errors.

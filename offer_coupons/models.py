@@ -1,7 +1,5 @@
 from django.db import models
 from django.utils import timezone
-from products.models import Product,Category
-from django.core.exceptions import ValidationError
 from django.conf import settings
 from userFolder.order.models import OrderMain
 class DiscountType(models.TextChoices):
@@ -23,14 +21,15 @@ class Offer(models.Model):
     discount_type = models.CharField(max_length=20,choices=DiscountType.choices)
     discount_value = models.DecimalField(max_digits=10,decimal_places=2)
 
-    products = models.ManyToManyField(Product, blank=True,related_name='offers')
-    categories = models.ManyToManyField(Category, blank=True,related_name='offers')
+    products = models.ManyToManyField('products.Product', blank=True,related_name='offers')
+    categories = models.ManyToManyField('products.Category', blank=True,related_name='offers')
     min_order_amount = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)
 
     active = models.BooleanField(default=True)
+    display_home = models.BooleanField(default=False)
 
     usage_limit = models.PositiveIntegerField(default=0)
     per_user_limit = models.PositiveIntegerField(default=1)

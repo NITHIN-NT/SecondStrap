@@ -44,6 +44,7 @@
                         <th class="text-center">Per user Limit</th>
                         <th class="text-center">Used</th>
                         <th>Status</th>
+                        <th>Display</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -88,10 +89,16 @@
                                 <span class="status-badge inactive">Inactive</span>
                             {% endif %}
                         </td>
-
+                        <td>
+                            {% if offer.display_home %}
+                                <span class="status-badge active">Displayed on Home</span>
+                            {% else %}
+                                <span class="status-badge inactive">Hidden</span>
+                            {% endif %}
+                        </td>
                         <!-- Actions -->
                         <td class="action-buttons text-center">
-                            <a href="#" class="action-btn view-btn" title="View">
+                            <a href="{% url "Offer_detailed_view" offer.id %}" class="action-btn view-btn" title="View">
                                 <i class="fa-solid fa-file-lines"></i>View
                             </a>
 

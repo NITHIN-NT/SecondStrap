@@ -1,0 +1,381 @@
+{% extends "adminbase.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .offer-detail-container {
+        max-width: 1200px;
+        margin: 32px auto;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 32px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: #334155;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .offer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20px;
+        margin-bottom: 28px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .offer-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .status-group {
+        display: flex;
+        gap: 12px;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid transparent;
+    }
+
+    .status-badge.active {
+        background: #f0fdf4;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .status-badge.inactive {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .info-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .info-field label {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .info-field .value {
+        font-size: 16px;
+        color: #1e293b;
+        font-weight: 500;
+    }
+
+    .section {
+        margin-top: 36px;
+        padding-top: 28px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .section h4 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 16px;
+    }
+
+    .description p {
+        font-size: 15px;
+        line-height: 1.7;
+        color: #475569;
+    }
+
+    .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tag {
+        padding: 6px 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #475569;
+    }
+
+    .product-table-wrapper {
+        overflow-x: auto;
+        margin-top: 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+
+    .product-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .product-table thead {
+        background: #f8fafc;
+    }
+
+    .product-table th,
+    .product-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .product-table th {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        letter-spacing: 0.05em;
+    }
+
+    .product-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Stock Status Classes */
+    .stock-status {
+        font-weight: 600;
+    }
+
+    .stock-in {
+        color: #16a34a;
+    }
+
+    .stock-low {
+        color: #ca8a04;
+    }
+
+    .stock-out {
+        color: #dc2626;
+    }
+
+    .current-price {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .usage-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .usage-card {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .usage-card h5 {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .usage-card .value {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .actions {
+        margin-top: 40px;
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .btn-back:hover {
+        background: #e2e8f0;
+    }
+
+    @media (max-width: 768px) {
+        .offer-detail-container { 
+            padding: 24px; 
+            margin: 16px; 
+        }
+        .offer-header { 
+            flex-direction: column; 
+            align-items: flex-start; 
+            gap: 12px; 
+        }
+        .status-group { 
+            flex-wrap: wrap; 
+        }
+        .info-grid { 
+            grid-template-columns: 1fr; 
+        }
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="offer-detail-container">
+    <div class="offer-header">
+        <h2>{{ offer.name }}</h2>
+        <div class="status-group">
+            <span class="status-badge {% if offer.display_home %}active{% else %}inactive{% endif %}">
+                {% if offer.display_home %}Displayed on Home{% else %}Hidden{% endif %}
+            </span>
+            <span class="status-badge {% if offer.active %}active{% else %}inactive{% endif %}">
+                {% if offer.active %}Active{% else %}Inactive{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-field">
+            <label>Offer Code</label>
+            <span class="value">{{ offer.code }}</span>
+        </div>
+        <div class="info-field">
+            <label>Offer Type</label>
+            <span class="value">{{ offer.get_offer_type_display }}</span>
+        </div>
+        <div class="info-field">
+            <label>Discount Type</label>
+            <span class="value">{{ offer.get_discount_type_display }}</span>
+        </div>
+        <div class="info-field">
+            <label>Discount Value</label>
+            <span class="value">
+                {% if offer.discount_type == 'percentage' %}
+                    {{ offer.discount_value }}%
+                {% else %}
+                    ₹{{ offer.discount_value }}
+                {% endif %}
+            </span>
+        </div>
+        {% if min_order_amount %}
+        <div class="info-field">
+            <label>Minimum Order Amount</label>
+            <span class="value">₹{{ min_order_amount }}</span>
+        </div>
+        {% endif %}
+        <div class="info-field">
+            <label>Validity</label>
+            <span class="value">{{ offer.start_date|date:"d M Y" }} – {{ offer.end_date|date:"d M Y" }}</span>
+        </div>
+    </div>
+
+    {% if offer.description %}
+    <div class="section description">
+        <h4>Description</h4>
+        <p>{{ offer.description }}</p>
+    </div>
+    {% endif %}
+
+    {% if offer.categories.all and offer.categories.count > 0 %}
+    <div class="section">
+        <h4>Applicable Categories</h4>
+        <div class="tag-list">
+            {% for category in offer.categories.all %}
+                <span class="tag">{{ category }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if offer.products.all %}
+    <div class="section">
+        <h4>Applicable Products</h4>
+        <div class="product-table-wrapper">
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Size</th>
+                        <th>Stock Status</th>
+                        <th>Base Price</th>
+                        <th>Offer Price</th>
+                        <th>Current Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in variants_with_price %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.variant.size.size }}</td>
+                        <td class="stock-status {% if item.variant.stock == 0 %}stock-out{% elif item.variant.stock <= 10 %}stock-low{% else %}stock-in{% endif %}">
+                            {% if item.variant.stock == 0 %}
+                                Out of Stock
+                            {% elif item.variant.stock <= 10 %}
+                                {{ item.variant.stock }}
+                            {% else %}
+                               {{ item.variant.stock }}
+                            {% endif %}
+                        </td>
+                        <td>₹{{ item.variant.base_price }}</td>
+                        <td>₹{{ item.variant.offer_price }}</td>
+                        <td class="current-price">₹{{ item.current_price|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <h4>Usage Information</h4>
+        <div class="usage-grid">
+            <div class="usage-card">
+                <h5>Total Usage Limit</h5>
+                <div class="value">
+                    {% if offer.usage_limit == 0 %}Unlimited{% else %}{{ offer.usage_limit }}{% endif %}
+                </div>
+            </div>
+            <div class="usage-card">
+                <h5>Times Used</h5>
+                <div class="value">0</div> {# Update this with actual usage count if available in context #}
+            </div>
+            <div class="usage-card">
+                <h5>Per User Limit</h5>
+                <div class="value">
+                    {% if offer.per_user_limit == 0 %}Unlimited{% else %}{{ offer.per_user_limit }}{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a href="{% url 'offers_view' %}" class="btn btn-back">← Back to Offers</a>
+    </div>
+</div>
+{% endblock content %}

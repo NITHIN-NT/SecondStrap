@@ -1,10 +1,11 @@
 from django.shortcuts import render,redirect
-from django.http import HttpResponse
-from .models import Offer,DiscountType,OfferUsage,OfferType
+from .models import Offer,DiscountType,OfferUsage
+from products.models import ProductVariant
 from django.http import JsonResponse
 from products.models import Product,Category
 from .forms import OfferForm
 from django.contrib import messages
+from django.views.generic import DetailView
 
 def offers_view(request):
     offers = Offer.objects.all() 
@@ -54,3 +55,25 @@ def search_category(request):
     categorys = Category.objects.filter(name__icontains=category_search_value).prefetch_related()[:10]
     
     return JsonResponse([{"id":category.id ,"name":category.name} for category in categorys],safe=False)
+
+
+class OfferDetailedView(DetailView):
+    model=Offer
+    template_name = 'offer_coupons/offer_detail.html'
+    context_object_name = 'offer'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        offer = self.object
+        variants_with_price = []
+        for product in offer.products.prefetch_related('variants'):
+            for variant in product.variants.all():
+                variants_with_price.append({
+                        "product" : product,
+                        "variant" : variant,
+                        "current_price" : variant.get_offer_price(offer)
+                    })
+            
+        context['variants_with_price'] = variants_with_price
+        return context
+    
