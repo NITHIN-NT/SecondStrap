@@ -15,7 +15,7 @@ class OfferType(models.TextChoices):
 class Offer(models.Model):
     name = models.CharField(max_length=350)
     description = models.TextField(blank=True)
-    code = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
     offer_type = models.CharField(max_length=20,choices=OfferType.choices)
     discount_type = models.CharField(max_length=20,choices=DiscountType.choices)
@@ -50,7 +50,7 @@ class OfferUsage(models.Model):
 
     discount_amount = models.DecimalField(max_digits=10,decimal_places=2)
 
-    is_active = models.BooleanField(default=False,)
+    status = models.BooleanField(default=False,)
 
     used_at = models.DateTimeField(auto_now_add=True)
 

@@ -15,8 +15,8 @@ class OfferForm(forms.ModelForm):
         discount_value = cleaned_data.get("discount_value")
 
         products = self.data.get("products")
-        active = self.data.get("active")
-        display_home = self.data.get("display_home")
+        active = cleaned_data.get("active")
+        display_home = cleaned_data.get("display_home")
         categories = self.data.get("categories")
 
         min_order_amount = cleaned_data.get("min_order_amount")

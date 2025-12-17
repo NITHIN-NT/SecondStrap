@@ -37,6 +37,7 @@ urlpatterns = [
     
     path('offer-coupons/',offers_view,name='offers_view'),
     path('offer-coupons/manage-offer/',manage_offer_view,name='manage_offer_view'),
+    path('offer-coupons/manage-offer/edit/<int:pk>',manage_offer_view,name='edit_offer_view'),
     path('offer-coupons/<int:pk>',OfferDetailedView.as_view(),name='Offer_detailed_view'),
     path('offer-coupons/delete/',delete_offer_view,name='Offer_delete_view'),
     path('offer-coupons/manage-offer/products/search/',search_products,name='search_products'),

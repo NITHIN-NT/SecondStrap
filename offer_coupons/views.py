@@ -26,27 +26,37 @@ def offers_view(request):
     return render(request, 'offer_coupons/offer_coupons.html',context)
 
 @superuser_required
-def manage_offer_view(request):
+@transaction.atomic
+def manage_offer_view(request,pk=None):
+    instance = get_object_or_404(Offer,pk=pk) if pk else None
     if request.method == 'POST':
-        form = OfferForm(request.POST)
+        form = OfferForm(request.POST,instance=instance)
         if form.is_valid():
             offer = form.save(commit=False)
-            offer.save()    
-            product_ids = request.POST.get('products','')
-            print(product_ids)
+            offer.save()
+            
+            product_ids = request.POST.get('products','').strip(',')
             if product_ids :
                 offer.products.set(product_ids.split(','))
+            else:
+                offer.products.clear()
                 
-            category_ids = request.POST.get('categories', '')
+            category_ids = request.POST.get('categories', '').strip(',')
             if category_ids:
                 offer.categories.set(category_ids.split(','))
-            
+            else:
+                offer.categories.clear()
             form.save_m2m()
-            messages.success(request,'offer created')
+            verb = "updated" if instance else "created"
+            messages.success(request, f'Offer {verb} successfully!')
             return redirect('offers_view')
     else:
-        form = OfferForm()
-    return render(request, 'offer_coupons/manage_offer.html',{'form':form}) 
+        form = OfferForm(instance=instance)
+    context = {
+        'form' : form,
+        'instance' : instance
+    }
+    return render(request, 'offer_coupons/manage_offer.html',context) 
     
 @superuser_required
 def search_products(request):

@@ -63,9 +63,12 @@
                         <!-- Discount Formatting -->
                         <td>
                             {% if offer.discount_type == "percentage" %}
-                                {{ offer.discount_value }}%
+                                <span class="discount-tag">{{ offer.discount_value }}% OFF</span>
                             {% else %}
-                                ₹{{ offer.discount_value }}
+                                <span class="discount-tag">₹{{ offer.discount_value }} OFF</span>
+                            {% endif %}
+                            {% if offer.offer_type == "amount_threshold" %}
+                                <br><small class="text-muted">Min: ₹{{ offer.min_order_amount }}</small>
                             {% endif %}
                         </td>
 
@@ -100,7 +103,7 @@
                                 <i class="fa-solid fa-file-lines"></i>View
                             </a>
 
-                            <a href="#" class="action-btn edit-btn" title="Edit">
+                            <a href="{% url "edit_offer_view" offer.pk %}" class="action-btn edit-btn" title="Edit">
                                 <i class="fa-solid fa-pen-to-square"></i>Edit
                             </a>
 

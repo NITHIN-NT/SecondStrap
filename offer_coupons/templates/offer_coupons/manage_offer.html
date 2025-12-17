@@ -3,6 +3,25 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/offer_coupons/manage_offer.css' %}">
+<style>
+    /* Adding styles for the JS-generated selected items */
+    .selected-item {
+        display: flex;
+        align-items: center;
+        background: #e0e7ff;
+        padding: 5px 10px;
+        border-radius: 8px;
+        gap: 10px;
+        margin-bottom: 5px;
+    }
+    .remove-chip {
+        background: none;
+        border: none;
+        color: var(--danger);
+        cursor: pointer;
+        font-weight: bold;
+    }
+</style>
 {% endblock extra_css %}
 
 {% block content %}
@@ -13,7 +32,7 @@
 
     <div class="offer-card">
         <div class="offer-header">
-            <h2>Create New Offer</h2>
+            <h2>{% if instance %}Edit{% else %}Create New{% endif %} Offer</h2>
             <p class="subtitle">Configure discounts for products, categories, or order totals.</p>
         </div>
 
@@ -21,9 +40,7 @@
             {% csrf_token %}
 
             {% if form.non_field_errors %}
-                <div class="form-errors">
-                    {{ form.non_field_errors }}
-                </div>
+                <div class="form-errors">{{ form.non_field_errors }}</div>
             {% endif %}
 
             <div class="form-grid">
@@ -62,7 +79,6 @@
                         <option value="category" {% if form.offer_type.value == "category" %}selected{% endif %}>Category Offer</option>
                         <option value="amount_threshold" {% if form.offer_type.value == "amount_threshold" %}selected{% endif %}>Order Amount Offer</option>
                     </select>
-                    {% if form.errors.offer_type %}<div class="field-error">{{ form.errors.offer_type|striptags }}</div>{% endif %}
                 </div>
 
                 <div class="form-group">
@@ -71,14 +87,11 @@
                         <option value="percentage" {% if form.discount_type.value == "percentage" %}selected{% endif %}>Percentage (%)</option>
                         <option value="fixed_amount" {% if form.discount_type.value == "fixed_amount" %}selected{% endif %}>Fixed Amount (₹)</option>
                     </select>
-                    {% if form.errors.discount_type %}<div class="field-error">{{ form.errors.discount_type|striptags }}</div>{% endif %}
                 </div>
 
                 <div class="form-group">
                     <label>Discount Value</label>
-                    <input type="number" name="discount_value" step="0.01" placeholder="0.00"
-                           value="{{ form.discount_value.value|default_if_none:'' }}">
-                    {% if form.errors.discount_value %}<div class="field-error">{{ form.errors.discount_value|striptags }}</div>{% endif %}
+                    <input type="number" name="discount_value" step="0.01" value="{{ form.discount_value.value|default_if_none:'' }}">
                 </div>
             </div>
 
@@ -94,7 +107,6 @@
                     <label>Selected Products:</label>
                     <ul id="selectedProducts" class="chips-list"></ul>
                 </div>
-                {% if form.errors.products %}<div class="field-error">{{ form.errors.products|striptags }}</div>{% endif %}
             </div>
 
             <div id="categorySection" class="conditional-section" style="display:none;">
@@ -107,15 +119,12 @@
                     <label>Selected Categories:</label>
                     <ul id="selectedCategories" class="chips-list"></ul>
                 </div>
-                {% if form.errors.categories %}<div class="field-error">{{ form.errors.categories|striptags }}</div>{% endif %}
             </div>
-
+                                
             <div id="amountSection" class="conditional-section" style="display:none;">
                 <div class="form-group">
                     <label>Minimum Order Amount</label>
-                    <input type="number" name="min_order_amount" step="0.01"
-                           value="{{ form.min_order_amount.value|default_if_none:'' }}">
-                    {% if form.errors.min_order_amount %}<div class="field-error">{{ form.errors.min_order_amount|striptags }}</div>{% endif %}
+                    <input type="number" name="min_order_amount" step="0.01" value="{{ form.min_order_amount.value|default_if_none:'' }}">
                 </div>
             </div>
 
@@ -133,24 +142,29 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Start Date</label>
-                    <input type="datetime-local" name="start_date" value="{{ form.start_date.value|default_if_none:'' }}">
+                    <input type="datetime-local" name="start_date" 
+                        value="{% if form.start_date.value %}{{ form.start_date.value|date:'Y-m-d\TH:i' }}{% elif instance.start_date %}{{ instance.start_date|date:'Y-m-d\TH:i' }}{% endif %}">
+                    {% if form.errors.start_date %}<div class="field-error">{{ form.errors.start_date|striptags }}</div>{% endif %}
                 </div>
+                
                 <div class="form-group">
                     <label>End Date</label>
-                    <input type="datetime-local" name="end_date" value="{{ form.end_date.value|default_if_none:'' }}">
+                    <input type="datetime-local" name="end_date" 
+                        value="{% if form.end_date.value %}{{ form.end_date.value|date:'Y-m-d\TH:i' }}{% elif instance.end_date %}{{ instance.end_date|date:'Y-m-d\TH:i' }}{% endif %}">
+                    {% if form.errors.end_date %}<div class="field-error">{{ form.errors.end_date|striptags }}</div>{% endif %}
                 </div>
             </div>
 
             <div class="form-group full-width">
                 <label>Offer Description</label>
-                <textarea name="description" rows="3" placeholder='Display on the offer track'>{{ form.description.value|default_if_none:'' }}</textarea>
+                <textarea name="description" rows="3">{{ form.description.value|default_if_none:'' }}</textarea>
             </div>
-            <br>
+
             <input type="hidden" name="products" id="productsInput">
             <input type="hidden" name="categories" id="categoriesInput">
 
             <div class="form-actions">
-                <button type="submit" class="btn-primary">Create Offer</button>
+                <button type="submit" class="btn-primary">{% if instance %}Update{% else %}Create{% endif %} Offer</button>
             </div>
         </form>
     </div>
@@ -161,8 +175,24 @@
 <script>
     window.PRODUCT_SEARCH_URL = "{% url 'search_products' %}";
     window.CATEGORY_SEARCH_URL = "{% url 'search_categories' %}";
-</script>
 
+    // Data from Django ORM passed to JS Maps
+    const initialProducts = [
+        {% if instance %}
+            {% for product in instance.products.all %}
+                { id: "{{ product.id }}", name: "{{ product.name }}", image: "{{ product.image.url|default:'' }}" },
+            {% endfor %}
+        {% endif %}
+    ];
+
+    const initialCategories = [
+        {% if instance %}
+            {% for category in instance.categories.all %}
+                { id: "{{ category.id }}", name: "{{ category.name }}", image: "" },
+            {% endfor %}
+        {% endif %}
+    ];
+</script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="{% static 'js/offer_coupons/manage_offer.js' %}"></script>
 {% endblock %}
