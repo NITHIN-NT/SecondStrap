@@ -205,6 +205,19 @@ textarea:focus {
     background: var(--primary-hover);
     box-shadow: 0 6px 15px rgba(79, 70, 229, 0.25);
 }
+.field-error {
+    color: #d93025;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.form-errors {
+    background: #ffecec;
+    color: #d93025;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
 
 /* ===============================
    RESPONSIVE

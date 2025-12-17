@@ -17,7 +17,7 @@ function setupSearch(inputId, resultId, selectedId, searchUrl, store) {
     input.addEventListener("input", async () => {
         const query = input.value.trim();
 
-        if (query.length < 2) {
+        if (query.length < 2) { 
             results.innerHTML = "";
             return;
         }

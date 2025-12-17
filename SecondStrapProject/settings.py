@@ -5,7 +5,7 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 import razorpay
-
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -145,7 +145,11 @@ TEMPLATES = [
     DATABASE
 '''
 DATABASES = {
-    'default': env.db(),
+    'default': dj_database_url.parse(
+        os.environ.get("DATABASE_URL"),
+        conn_max_age=60,      
+        ssl_require=False,
+    )
 }
 
 '''
