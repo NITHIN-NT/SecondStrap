@@ -263,11 +263,11 @@
             <div class="footer-column">
                 <h4>Company</h4>
                 <ul>
-                    <li><a href="/about">About</a></li>
-                    <li><a href="/products">Products</a></li>
-                    <li><a href="/contact">Contact</a></li>
-                    <li><a href="/terms">Terms</a></li>
-                    <li><a href="/privacy">Privacy</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Products</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Terms</a></li>
+                    <li><a href="#">Privacy</a></li>
                 </ul>
             </div>
 
@@ -322,7 +322,12 @@
         const track = document.getElementById('offer-track');
         const endpoint = '/api/get-offers/'; 
 
-        // Function to synchronize the CSS animation
+        const defaultOffers = [
+            "🔥 Welcome to SecondStrap!", 
+            "🚚 Free Shipping on Orders Above ₹999", 
+            "💳 Extra 5% OFF on UPI payments"
+        ];
+
         function syncAnimationState(element) {
             const animationDuration = 30000; 
             const now = Date.now();
@@ -332,26 +337,23 @@
 
         axios.get(endpoint)
             .then(response => {
-                const offers = response.data.offers;
+                const backendOffers = response.data.offers || [];
                 
-                if (offers && offers.length > 0) {
-                    let htmlContent = '';
-                    offers.forEach(offer => {
-                        htmlContent += `<div class="offer-item">${offer}</div>`;
-                    });
+                // --- COMBINE BOTH ARRAYS HERE ---
+                const allOffers = [...defaultOffers, ...backendOffers];
 
-                    // Duplicate content for seamless loop
-                    track.innerHTML = htmlContent + htmlContent;
-                    syncAnimationState(track);
-                }
+                let htmlContent = '';
+                allOffers.forEach(offer => {
+                    htmlContent += `<div class="offer-item">${offer}</div>`;
+                });
+
+                // Duplicate for seamless loop
+                track.innerHTML = htmlContent + htmlContent;
+                syncAnimationState(track);
             })
             .catch(error => {
-                console.log('Using default offers (Backend not connected yet)');
-                const defaultOffers = [
-                    "🔥 Welcome to SecondStrap!", 
-                    "🚚 Free Shipping on Orders Above ₹999", 
-                    "💳 Extra 5% OFF on UPI payments"
-                ];
+                console.error("Error fetching offers:", error);
+                // Fallback to only defaults if API fails
                 let htmlContent = '';
                 defaultOffers.forEach(o => htmlContent += `<div class="offer-item">${o}</div>`);
                 track.innerHTML = htmlContent + htmlContent;

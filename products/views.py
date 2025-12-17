@@ -7,7 +7,8 @@ from django.db.models import Max, Min
 from django.views.generic import TemplateView, DetailView, ListView
 from django.db.models import Min, Max, Sum, Count
 from django.db.models.functions import Coalesce
-
+from offer_coupons.models import Offer
+from django.http import JsonResponse
 # Create your views here.
 """
 def home_page_view(request):
@@ -245,3 +246,7 @@ class ProductDetailedView(DetailView):
         context["random_products"] = random_products[:4]
 
         return context
+
+def get_offers(request):
+    offers_from_db = list(Offer.objects.filter(active=True,display_home=True).values_list('description',flat=True))
+    return JsonResponse({'offers': offers_from_db})
