@@ -7,7 +7,7 @@ from django.db.models import Max, Min
 from django.views.generic import TemplateView, DetailView, ListView
 from django.db.models import Min, Max, Sum, Count
 from django.db.models.functions import Coalesce
-from offer_coupons.models import Offer
+from offer.models import Offer
 from django.http import JsonResponse
 # Create your views here.
 """

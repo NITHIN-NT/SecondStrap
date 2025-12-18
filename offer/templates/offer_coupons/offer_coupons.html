@@ -35,13 +35,10 @@
                         <th>ID</th>
                         <th>Offer Name</th>
                         <th>Description</th>
-                        <th>Code</th>
                         <th>Offer Type</th>
                         <th>Discount Type</th>
                         <th>Discount</th>
                         <th>Valid Period</th>
-                        <th class="text-center">Limit</th>
-                        <th class="text-center">Per user Limit</th>
                         <th>Status</th>
                         <th>Display</th>
                         <th class="text-center">Actions</th>
@@ -54,7 +51,6 @@
                         <td>{{ offer.id }}</td>
                         <td>{{ offer.name }}</td>
                         <td>{{offer.description}}</td>
-                        <td>{{ offer.code }}</td>
 
                         <!-- TextChoices Display -->
                         <td>{{ offer.get_offer_type_display }}</td>
@@ -78,9 +74,6 @@
                             →
                             {{ offer.end_date|date:"Y-m-d" }}
                         </td>
-
-                        <td class="text-center">{{ offer.usage_limit }}</td>
-                        <td class="text-center">{{offer.per_user_limit}}</td>
 
                         <!-- Status -->
                         <td>

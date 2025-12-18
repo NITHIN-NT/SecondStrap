@@ -69,7 +69,7 @@ INSTALLED_APPS = [
     'userFolder.order',
     'userFolder.wallet',
     'userFolder.payment',
-    'offer_coupons',
+    'offer',
     'products',
     'Admin',
     'accounts',

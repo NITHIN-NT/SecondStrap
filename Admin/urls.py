@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from .views import AdminProductsView,AdminCategoryView,AdminUserView,AdminHome,StockManagementView,AdminOrderView
-from offer_coupons.views import *
+from offer.views import *
 from django.conf import settings
 from django.conf.urls.static import static
 

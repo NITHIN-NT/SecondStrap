@@ -51,23 +51,8 @@
                     {% if form.errors.name %}<div class="field-error">{{ form.errors.name|striptags }}</div>{% endif %}
                 </div>
 
-                <div class="form-group">
-                    <label>Coupon Code</label>
-                    <input type="text" name="code" placeholder="SUMMER50"
-                           value="{{ form.code.value|default_if_none:'' }}">
-                    {% if form.errors.code %}<div class="field-error">{{ form.errors.code|striptags }}</div>{% endif %}
-                </div>
 
-                <div class="form-group checkbox-group">
-                    <label class="switch-label">
-                        <input type="checkbox" name="active" {% if form.active.value %}checked{% endif %}>
-                        <span>Active Now</span>
-                    </label>
-                    <label class="switch-label">
-                        <input type="checkbox" name="display_home" {% if form.display_home.value %}checked{% endif %}>
-                        <span>Show on Home</span>
-                    </label>
-                </div>
+                
             </div>
 
             <div class="form-grid">
@@ -115,6 +100,7 @@
                     <input type="text" id="categorySearch" placeholder="Type category name...">
                     <ul id="categoryResults" class="search-results"></ul>
                 </div>
+                
                 <div class="selected-container">
                     <label>Selected Categories:</label>
                     <ul id="selectedCategories" class="chips-list"></ul>
@@ -128,16 +114,6 @@
                 </div>
             </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Usage Limit (Total)</label>
-                    <input type="number" name="usage_limit" value="{{ form.usage_limit.value|default:0 }}">
-                </div>
-                <div class="form-group">
-                    <label>Per User Limit</label>
-                    <input type="number" name="per_user_limit" value="{{ form.per_user_limit.value|default:1 }}">
-                </div>
-            </div>
 
             <div class="form-grid">
                 <div class="form-group">
@@ -160,6 +136,17 @@
                 <textarea name="description" rows="3">{{ form.description.value|default_if_none:'' }}</textarea>
             </div>
 
+            <div class="form-group checkbox-group">
+                <label class="switch-label">
+                    <input type="checkbox" name="active" {% if form.active.value %}checked{% endif %}>
+                    <span>Active Now</span>
+                </label>
+                <label class="switch-label">
+                    <input type="checkbox" name="display_home" {% if form.display_home.value %}checked{% endif %}>
+                    <span>Show on Home</span>
+                </label>
+            </div>
+            <br>
             <input type="hidden" name="products" id="productsInput">
             <input type="hidden" name="categories" id="categoriesInput">
 
