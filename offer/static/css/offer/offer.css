@@ -1,0 +1,422 @@
+/* offer.css */
+
+:root {
+    --color-border: #e2e8f0;
+    --color-text-main: #1e293b;
+    --color-text-secondary: #64748b;
+    --primary-blue: #2563eb;
+    --success-green: #16a34a;
+    --bg-light: #f8fafc;
+    --transition-speed: 0.3s;
+}
+
+/* Page Layout */
+.offers-page-container {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.offers-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sticky Header & Tabs */
+.offers-sticky-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--color-border);
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.selection_area {
+    display: flex;
+    gap: 5px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+    width: fit-content;
+}
+
+.tab-btn {
+    padding: 8px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 7px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    transition: all var(--transition-speed);
+}
+
+.tab-btn.active {
+    background: #fff;
+    color: var(--primary-blue);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Tab Content Visibility */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* =========================================
+   TAB: ALL OFFERS (TABLE STYLING)
+   ========================================= */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.offers-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+    background-color: #fff;
+}
+
+.offers-table thead th {
+    background: #f8fafc;
+    padding: 16px;
+    text-align: left;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.offers-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.offers-table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+.offers-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.85rem;
+    color: var(--color-text-main);
+    vertical-align: middle;
+}
+
+.truncate-text {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text-secondary);
+}
+
+/* =========================================
+   TAB: PRODUCTS & CATEGORIES (ACCORDION)
+   ========================================= */
+.variant-list-container {
+    padding: 20px;
+    background: var(--bg-light);
+}
+
+.product-group {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: box-shadow var(--transition-speed) ease;
+}
+
+.product-group.is-open {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e1;
+}
+
+.group-header {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr 100px 140px;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    background: #fff;
+}
+
+.accordion-icon {
+    margin-right: 15px;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-group.is-open .accordion-icon {
+    transform: rotate(180deg);
+    color: var(--primary-blue);
+}
+
+.prod-main {
+    display: flex;
+    align-items: center;
+}
+
+.prod-main img {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 1px solid #eef2f6;
+}
+
+.product-offers-list {
+    display: none;
+    /* Controlled by JS SlideToggle */
+    background: #fcfdfe;
+    padding: 10px 0 20px 0;
+    border-top: 1px solid #f1f5f9;
+}
+
+.offer-item-row {
+    display: grid;
+    grid-template-columns: 40px 200px 150px 1fr;
+    padding: 12px 20px 12px 65px;
+    align-items: center;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.offer-indicator {
+    color: #cbd5e1;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* =========================================
+   UTILITY BADGES & BUTTONS
+   ========================================= */
+.offer-tag-badge {
+    padding: 4px 12px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.offer-tag-badge.summer {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.offer-tag-badge.winter {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.offer-tag-badge.exclusive {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.offer-tag-badge.generic {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.discount-pill {
+    background: #eff6ff;
+    color: var(--primary-blue);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    border: 1px solid #dbeafe;
+}
+
+.view-details-btn {
+    padding: 7px 14px;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.action-btn {
+    padding: 8px;
+    border-radius: 6px;
+    background: #f3f4f6;
+    color: var(--color-text-secondary);
+    margin: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    background: #e5e7eb;
+    color: var(--color-text-main);
+}
+
+/* Modal Styling */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    width: 420px;
+    text-align: center;
+}
+
+/* =========================================
+   MODAL STYLING (FIXED)
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.7);
+    /* Darker backdrop for better focus */
+    backdrop-filter: blur(4px);
+    /* Modern blur effect */
+    display: none;
+    /* Controlled by JS */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: modalScale 0.2s ease-out;
+}
+
+@keyframes modalScale {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: var(--color-text-main);
+    margin-bottom: 12px;
+}
+
+.modal-content p {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* Button Base Styles */
+.modal-actions button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    flex: 1;
+}
+
+/* Cancel Button */
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.btn-secondary:hover {
+    background-color: #e2e8f0;
+}
+
+/* Delete Button */
+.btn-danger {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+    box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2);
+}

@@ -15,15 +15,21 @@ from django.views.decorators.http import require_POST
 
 @superuser_required
 def offers_view(request):
-    offers = Offer.objects.all() 
+    offers = Offer.objects.all()
     total_active_offers = offers.filter(active=True).count() 
+    products_offers = Product.objects.filter(is_active=True,offers__isnull=False).prefetch_related('offers')
+    print(products_offers)
+    products_offers = Offer.objects.filter(products__isnull=False).distinct()
+    category_offers = Offer.objects.filter(categories__isnull=False).distinct()
     
     context={
         'offers' : offers,
         'total_active_offers':total_active_offers,
+        'products_offers' : products_offers,
+        'category_offers' : category_offers,
         'DiscountType' : DiscountType ,
     }
-    return render(request, 'offer_coupons/offer_coupons.html',context)
+    return render(request, 'offer/offer.html',context)
 
 @superuser_required
 @transaction.atomic
@@ -56,7 +62,7 @@ def manage_offer_view(request,pk=None):
         'form' : form,
         'instance' : instance
     }
-    return render(request, 'offer_coupons/manage_offer.html',context) 
+    return render(request, 'offer/manage_offer.html',context) 
     
 @superuser_required
 def search_products(request):
@@ -76,7 +82,7 @@ def search_category(request):
 @method_decorator([never_cache, superuser_required], name="dispatch")
 class OfferDetailedView(LoginRequiredMixin,DetailView):
     model=Offer
-    template_name = 'offer_coupons/offer_detail.html'
+    template_name = 'offer/offer_detail.html'
     context_object_name = 'offer'
     
     def get_context_data(self, **kwargs):
@@ -86,13 +92,13 @@ class OfferDetailedView(LoginRequiredMixin,DetailView):
         for product in offer.products.prefetch_related('variants'):
             for variant in product.variants.all():
                 variants_with_price.append({
-                        "product" : product,
-                        "variant" : variant,
-                        "current_price" : variant.get_offer_price(offer),
-                    })
+                    "product" : product,
+                    "variant" : variant,
+                    "current_price" : variant.get_offer_price(offer),
+                })
             
         context['variants_with_price'] = variants_with_price
-        context["offer_user"] =  OfferUsage.objects.filter(offer=offer,is_active=True).count()
+        context["offer_user"] =  OfferUsage.objects.filter(offer=offer,status=True).count()
         return context
  
 @superuser_required  

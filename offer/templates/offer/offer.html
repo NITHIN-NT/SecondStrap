@@ -1,0 +1,270 @@
+{% extends "adminbase.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/offer/offer.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="offers-page-container">
+    <div class="offers-card">
+        
+        <div class="offers-sticky-header">
+            <div class="header-top">
+                <div class="titles">
+                    <h1>Offers & Promotions</h1>
+                    <p>Manage discounts and promotional offers</p>
+                </div>
+                <div class="card-header-main">
+                    <a href="{% url 'manage_offer_view' %}" class="create-offer-link">
+                        <button type="button" class="create-offer-btn">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Create Offer</span>
+                        </button>
+                    </a>
+                </div>
+            </div>
+
+            <div class="selection_area">
+                <button class="tab-btn active" onclick="switchTab(event, 'all')">All Offers</button>
+                <button class="tab-btn" onclick="switchTab(event, 'products')">Products</button>
+                <button class="tab-btn" onclick="switchTab(event, 'categories')">Categories</button>
+            </div>
+        </div>
+
+        <div id="tab-all" class="tab-content active">
+            <div class="table-responsive">
+                <table class="offers-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Offer Name</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Discount</th>
+                            <th>Valid Period</th>
+                            <th>Status</th>
+                            <th>Display</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for offer in offers %}
+                        <tr>
+                            <td>{{ offer.id }}</td>
+                            <td><strong>{{ offer.name }}</strong></td>
+                            <td class="truncate-text">{{ offer.description }}</td>
+                            <td>{{ offer.get_offer_type_display }}</td>
+                            <td>
+                                {% if offer.discount_type == "percentage" %}
+                                    <span class="discount-pill">{{ offer.discount_value }}% OFF</span>
+                                {% else %}
+                                    <span class="discount-pill">₹{{ offer.discount_value }} OFF</span>
+                                {% endif %}
+                            </td>
+                            <td class="date-text">{{ offer.start_date|date:"Y-m-d" }} → {{ offer.end_date|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="status-badge {% if offer.active %}active{% else %}inactive{% endif %}">
+                                    {{ offer.active|yesno:"Active,Inactive" }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge {% if offer.display_home %}active{% else %}inactive{% endif %}">
+                                    {{ offer.display_home|yesno:"Home,Hidden" }}
+                                </span>
+                            </td>
+                            <td class="action-buttons text-center">
+                                <a href="{% url 'Offer_detailed_view' offer.id %}" class="action-btn view-btn"><i class="fa-solid fa-file-lines"></i> View</a>
+                                <a href="{% url 'edit_offer_view' offer.pk %}" class="action-btn edit-btn"><i class="fa-solid fa-pen-to-square"></i> Edit</a>
+                                <a href="#" class="action-btn delete-btn" onclick="showDeleteModal(event, {{ offer.id }})"><i class="fa-solid fa-trash-can"></i> Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="9" class="text-center">No offers available.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-products" class="tab-content">
+            <div class="variant-list-container">
+                
+                <div class="product-group">
+                    {% for offer in products_offers %}
+                    <div class="group-header" onclick="toggleAccordion(this)">
+                        <div class="prod-main">
+                            <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                            <img src="https://via.placeholder.com/40" alt="prod">
+                            <div class="prod-info"><strong>{{offer.name}}</strong></div>
+                        </div>
+                        <div class="prod-meta">2 Active Offers</div>
+                        <div class="prod-meta"><strong>4 variants</strong></div>
+                        <div class="prod-status active">Active</div>
+                        <div><button class="view-details-btn">View Product</button></div>
+                    </div>
+                    <div class="product-offers-list">
+                        <div class="offer-item-row">
+                            <span class="offer-indicator">↳</span>
+                            <span class="offer-tag-badge summer">Summer Blast</span>
+                            <span class="offer-benefit">20% OFF</span>
+                            <span class="offer-validity">Ends: Oct 25, 2025</span>
+                        </div>
+                        <div class="offer-item-row">
+                            <span class="offer-indicator">↳</span>
+                            <span class="offer-tag-badge exclusive">First Purchase</span>
+                            <span class="offer-benefit">₹200 OFF</span>
+                            <span class="offer-validity">Ends: Dec 31, 2025</span>
+                        </div>
+                    </div>
+                </div>
+
+               {% endfor %}
+
+            </div>
+        </div>
+
+        <div id="tab-categories" class="tab-content">
+            <div class="variant-list-container">
+                <div class="product-group">
+                    {% for offer in category_offers %}
+                        {% for cat in offer.categories.all %}
+                            <div class="group-header" onclick="toggleAccordion(this)">
+                                <div class="prod-main">
+                                    <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                                    <div class="prod-info"><strong>Category: {{cat.name}}</strong></div>
+                                </div>
+                                <div class="prod-meta">1 Active Category Offer</div>
+                                <div class="prod-meta"><strong>15 Products Linked</strong></div>
+                                <div class="prod-status active">Active</div>
+                                <div><button class="view-details-btn">Manage Category</button></div>
+                            </div>
+                            <div class="product-offers-list">
+                                <div class="offer-item-row">
+                                    <span class="offer-indicator">↳</span>
+                                    <span class="offer-tag-badge generic">Flash Sale</span>
+                                    <span class="offer-benefit">15% OFF across category</span>
+                                    <span class="offer-validity">Ends: Oct 20, 2025</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this offer?</p>
+        <div class="modal-actions">
+            <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+            <button id="confirmDeleteBtn" class="btn-danger">Delete Permanently</button>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extraJs %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script>
+// --- Tab Switching ---
+function switchTab(event, tabName) {
+    $('.tab-btn').removeClass('active');
+    $(event.currentTarget).addClass('active');
+    $('.tab-content').removeClass('active');
+    $('#tab-' + tabName).addClass('active');
+}
+
+// --- Accordion Logic ---
+function toggleAccordion(header) {
+    const group = $(header).closest('.product-group');
+    group.toggleClass('is-open');
+    group.find('.product-offers-list').slideToggle(300);
+}
+
+// --- Delete Logic ---
+
+// Helper function to get CSRF token from cookies (Required for Django POST)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function closeModal() { 
+    $('#deleteModal').fadeOut(200); 
+}
+
+function showDeleteModal(event, offerId) {
+    event.preventDefault();
+    $('#deleteModal').css('display', 'flex').hide().fadeIn(200);
+    
+    // .off().on() prevents the event from firing multiple times if modal is opened twice
+    $('#confirmDeleteBtn').off('click').on('click', function() { 
+        executeDelete(offerId); 
+    });
+}
+
+function executeDelete(offerId) {
+    const csrftoken = getCookie('csrftoken');
+    const deleteBtn = $('#confirmDeleteBtn');
+    
+    // Disable button to prevent double-clicks
+    deleteBtn.prop('disabled', true).text('Deleting...');
+
+    axios.post('{% url "Offer_delete_view" %}', 
+        { id: offerId }, 
+        {
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        }
+    )
+    .then(response => {
+        if (response.data.status === "success") {
+            toastr.success(response.data.message || "Deleted successfully");
+            
+            // Wait 1 second so user sees the success message, then reload
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+            
+        } else {
+            toastr.error(response.data.message || "An error occurred");
+            deleteBtn.prop('disabled', false).text('Delete Permanently');
+        }
+    })
+    .catch(error => {
+        console.error('Delete Error:', error);
+        toastr.error('Server error. Please try again.');
+        deleteBtn.prop('disabled', false).text('Delete Permanently');
+    })
+    .finally(() => {
+        closeModal();
+    });
+}
+
+// Close modal if user clicks outside the content box
+$(window).on('click', function(event) {
+    if ($(event.target).is('#deleteModal')) {
+        closeModal();
+    }
+});
+</script>
+{% endblock extraJs %}

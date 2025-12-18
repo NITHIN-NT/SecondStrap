@@ -261,10 +261,6 @@
 
     <div class="info-grid">
         <div class="info-field">
-            <label>Offer Code</label>
-            <span class="value">{{ offer.code }}</span>
-        </div>
-        <div class="info-field">
             <label>Offer Type</label>
             <span class="value">{{ offer.get_offer_type_display }}</span>
         </div>
@@ -351,28 +347,6 @@
         </div>
     </div>
     {% endif %}
-
-    <div class="section">
-        <h4>Usage Information</h4>
-        <div class="usage-grid">
-            <div class="usage-card">
-                <h5>Total Usage Limit</h5>
-                <div class="value">
-                    {% if offer.usage_limit == 0 %}Unlimited{% else %}{{ offer.usage_limit }}{% endif %}
-                </div>
-            </div>
-            <div class="usage-card">
-                <h5>Times Used</h5>
-                <div class="value">{{offer_user}}</div> {# Update this with actual usage count if available in context #}
-            </div>
-            <div class="usage-card">
-                <h5>Per User Limit</h5>
-                <div class="value">
-                    {% if offer.per_user_limit == 0 %}Unlimited{% else %}{{ offer.per_user_limit }}{% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="actions">
         <a href="{% url 'offers_view' %}" class="btn btn-back">← Back to Offers</a>

@@ -37,7 +37,7 @@ class Offer(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.name} ({self.code})"
+        return f"{self.name} ({self.description})"
 
 class OfferUsage(models.Model):
     offer = models.ForeignKey(Offer,on_delete=models.PROTECT,related_name="usages")
@@ -54,6 +54,6 @@ class OfferUsage(models.Model):
         unique_together = ("offer", "user", "order")
 
     def __str__(self):
-        return f"{self.offer.code} - {self.user}"
+        return f"{self.offer.description} - {self.user}"
 
     
