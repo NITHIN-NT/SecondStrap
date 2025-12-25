@@ -145,7 +145,11 @@
                                 <div class="product-image-placeholder {% if product.stock <= 5 and product.stock > 0 %}limited-stock-badge{% endif %}"
                                 style="background-image: url({{product.image.url}}); background-size: cover;">
                                 <p>
-                                    {% if product.stock > 10 %}
+                                    {% if product.best_discount %}
+                                        <span class='offer'>
+                                            ₹{{product.best_discount}} off
+                                        </span>
+                                    {% elif product.stock > 10 %}
                                         Available
                                     {% elif product.stock > 5 %}
                                         Few Left
@@ -153,17 +157,32 @@
                                         Limited stock
                                     {% endif %}
                                 </p>
+
+                                
                             </div>
 
                             </a>
                             <div class="product-info-container">
                                 <div class="product-details">
-                                    <h5>{{product.name}}</h5>
-                                    <p class="product-price">₹{{product.offer_price}}</p>
+                                    <h5>{{ product.name }}</h5>
+
+                                    {% if product.min_discounted_price and product.min_discounted_price < product.offer_price%}
+                                        <div class="product-price-wrapper">
+                                            <p class="product-price-old">₹{{ product.offer_price }}</p>
+                                            <p class="product-price-new">₹{{ product.min_discounted_price }}</p>
+                                        </div>
+                                    {% else %}
+                                        <div class="product-price-wrapper">
+                                            <p class="product-price-old">₹{{ product.base_price }}</p>
+                                            <p class="product-price-new">₹{{ product.offer_price }}</p>
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <div class="product-actions">
+
+
+                                {% comment %} <div class="product-actions">
                                     <i class='bx bx-heart'></i>
-                                </div>
+                                </div> {% endcomment %}
                             </div>
                         </div>
                         {% endif %}

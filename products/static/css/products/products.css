@@ -243,7 +243,6 @@
 
 /* ================= AVAILABILITY STATUS (NO BG — TEXT ONLY) ================ */
 
-/* === STATUS BADGE (BLACK BACKGROUND FOR ALL) === */
 .product-image-placeholder p {
     position: absolute;
     top: 10px;
@@ -251,9 +250,7 @@
     margin: 0;
     padding: 6px 12px;
     background: #000 !important;
-    /* black bg */
     color: #fff !important;
-    /* white text */
     font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
@@ -263,23 +260,34 @@
     line-height: 1;
 }
 
-/* === OUT OF STOCK BADGE (RED TEXT + BLACK BG) === */
+.product-image-placeholder > .offer {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    margin: 0;
+    padding: 6px 12px;
+    background: #000 !important;
+    color: #fff !important;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 999px;
+    z-index: 6;
+    pointer-events: none;
+    line-height: 1;
+}
+
+/* === OUT OF STOCK BADGE === */
 .product-card.out-of-stock .product-image-placeholder p {
     background: #c80501 !important;
     color: #fff !important;
-    /* red text */
 }
 
-/* === BOTTOM TEXT (Out of Stock!!) === */
 .product-card.out-of-stock .product-details p {
     color: #ff2623 !important;
-    /* red */
 }
 
-
-
-
-/* DIAGONAL RIBBONS WITH SMOOTH INFINITE LOOP */
+/* DIAGONAL RIBBONS */
 .ribbon {
     position: absolute;
     left: 50%;
@@ -293,21 +301,14 @@
     letter-spacing: 0.12em;
     transform-origin: center;
     pointer-events: none;
-    /* keep whole card clickable */
     white-space: nowrap;
     overflow: hidden;
-    /* hide extra text while track slides */
 }
 
-/* OUT OF STOCK – STATIC HORIZONTAL RIBBON */
 .ribbon-out-of-stock {
     bottom: 5%;
-    /* move to bottom */
-    top: auto !important;
-    /* override previous top position */
     transform: translateX(-50%) rotate(0deg);
     width: 100%;
-    /* cleaner horizontal ribbon */
     text-align: center;
     text-transform: uppercase;
     padding: 6px 0;
@@ -315,79 +316,82 @@
     color: #fff;
 }
 
-/* moving track for infinite loop */
 .ribbon-track {
     display: inline-flex;
     white-space: nowrap;
     will-change: transform;
-    -webkit-animation: ribbon-loop 10s linear infinite;
     animation: ribbon-loop 10s linear infinite;
 }
 
-/* stop animation for out of stock ribbon */
 .ribbon-out-of-stock .ribbon-track {
-    -webkit-animation: ribbon-loop 14s linear infinite;
     animation: ribbon-loop 4s linear infinite;
-    display: inline-flex;
-    padding: 0;
 }
 
-/* each text block – we duplicate them in HTML */
 .ribbon-track span {
     display: inline-block;
     padding-right: 40px;
-    /* spacing between repeats */
 }
 
-/* optional: pause on hover if you want */
 .ribbon:hover .ribbon-track {
-    -webkit-animation-play-state: paused;
     animation-play-state: paused;
-}
-
-/* perfect seamless loop */
-@-webkit-keyframes ribbon-loop {
-    from {
-        -webkit-transform: translateX(0);
-        transform: translateX(0);
-    }
-
-    to {
-        -webkit-transform: translateX(-50%);
-        transform: translateX(-50%);
-    }
 }
 
 @keyframes ribbon-loop {
     from {
-        -webkit-transform: translateX(0);
         transform: translateX(0);
     }
-
     to {
-        -webkit-transform: translateX(-50%);
         transform: translateX(-50%);
     }
 }
 
-.product-info-container {
+/* ================= PRODUCT DETAILS & PRICING UPDATED ================= */
+
+.product-details {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
     padding: 0 4px;
 }
 
 .product-details h5 {
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
-    margin-bottom: 4px;
-    color: #000;
+    margin-bottom: 0;
+    color: #111;
+    line-height: 1.3;
 }
 
-.product-price {
-    font-size: 14px;
-    color: #333;
+/* Wrapper for modern price layout */
+.product-price-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Original Price */
+.product-price-old {
+    font-size: 13px;
+    color: #9ca3af;
+    text-decoration: line-through;
+    margin: 0;
+}
+
+/* Discounted Price */
+.product-price-new {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
+}
+
+/* % OFF */
+.product-discount-percent {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    margin-left: 2px;
 }
 
 .product-actions {
@@ -519,9 +523,7 @@
     color: #000;
 }
 
-/* ============================================================= */
-/* ============ NEW: RESPONSIVE & MOBILE STYLES ================ */
-/* ============================================================= */
+/* ==================== RESPONSIVE & MOBILE ==================== */
 
 @media (max-width: 991px) {
     .products-page-container {
@@ -662,11 +664,19 @@
     }
 
     .product-details h5 {
+        font-size: 13.5px;
+    }
+
+    .product-price-new {
         font-size: 14px;
     }
 
-    .product-price {
-        font-size: 13px;
+    .product-price-old {
+        font-size: 12px;
+    }
+
+    .product-discount-percent {
+        font-size: 11px;
     }
 
     .product-actions i {
@@ -674,8 +684,7 @@
     }
 }
 
-/* ============ STYLES FOR DESKTOP ========== */
-
+/* DESKTOP FIXES */
 @media (min-width: 992px) {
     .mobile-filter-header {
         display: none;

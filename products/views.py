@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Product, ProductImage, Category
+from .models import Product, ProductVariant, Category
 from django.utils import timezone
 from datetime import date, timedelta
 from django.core.paginator import Paginator
@@ -9,6 +9,9 @@ from django.db.models import Min, Max, Sum, Count
 from django.db.models.functions import Coalesce
 from offer.models import Offer
 from django.http import JsonResponse
+from django.db.models import OuterRef,Subquery,F,Value,DecimalField,ExpressionWrapper,When,Case
+from django.db.models.functions import Coalesce, Greatest
+from offer.models import DiscountType,OfferType
 # Create your views here.
 """
 def home_page_view(request):
@@ -93,7 +96,6 @@ class HomePageView(TemplateView):
 class AboutView(TemplateView):
     template_name = "products/about.html"
 
-
 def product_list_view(request):
     categories = (
         Category.objects.filter(
@@ -109,6 +111,7 @@ def product_list_view(request):
         .prefetch_related("variants")
         .annotate(
             offer_price=Min("variants__offer_price"),
+            base_price=Min("variants__base_price"),
             stock=Coalesce(Min("variants__stock"), 0),
             total_stock=Coalesce(
                 Sum("variants__stock"), 0
@@ -116,6 +119,33 @@ def product_list_view(request):
             # replace NULL values with a default value (usually 0 or an empty string).
         )
         .order_by("?")
+    )
+    now = timezone.now()
+    # Subquery to find the products offer
+    product_offer_subquery = Offer.objects.filter(
+        products=OuterRef('id'),       
+        offer_type=OfferType.PRODUCT,
+        active=True,
+        start_date__lte=now,
+        end_date__gte=now
+    ).order_by('-discount_value').values('discount_value')[:1]
+    
+    category_offer_subquery = Offer.objects.filter(
+        categories=OuterRef('category'),
+        offer_type=OfferType.CATEGORY,
+        active=True,
+        start_date__lte=now,
+        end_date__gte=now
+    ).order_by('-discount_value').values('discount_value')[:1]
+    
+    products = products.annotate(
+        min_variant_price=Min("variants__offer_price"),
+        offer_prod_val=Coalesce(Subquery(product_offer_subquery), Value(0, output_field=DecimalField())),
+        offer_cat_val=Coalesce(Subquery(category_offer_subquery), Value(0, output_field=DecimalField())),
+    ).annotate(
+        best_discount=Greatest('offer_prod_val', 'offer_cat_val'),
+    ).annotate(
+        min_discounted_price=F('min_variant_price') - F('best_discount')
     )
 
     # Query Params
@@ -212,6 +242,11 @@ class ProductDetailedView(DetailView):
                 offer_price=Min("variants__offer_price"),
                 base_price=Min("variants__base_price"),
             )
+            .annotate(
+                best_discount_price=ExpressionWrapper(
+                    F('')
+                )
+            )
         )
 
     def get_context_data(self, **kwargs):
@@ -250,3 +285,36 @@ class ProductDetailedView(DetailView):
 def get_offers(request):
     offers_from_db = list(Offer.objects.filter(active=True,display_home=True).values_list('description',flat=True))
     return JsonResponse({'offers': offers_from_db})
+
+def samble(request):
+    now = timezone.now()
+    
+
+    product_offer_subquery = Offer.objects.filter(
+        products=OuterRef('id'),       
+        offer_type=OfferType.PRODUCT,
+        active=True,
+        start_date__lte=now,
+        end_date__gte=now
+    ).order_by('-discount_value').values('discount_value')[:1]
+    
+    category_offer_subquery = Offer.objects.filter(
+        categories=OuterRef('category'),
+        offer_type=OfferType.CATEGORY,
+        active=True,
+        start_date__lte=now,
+        end_date__gte=now
+    ).order_by('-discount_value').values('discount_value')[:1]
+
+    products = Product.objects.annotate(
+       best_product_offer_discount=Subquery(product_offer_subquery),
+       best_categories_offer_discount=Subquery(category_offer_subquery)
+    )
+
+
+    return render(request, 'products/sambel.html', {'products': products})
+
+
+'''
+OuterRef = To make a field from the main query available inside a Subquery expression.
+'''
