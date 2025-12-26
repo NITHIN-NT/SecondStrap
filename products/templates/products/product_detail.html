@@ -14,7 +14,11 @@
         <div class="product-detail-container">
             <div class="product-gallery">
                 <div class="gallery-main img-zoom-container">
-                    <span class="product-offer-tag">30% OFF</span>
+                   {% if product.annotated_variants.0.best_discount > 0 %}
+                        <span class="product-offer-tag" id="gallery-offer-tag">₹{{ product.annotated_variants.0.best_discount }} OFF</span>
+                    {% endif %}
+
+                    {% comment %} used to get the 0 th item in the queryset (list) annotated_variants[0] like this in template we user "."  {% endcomment %}
                     <img src="{{ product.image.url }}"
                          alt="{{ product.name }}"
                          id="main-product-image">
@@ -53,10 +57,12 @@
                 </div>
 
                 <div class="product-price-container">
-                    <del id="base-price-display">₹ {{ product.base_price }}</del>
-                    <span class="offer-price" id="offer-price-display">₹ {{ product.offer_price }}</span>
+                    <del id="base-price-display">₹ {{ product.annotated_variants.0.base_price }}</del>
+                    <span class="offer-price" id="offer-price-display">₹ {{ product.annotated_variants.0.discounted_price }}</span>
 
-                    <p> ₹200 OFF</p>
+                    <p id="discount-amount-display" style="display: {% if product.annotated_variants.0.best_discount > 0 %}inline{% else %}none{% endif %};"> 
+                        ₹{{ product.annotated_variants.0.best_discount }} OFF
+                    </p>
                 </div>
 
                 <div class="product-options">
@@ -65,13 +71,15 @@
                             <strong>Size:</strong> <span id="selected-size"></span>
                         </label>
                         <div class="option-buttons size-buttons">
-                            {% for size in sizes %}
+                            {% for variant in product.annotated_variants %}
                                 <button class="btn-size {% if forloop.first %}active{% endif %}"
-                                        data-size="{{ size.size }}"
-                                        data-offer-price="{{ size.offer_price }}"
-                                        data-base-price="{{ size.base_price }}"
-                                        data-stock="{{ size.stock }}"
-                                        data-variant-id="{{ size.id }}"> {{ size.size }}
+                                        data-size="{{ variant.size }}"
+                                        data-offer-price="{{ variant.discounted_price }}"
+                                        data-base-price="{{ variant.base_price }}"
+                                        data-discount="{{ variant.best_discount }}"
+                                        data-stock="{{ variant.stock }}"
+                                        data-variant-id="{{ variant.id }}"> 
+                                        {{ variant.size }}
                                 </button>
                             {% endfor %}
                         </div>
@@ -427,6 +435,26 @@
                 if (selectedSize) selectedSize.textContent = this.dataset.size;
                 if (this.dataset.offerPrice) offerPriceDisplay.textContent = `₹ ${this.dataset.offerPrice}`;
                 if (this.dataset.basePrice) basePriceDisplay.textContent = `₹ ${this.dataset.basePrice}`;
+
+                // Update Discount Labels
+                const discount = parseFloat(this.dataset.discount);
+                const discountDisplay = document.getElementById('discount-amount-display');
+                const galleryOfferTag = document.getElementById('gallery-offer-tag');
+
+                if (discount > 0) {
+                    const text = `₹${discount} OFF`;
+                    if (discountDisplay) {
+                        discountDisplay.textContent = text;
+                        discountDisplay.style.display = 'inline';
+                    }
+                    if (galleryOfferTag) {
+                        galleryOfferTag.textContent = text;
+                        galleryOfferTag.style.display = 'block';
+                    }
+                } else {
+                    if (discountDisplay) discountDisplay.style.display = 'none';
+                    if (galleryOfferTag) galleryOfferTag.style.display = 'none';
+                }
 
                 updateStockInfo(this);
             });

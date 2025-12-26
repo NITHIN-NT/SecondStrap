@@ -9,7 +9,7 @@ from django.db.models import Min, Max, Sum, Count
 from django.db.models.functions import Coalesce
 from offer.models import Offer
 from django.http import JsonResponse
-from django.db.models import OuterRef,Subquery,F,Value,DecimalField,ExpressionWrapper,When,Case
+from django.db.models import OuterRef,Subquery,F,Value,DecimalField,ExpressionWrapper,When,Case,Prefetch
 from django.db.models.functions import Coalesce, Greatest
 from offer.models import DiscountType,OfferType
 # Create your views here.
@@ -233,28 +233,47 @@ class ProductDetailedView(DetailView):
     slug_url_kwarg = "slug"
 
     def get_queryset(self):
-        query_set = super().get_queryset()
-        return (
-            query_set.filter(is_active=True)
-            .select_related("category")
-            .prefetch_related("variants__size", "images")
-            .annotate(
-                offer_price=Min("variants__offer_price"),
-                base_price=Min("variants__base_price"),
-            )
-            .annotate(
-                best_discount_price=ExpressionWrapper(
-                    F('')
-                )
-            )
+        now = timezone.now()
+        
+        # Subquery to find the products offer
+        product_offer_subquery = Offer.objects.filter(
+            products=OuterRef('product_id'),       
+            offer_type=OfferType.PRODUCT,
+            active=True,
+            start_date__lte=now,
+            end_date__gte=now
+        ).order_by('-discount_value').values('discount_value')[:1]
+        
+        category_offer_subquery = Offer.objects.filter(
+            categories=OuterRef('product__category'),
+            offer_type=OfferType.CATEGORY,
+            active=True,
+            start_date__lte=now,
+            end_date__gte=now
+        ).order_by('-discount_value').values('discount_value')[:1]
+        
+        # creating a custome queryset for variants with discount logic
+        
+        variants_queryset = ProductVariant.objects.annotate(
+            offer_prod_value = Coalesce(Subquery(product_offer_subquery),Value(0,output_field=DecimalField())),
+            offer_cate_value = Coalesce(Subquery(category_offer_subquery),Value(0,output_field=DecimalField()))
+        ).annotate(
+            best_discount = Greatest('offer_prod_value','offer_cate_value'),
+        ).annotate(
+            discounted_price = F('offer_price') - F('best_discount')
         )
+        return (
+            Product.objects.filter(is_active=True).select_related('category').prefetch_related( Prefetch("variants",queryset = variants_queryset,to_attr="annotated_variants"),"images")
+        )
+        
+        # the to_attr is store the data in a new list on the product object called annotated_variants
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = self.object
         all_images = product.images.all()
         context["images_list_limited"] = all_images[:4]
-        context["sizes"] = product.variants.all()
+        context["sizes"] = product.annotated_variants
         product_category = product.category
 
         related_products = (
@@ -279,10 +298,12 @@ class ProductDetailedView(DetailView):
         )
         context["related_products"] = related_products[:4]
         context["random_products"] = random_products[:4]
-
         return context
 
 def get_offers(request):
+    '''
+        This view is used to get the offers for the offer track
+    '''
     offers_from_db = list(Offer.objects.filter(active=True,display_home=True).values_list('description',flat=True))
     return JsonResponse({'offers': offers_from_db})
 

@@ -775,6 +775,58 @@
     text-decoration: none;
 }
 
+/* --- Price & Discount Container --- */
+.product-detail-page-wrapper .product-price-container {
+    display: flex;
+    align-items: center;
+    /* Aligns prices and tag vertically center */
+    gap: 12px;
+    margin: 15px 0 25px 0;
+    flex-wrap: wrap;
+    /* Ensures it doesn't break on very small screens */
+}
+
+/* The actual price the user pays */
+.product-detail-page-wrapper .product-price-container .offer-price {
+    font-size: 32px;
+    font-weight: 700;
+    color: #000;
+    letter-spacing: -0.5px;
+}
+
+/* The original price with strike-through */
+.product-detail-page-wrapper .product-price-container del {
+    font-size: 20px;
+    font-weight: 400;
+    color: #888;
+    text-decoration: line-through;
+}
+
+/* The "Amount OFF" Badge */
+.product-detail-page-wrapper #discount-amount-display {
+    background-color: #000000;
+    /* Professional Forest Green */
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+#offer-price-display,
+#base-price-display {
+    transition: color 0.2s ease-in-out;
+}
+
+/* If the price is very high, you might want to highlight the savings */
+#discount-amount-display {
+    box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 @keyframes zoomIn {
     from {
         transform: scale(0.8);
