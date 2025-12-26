@@ -8,7 +8,7 @@
 {% block content %}
 <div class="offers-page-container">
     <div class="offers-card">
-        
+
         <div class="offers-sticky-header">
             <div class="header-top">
                 <div class="titles">
@@ -32,12 +32,12 @@
             </div>
         </div>
 
+        <!-- TAB 1: ALL OFFERS -->
         <div id="tab-all" class="tab-content active">
             <div class="table-responsive">
                 <table class="offers-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Offer Name</th>
                             <th>Description</th>
                             <th>Type</th>
@@ -51,7 +51,6 @@
                     <tbody>
                         {% for offer in offers %}
                         <tr>
-                            <td>{{ offer.id }}</td>
                             <td><strong>{{ offer.name }}</strong></td>
                             <td class="truncate-text">{{ offer.description }}</td>
                             <td>{{ offer.get_offer_type_display }}</td>
@@ -62,7 +61,12 @@
                                     <span class="discount-pill">₹{{ offer.discount_value }} OFF</span>
                                 {% endif %}
                             </td>
-                            <td class="date-text">{{ offer.start_date|date:"Y-m-d" }} → {{ offer.end_date|date:"Y-m-d" }}</td>
+                            <td>{{ offer.start_date|date:"Y-m-d" }} → 
+                                {% if offer.end_date %}
+                                    {{ offer.end_date|date:"Y-m-d" }}
+                                {% else %}
+                                     Not Fixed
+                                {% endif %}</td>
                             <td>
                                 <span class="status-badge {% if offer.active %}active{% else %}inactive{% endif %}">
                                     {{ offer.active|yesno:"Active,Inactive" }}
@@ -74,9 +78,9 @@
                                 </span>
                             </td>
                             <td class="action-buttons text-center">
-                                <a href="{% url 'Offer_detailed_view' offer.id %}" class="action-btn view-btn"><i class="fa-solid fa-file-lines"></i> View</a>
-                                <a href="{% url 'edit_offer_view' offer.pk %}" class="action-btn edit-btn"><i class="fa-solid fa-pen-to-square"></i> Edit</a>
-                                <a href="#" class="action-btn delete-btn" onclick="showDeleteModal(event, {{ offer.id }})"><i class="fa-solid fa-trash-can"></i> Delete</a>
+                                <a href="{% url 'Offer_detailed_view' offer.id %}" class="action-btn view-btn"><i class="fa-solid fa-file-lines"></i></a>
+                                <a href="{% url 'edit_offer_view' offer.pk %}" class="action-btn edit-btn"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <a href="#" class="action-btn delete-btn" onclick="showDeleteModal(event, {{ offer.id }})"><i class="fa-solid fa-trash-can"></i></a>
                             </td>
                         </tr>
                         {% empty %}
@@ -87,75 +91,79 @@
             </div>
         </div>
 
+        <!-- TAB 2: PRODUCTS -->
         <div id="tab-products" class="tab-content">
             <div class="variant-list-container">
+                {% for offer in products_offers %}
                 
                 <div class="product-group">
-                    {% for offer in products_offers %}
                     <div class="group-header" onclick="toggleAccordion(this)">
+                        <div class="prod-meta">
+                            <span>{{offer.id}}</span>
+                        </div>
                         <div class="prod-main">
-                            <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                            <img src="https://via.placeholder.com/40" alt="prod">
-                            <div class="prod-info"><strong>{{offer.name}}</strong></div>
+                            <div class="prod-info"><strong>{{ offer.name }}</strong></div>
                         </div>
-                        <div class="prod-meta">2 Active Offers</div>
-                        <div class="prod-meta"><strong>4 variants</strong></div>
-                        <div class="prod-status active">Active</div>
-                        <div><button class="view-details-btn">View Product</button></div>
-                    </div>
-                    <div class="product-offers-list">
-                        <div class="offer-item-row">
-                            <span class="offer-indicator">↳</span>
-                            <span class="offer-tag-badge summer">Summer Blast</span>
-                            <span class="offer-benefit">20% OFF</span>
-                            <span class="offer-validity">Ends: Oct 25, 2025</span>
+                        <div class="prod-meta">
+                            {% if offer.active %}
+                                Active Offer
+                            {% else %}
+                                Ended Offer
+                            {% endif %}
                         </div>
-                        <div class="offer-item-row">
-                            <span class="offer-indicator">↳</span>
-                            <span class="offer-tag-badge exclusive">First Purchase</span>
-                            <span class="offer-benefit">₹200 OFF</span>
-                            <span class="offer-validity">Ends: Dec 31, 2025</span>
-                        </div>
+                        <div class="prod-status active">
+                            {% if offer.active %}
+                                Active
+                            {% else %}
+                                Ended
+                            {% endif %}</div>
+                        <button class="view-details-btn">
+                            <a href="{% url "Offer_detailed_view" offer.id %}">View</a>
+                        </button>
                     </div>
                 </div>
-
-               {% endfor %}
-
+                {% endfor %}
             </div>
         </div>
 
+        <!-- TAB 3: CATEGORIES -->
         <div id="tab-categories" class="tab-content">
             <div class="variant-list-container">
-                <div class="product-group">
-                    {% for offer in category_offers %}
-                        {% for cat in offer.categories.all %}
-                            <div class="group-header" onclick="toggleAccordion(this)">
-                                <div class="prod-main">
-                                    <i class="fa-solid fa-chevron-down accordion-icon"></i>
-                                    <div class="prod-info"><strong>Category: {{cat.name}}</strong></div>
-                                </div>
-                                <div class="prod-meta">1 Active Category Offer</div>
-                                <div class="prod-meta"><strong>15 Products Linked</strong></div>
-                                <div class="prod-status active">Active</div>
-                                <div><button class="view-details-btn">Manage Category</button></div>
+                {% for offer in category_offers %}
+                    {% for cat in offer.categories.all %}
+                    <div class="product-group">
+                        <div class="group-header" onclick="toggleAccordion(this)">
+                            <div class="prod-main">
+                                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                                <div class="prod-info"><strong>{{ cat.name }}</strong></div>
                             </div>
-                            <div class="product-offers-list">
-                                <div class="offer-item-row">
-                                    <span class="offer-indicator">↳</span>
-                                    <span class="offer-tag-badge generic">Flash Sale</span>
-                                    <span class="offer-benefit">15% OFF across category</span>
-                                    <span class="offer-validity">Ends: Oct 20, 2025</span>
-                                </div>
+                            <div class="prod-meta">Category Offer</div>
+                            <div class="prod-meta"><strong>{{ cat.products.count }} products</strong></div>
+                            <div class="prod-status active">Active</div>
+                            <button class="view-details-btn">
+                                <a href="{% url "edit_offer_view" offer.id %}">Manage</a>
+                            </button>
+                        </div>
+                        <div class="product-offers-list">
+                            <div class="offer-item-row">
+                                <span class="offer-benefit">₹{{ offer.discount_value }} OFF</span>
+                                <span class="offer-validity">Ends: {% if offer.end_date %}
+                                        {{ offer.end_date|date:"Y-m-d" }}
+                                        {% else %}
+                                        infinity
+                                    {% endif %}</span>
                             </div>
-                        {% endfor %}
+                        </div>
+                    </div>
                     {% endfor %}
-                </div>
+                {% endfor %}
             </div>
         </div>
 
     </div>
 </div>
 
+<!-- DELETE MODAL -->
 <div id="deleteModal" class="modal-overlay">
     <div class="modal-content">
         <h3>Confirm Deletion</h3>
@@ -172,8 +180,10 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <script>
-// --- Tab Switching ---
+
+// -------- Tab Logic --------
 function switchTab(event, tabName) {
     $('.tab-btn').removeClass('active');
     $(event.currentTarget).addClass('active');
@@ -181,90 +191,58 @@ function switchTab(event, tabName) {
     $('#tab-' + tabName).addClass('active');
 }
 
-// --- Accordion Logic ---
+// -------- Accordion --------
 function toggleAccordion(header) {
     const group = $(header).closest('.product-group');
     group.toggleClass('is-open');
-    group.find('.product-offers-list').slideToggle(300);
+    group.find('.product-offers-list').slideToggle(250);
 }
 
-// --- Delete Logic ---
-
-// Helper function to get CSRF token from cookies (Required for Django POST)
+// -------- DELETE OFFER --------
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+        const trimmed = cookie.trim();
+        if (trimmed.startsWith(name + '=')) {
+            return decodeURIComponent(trimmed.split('=')[1]);
         }
     }
-    return cookieValue;
+    return null;
 }
 
-function closeModal() { 
-    $('#deleteModal').fadeOut(200); 
+function closeModal() {
+    $('#deleteModal').fadeOut(200);
 }
 
-function showDeleteModal(event, offerId) {
-    event.preventDefault();
+function showDeleteModal(e, id) {
+    e.preventDefault();
     $('#deleteModal').css('display', 'flex').hide().fadeIn(200);
-    
-    // .off().on() prevents the event from firing multiple times if modal is opened twice
-    $('#confirmDeleteBtn').off('click').on('click', function() { 
-        executeDelete(offerId); 
-    });
+    $('#confirmDeleteBtn').off('click').on('click', () => executeDelete(id));
 }
 
-function executeDelete(offerId) {
-    const csrftoken = getCookie('csrftoken');
-    const deleteBtn = $('#confirmDeleteBtn');
-    
-    // Disable button to prevent double-clicks
-    deleteBtn.prop('disabled', true).text('Deleting...');
+function executeDelete(id) {
+    const btn = $('#confirmDeleteBtn');
+    btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
 
-    axios.post('{% url "Offer_delete_view" %}', 
-        { id: offerId }, 
-        {
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'Content-Type': 'application/json'
-            }
-        }
-    )
-    .then(response => {
-        if (response.data.status === "success") {
-            toastr.success(response.data.message || "Deleted successfully");
-            
-            // Wait 1 second so user sees the success message, then reload
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-            
-        } else {
-            toastr.error(response.data.message || "An error occurred");
-            deleteBtn.prop('disabled', false).text('Delete Permanently');
+    axios.post('{% url "Offer_delete_view" %}', { id }, {
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "Content-Type": "application/json",
         }
     })
-    .catch(error => {
-        console.error('Delete Error:', error);
-        toastr.error('Server error. Please try again.');
-        deleteBtn.prop('disabled', false).text('Delete Permanently');
+    .then(res => {
+        toastr.success(res.data.message || "Deleted!");
+        setTimeout(() => location.reload(), 900);
     })
-    .finally(() => {
-        closeModal();
-    });
+    .catch(() => {
+        toastr.error("Delete failed!");
+        btn.prop('disabled', false).text('Delete Permanently');
+    })
+    .finally(closeModal);
 }
 
-// Close modal if user clicks outside the content box
-$(window).on('click', function(event) {
-    if ($(event.target).is('#deleteModal')) {
-        closeModal();
-    }
+$(window).on('click', (e) => {
+    if ($(e.target).is('#deleteModal')) closeModal();
 });
 </script>
 {% endblock extraJs %}

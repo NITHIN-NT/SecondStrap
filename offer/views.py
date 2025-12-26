@@ -12,13 +12,13 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.db import transaction
 from django.views.decorators.http import require_POST
+from django.db.models import Count
 
 @superuser_required
 def offers_view(request):
     offers = Offer.objects.all()
     total_active_offers = offers.filter(active=True).count() 
-    products_offers = Product.objects.filter(is_active=True,offers__isnull=False).prefetch_related('offers')
-    print(products_offers)
+    # products_offers = Product.objects.filter(is_active=True,offers__isnull=False).prefetch_related('offers')
     products_offers = Offer.objects.filter(products__isnull=False).distinct()
     category_offers = Offer.objects.filter(categories__isnull=False).distinct()
     

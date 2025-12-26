@@ -3,14 +3,12 @@ from django.utils import timezone
 from django.conf import settings
 from userFolder.order.models import OrderMain
 class DiscountType(models.TextChoices):
-    PERCENTAGE = "percentage", "Percentage"
     FIXED_AMOUNT = "fixed_amount", "Fixed Amount"
 
 
 class OfferType(models.TextChoices):
     CATEGORY = "category", "Category Offer"
     PRODUCT = "product", "Product Offer"
-    AMOUNT_THRESHOLD = "amount_threshold", "Amount Threshold Offer"
 
 class Offer(models.Model):
     name = models.CharField(max_length=350)
@@ -22,7 +20,6 @@ class Offer(models.Model):
 
     products = models.ManyToManyField('products.Product', blank=True,related_name='offers')
     categories = models.ManyToManyField('products.Category', blank=True,related_name='offers')
-    min_order_amount = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)

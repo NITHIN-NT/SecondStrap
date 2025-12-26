@@ -35,13 +35,13 @@ urlpatterns = [
     path('order/update/<str:order_id>/',views.admin_order_status_update,name='order_status_update'),
     path('order/manage-return/<int:item_id>/<str:order_id>/',views.manage_return_request,name='manage_return_item'),
     
-    path('offer-coupons/',offers_view,name='offers_view'),
-    path('offer-coupons/manage-offer/',manage_offer_view,name='manage_offer_view'),
-    path('offer-coupons/manage-offer/edit/<int:pk>',manage_offer_view,name='edit_offer_view'),
-    path('offer-coupons/<int:pk>',OfferDetailedView.as_view(),name='Offer_detailed_view'),
-    path('offer-coupons/delete/',delete_offer_view,name='Offer_delete_view'),
-    path('offer-coupons/manage-offer/products/search/',search_products,name='search_products'),
-    path('offer-coupons/manage-offer/categories/search/',search_category,name='search_categories'),
+    path('offer/',offers_view,name='offers_view'),
+    path('offer/manage-offer/',manage_offer_view,name='manage_offer_view'),
+    path('offer/manage-offer/edit/<int:pk>',manage_offer_view,name='edit_offer_view'),
+    path('offer/<int:pk>',OfferDetailedView.as_view(),name='Offer_detailed_view'),
+    path('offer/delete/',delete_offer_view,name='Offer_delete_view'),
+    path('offer/manage-offer/products/search/',search_products,name='search_products'),
+    path('offer/manage-offer/categories/search/',search_category,name='search_categories'),
 ]
 
 if settings.DEBUG:

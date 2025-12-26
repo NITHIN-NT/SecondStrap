@@ -50,9 +50,6 @@
                            value="{{ form.name.value|default_if_none:'' }}">
                     {% if form.errors.name %}<div class="field-error">{{ form.errors.name|striptags }}</div>{% endif %}
                 </div>
-
-
-                
             </div>
 
             <div class="form-grid">
@@ -62,14 +59,12 @@
                         <option value="">-- Select Type --</option>
                         <option value="product" {% if form.offer_type.value == "product" %}selected{% endif %}>Product Offer</option>
                         <option value="category" {% if form.offer_type.value == "category" %}selected{% endif %}>Category Offer</option>
-                        <option value="amount_threshold" {% if form.offer_type.value == "amount_threshold" %}selected{% endif %}>Order Amount Offer</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Discount Type</label>
                     <select name="discount_type">
-                        <option value="percentage" {% if form.discount_type.value == "percentage" %}selected{% endif %}>Percentage (%)</option>
                         <option value="fixed_amount" {% if form.discount_type.value == "fixed_amount" %}selected{% endif %}>Fixed Amount (₹)</option>
                     </select>
                 </div>
@@ -106,14 +101,6 @@
                     <ul id="selectedCategories" class="chips-list"></ul>
                 </div>
             </div>
-                                
-            <div id="amountSection" class="conditional-section" style="display:none;">
-                <div class="form-group">
-                    <label>Minimum Order Amount</label>
-                    <input type="number" name="min_order_amount" step="0.01" value="{{ form.min_order_amount.value|default_if_none:'' }}">
-                </div>
-            </div>
-
 
             <div class="form-grid">
                 <div class="form-group">
