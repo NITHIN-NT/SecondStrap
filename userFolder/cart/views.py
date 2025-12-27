@@ -10,6 +10,9 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from offer.selectors import get_active_offer_subqueries_cart
+from django.db.models.functions import Coalesce,Greatest
+from django.db.models import Value,F,Q,DecimalField,Case,When,ExpressionWrapper
 # Create your views here.
 class CartView(LoginRequiredMixin, ListView):
     template_name = "cart/cart.html"
@@ -20,14 +23,71 @@ class CartView(LoginRequiredMixin, ListView):
         user = self.request.user
 
         cart, created = Cart.objects.get_or_create(user=user)
-        return cart.items.select_related("variant__product").order_by("-item_added")
+        
+        product_offer_subquery, category_offer_subquery = get_active_offer_subqueries_cart()
+
+        return cart.items.select_related(
+            "variant",
+            "variant__product",
+            "variant__product__category",
+            "variant__size"
+        ).annotate(
+            product_base_price = F('variant__base_price'),
+            product_offer_price =F('variant__offer_price'),
+            
+            offer_prod_val=Coalesce(product_offer_subquery, Value(0, output_field=DecimalField())),
+            offer_cat_val=Coalesce(category_offer_subquery, Value(0, output_field=DecimalField())),
+            
+            best_discount = Greatest("offer_prod_val","offer_cat_val"),
+            
+            final_price = Case(
+                When(
+                    Q(best_discount__gt=0),
+                    then=F('product_base_price') - F('best_discount'),
+                ),
+                When(
+                    Q(product_offer_price__isnull=False),
+                    then=F('product_offer_price'),
+                ),
+                default=F('product_offer_price'),
+                output_field=DecimalField(),
+            ),
+            
+            actual_discount = Case(
+                When(
+                    Q(best_discount__gt=0),
+                    then=F('best_discount')
+                ),
+                When(
+                    Q(product_offer_price__isnull=False),
+                    then=F('product_base_price') - F('product_offer_price')
+                ),
+                default=F('product_base_price'),
+                output_field=DecimalField()
+            ),
+            
+            # Calculate line total (final_price * quantity)
+            product_total=ExpressionWrapper(
+                F('final_price') * F('quantity'),
+                output_field=DecimalField()
+            ),
+
+            subtotal = ExpressionWrapper(
+                F('product_base_price') * F('quantity'),
+                output_field = DecimalField()
+            )
+        ).order_by("-item_added")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        cart, _ = Cart.objects.get_or_create(user=self.request.user)
+        cart, created = Cart.objects.get_or_create(user=self.request.user)     
+        cartitems = context['cartitems']   
+        
 
-        context["total_price"] = cart.total_price
+        context["subtotal"] = sum(item.subtotal for item in cartitems)
+        context["total_price"] = sum(item.product_total for item in cartitems)
         context["total_quantity"] = cart.total_quantity
+        context["total_savings"] = sum((item.actual_discount for item in cartitems))
 
         return context
 
@@ -92,6 +152,8 @@ def cart_item_add(request):
             status=400,
         )
 
+    # check the price if there is any discount available or not.
+    
     # Get or create the user's cart
     cart, _ = Cart.objects.get_or_create(user=request.user)
 

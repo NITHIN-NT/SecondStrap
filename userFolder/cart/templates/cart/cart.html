@@ -25,14 +25,15 @@
         {% for item in cartitems %}
         <div class="cart-row"
              data-item-id="{{ item.id }}"
-             data-price="{{ item.variant.offer_price }}"
-             data-stock="{{ item.variant.stock }}">
-                {% comment %} <h1>{{item.variant.product.is_active}}</h1> {% endcomment %}
+             data-price="{{ item.final_price }}"
+             data-stock="{{ item.variant.stock }}"
+             data-discount="{{ item.actual_discount }}">
+            
             <div class="cart-product">
                 <div class="product-img-wrapper {% if item.variant.stock <= 0 %}faded{% endif %}">
                     <img src="{{ item.variant.product.image.url }}" alt="Product">
                     
-                    {% if item.variant.stock <= 0 or item.variant.product.is_active == False%}
+                    {% if item.variant.stock <= 0 or item.variant.product.is_active == False %}
                         <div class="oos-overlay">
                             <span class="oos-text">Out of Stock</span>
                         </div>
@@ -42,6 +43,12 @@
                 <div class="cart-info">
                     <h3>{{ item.variant.product.name }}</h3>
                     <p class="size">Size: {{ item.size }}</p>
+
+                    {% if item.actual_discount > 0 %}
+                        <p class="discount-badge" style="color: #000000ff; font-weight: 600; font-size: 0.9rem;">
+                            You Save: ₹{{ item.actual_discount|floatformat:0 }}
+                        </p>
+                    {% endif %}
                     
                     <a href="#" class="remove" data-item-id="{{ item.id }}">
                         <span>🗑️</span> Remove
@@ -50,24 +57,25 @@
             </div>
             
             <div class="cart-price">
-                ₹{{ item.variant.offer_price }}
-                {% if item.variant.base_price %}
-                <p><del>₹{{ item.variant.base_price }}</del></p>
+                <span class="current-price">₹{{ item.final_price|floatformat:2 }}</span>
+                
+                {% if item.actual_discount > 0 %}
+                    <p><del style="color: #999; font-size: 0.9rem;">₹{{ item.product_base_price|floatformat:2 }}</del></p>
                 {% endif %}
             </div>
             
             <div class="cart-qty" data-item-id="{{ item.id }}" data-stock="{{ item.variant.stock }}">
-                {% if item.variant.stock <=  0 or item.variant.product.is_active == False%}
-                <span class="qty-value">{{ item.quantity }}</span>
-                {% else %}
-                <button class="qty-btn minus" data-item-id="{{ item.id }}">−</button>
+                {% if item.variant.stock <= 0 or item.variant.product.is_active == False %}
                     <span class="qty-value">{{ item.quantity }}</span>
-                <button class="qty-btn plus" data-item-id="{{ item.id }}">+</button>
+                {% else %}
+                    <button class="qty-btn minus" data-item-id="{{ item.id }}">−</button>
+                    <span class="qty-value">{{ item.quantity }}</span>
+                    <button class="qty-btn plus" data-item-id="{{ item.id }}">+</button>
                 {% endif %}
             </div>
             
             <div class="cart-subtotal">
-                ₹{{ item.subtotal }}
+                ₹{{ item.product_total|floatformat:2 }}
             </div>
             
         </div>
@@ -76,13 +84,13 @@
         <div class="cart-summary-left">
             <p>
                 <strong>Subtotal:</strong>
-                <span id="summary-left-subtotal">₹{{ total_price }}</span>
+                <span id="summary-left-subtotal">₹{{ total_price|floatformat:2 }}</span>
             </p>
             <small>Shipping and taxes calculated at checkout</small>
             
             <div class="cart-buttons">
                 <a href="{% url 'products_page_user' %}" class="btn-light">Continue Shopping</a>
-                <a href="{% url "checkout" %}" class="btn-dark">Proceed to Checkout</a>
+                <a href="{% url 'checkout' %}" class="btn-dark">Proceed to Checkout</a>
             </div>
         </div>
     </div>
@@ -95,8 +103,13 @@
             <div>
                 <strong>{{ item.variant.product.name }}</strong>
                 <p class="summary-qty">Qty: {{ item.quantity }}</p>
+                {% if item.actual_discount > 0 %}
+                    <p class="summary-savings" style="color: #28a745; font-size: 0.85rem;">
+                        Save: ₹{{ item.actual_discount|floatformat:0 }} each
+                    </p>
+                {% endif %}
             </div>
-            <span class="summary-subtotal">₹{{ item.subtotal }}</span>
+            <span class="summary-subtotal">₹{{ item.product_total|floatformat:2 }}</span>
         </div>
         {% endfor %}
         
@@ -104,14 +117,21 @@
         
         <div class="summary-item">
             <span>Subtotal</span>
-            <span id="summary-right-subtotal">₹{{ total_price }}</span>
+            <span id="summary-right-subtotal">₹{{ subtotal|floatformat:2 }}</span>
         </div>
+        
+        {% if total_savings > 0 %}
+        <div class="summary-item" style="color: #28a745;">
+            <span>Total Savings</span>
+            <span id="summary-right-savings">−₹{{ total_savings|floatformat:2 }}</span>
+        </div>
+        {% endif %}
             
         <hr>
             
         <div class="summary-total">
             <strong>Total</strong>
-            <strong id="summary-right-total">₹{{ total_price }}</strong>
+            <strong id="summary-right-total">₹{{ total_price|floatformat:2 }}</strong>
         </div>
     </div>
         
@@ -125,7 +145,7 @@
     {% if user.is_authenticated %}
         <a href="{% url 'products_page_user' %}" class="btn-dark">Continue Shopping</a>
     {% else %}
-        <a href="{% url 'login' %}" class="btn-dark">Login Continue</a>   
+        <a href="{% url 'login' %}" class="btn-dark">Login to Continue</a>   
     {% endif %}
 </div>
 {% endif %}
@@ -137,39 +157,76 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    // ========================================
     // 1. CONFIGURATION
+    // ========================================
     const USER_LIMIT = 10; 
 
+    // ========================================
     // 2. HELPER FUNCTIONS
+    // ========================================
+    
     function formatCurrency(amount) {
-        return "₹" + Number(amount).toLocaleString("en-IN");
+        const num = Number(amount);
+        if (isNaN(num)) return "₹0";
+        return "₹" + num.toFixed(2);
     }
 
     function recalcTotals() {
         const rows = document.querySelectorAll(".cart-row");
         let total = 0;
+        let totalSavings = 0;
 
         rows.forEach(row => {
+            // Calculate subtotal
             const subtotalEl = row.querySelector(".cart-subtotal");
             if (!subtotalEl) return;
-            const text = subtotalEl.textContent || "";
-            const cleaned = text.replace(/[^\d.]/g, "");
-            const value = parseFloat(cleaned) || 0;
-            total += value;
+            
+            const subtotalText = subtotalEl.textContent || "";
+            const subtotalCleaned = subtotalText.replace(/[^\d.]/g, "");
+            const subtotalValue = parseFloat(subtotalCleaned) || 0;
+            total += subtotalValue;
+            
+            // Calculate savings for this row
+            const discount = parseFloat(row.getAttribute("data-discount")) || 0;
+            const qtySpan = row.querySelector(".qty-value");
+            const qty = parseInt(qtySpan.textContent, 10) || 1;
+            totalSavings += discount * qty;
         });
 
-        const leftSubtotal  = document.getElementById("summary-left-subtotal");
+        // Update all total displays
+        const leftSubtotal = document.getElementById("summary-left-subtotal");
         const rightSubtotal = document.getElementById("summary-right-subtotal");
-        const rightTotal    = document.getElementById("summary-right-total");
+        const rightTotal = document.getElementById("summary-right-total");
+        const leftSavings = document.getElementById("summary-left-savings");
+        const rightSavings = document.getElementById("summary-right-savings");
 
         const fmtTotal = formatCurrency(total);
+        const fmtSavings = formatCurrency(totalSavings);
 
-        if (leftSubtotal)  leftSubtotal.textContent  = fmtTotal;
+        if (leftSubtotal) leftSubtotal.textContent = fmtTotal;
         if (rightSubtotal) rightSubtotal.textContent = fmtTotal;
-        if (rightTotal)    rightTotal.textContent    = fmtTotal;
+        if (rightTotal) rightTotal.textContent = fmtTotal;
+        
+        if (totalSavings > 0) {
+            if (leftSavings) {
+                leftSavings.textContent = fmtSavings;
+                leftSavings.parentElement.style.display = 'block';
+            }
+            if (rightSavings) {
+                rightSavings.textContent = "−" + fmtSavings;
+                rightSavings.parentElement.style.display = 'flex';
+            }
+        } else {
+            if (leftSavings) leftSavings.parentElement.style.display = 'none';
+            if (rightSavings) rightSavings.parentElement.style.display = 'none';
+        }
     }
 
+    // ========================================
     // 3. CSRF SETUP
+    // ========================================
+    
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {
@@ -184,10 +241,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return cookieValue;
     }
+    
     const csrftoken = getCookie("csrftoken");
     axios.defaults.headers.common["X-CSRFToken"] = csrftoken;
 
+    // ========================================
     // 4. AUTOMATIC STOCK CHECK ON LOAD
+    // ========================================
+    
     function checkStockLimitsOnLoad() {
         const rows = document.querySelectorAll(".cart-row");
         let changesMade = false;
@@ -201,29 +262,38 @@ document.addEventListener("DOMContentLoaded", function () {
             const effectiveLimit = Math.min(stock, USER_LIMIT);
 
             if (currentQty > effectiveLimit) {
-                const newQty = effectiveLimit; 
+                const newQty = effectiveLimit > 0 ? effectiveLimit : 0;
 
-                // A. Visual Updates
+                // Update quantity display
                 qtySpan.textContent = newQty;
                 
+                // Update subtotal
                 const unitPrice = parseFloat(row.getAttribute("data-price")) || 0;
                 const newSubtotal = unitPrice * newQty;
                 const rowSubtotalEl = row.querySelector(".cart-subtotal");
                 if (rowSubtotalEl) rowSubtotalEl.textContent = formatCurrency(newSubtotal);
 
+                // Update summary sidebar
                 const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
                 if (summaryItem) {
                     const qtyTextEl = summaryItem.querySelector(".summary-qty");
-                    const sumSubEl  = summaryItem.querySelector(".summary-subtotal");
-                    if (qtyTextEl) qtyTextEl.innerHTML = qtyTextEl.innerHTML.replace(/Qty: \d+/, `Qty: ${newQty}`);
-                    if (sumSubEl)  sumSubEl.textContent = formatCurrency(newSubtotal);
+                    const sumSubEl = summaryItem.querySelector(".summary-subtotal");
+                    
+                    if (qtyTextEl) {
+                        qtyTextEl.textContent = `Qty: ${newQty}`;
+                    }
+                    if (sumSubEl) {
+                        sumSubEl.textContent = formatCurrency(newSubtotal);
+                    }
                 }
 
-                // C. Sync Backend (Quietly)
-                axios.post("{% url 'update_cart_item_quantity' %}", {
-                    item_id: itemId,
-                    quantity: newQty
-                }).catch(err => console.error("Auto-correction sync failed", err));
+                // Sync with backend silently
+                if (newQty > 0) {
+                    axios.post("{% url 'update_cart_item_quantity' %}", {
+                        item_id: itemId,
+                        quantity: newQty
+                    }).catch(err => console.error("Auto-correction sync failed", err));
+                }
 
                 changesMade = true;
             }
@@ -234,11 +304,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Run stock check on page load
     checkStockLimitsOnLoad();
 
-    // 5. EVENT LISTENERS
-
-    // REMOVE ITEM
+    // ========================================
+    // 5. REMOVE ITEM
+    // ========================================
+    
     document.querySelectorAll(".remove").forEach(btn => {
         btn.addEventListener("click", function (e) {
             e.preventDefault();
@@ -248,38 +320,46 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => {
                 const data = response.data;
                 if (data.status === "success") {
-                    // Removed Toastr, just updating UI
+                    // Remove cart row
                     const row = document.querySelector(`.cart-row[data-item-id="${itemId}"]`);
-                    if (row && row.parentNode) row.parentNode.removeChild(row);
+                    if (row && row.parentNode) row.parentNode.remove();
                     
+                    // Remove summary item
                     const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
-                    if (summaryItem && summaryItem.parentNode) summaryItem.parentNode.removeChild(summaryItem);
+                    if (summaryItem && summaryItem.parentNode) summaryItem.parentNode.remove();
 
+                    // Recalculate totals
                     recalcTotals();
                     
+                    // Reload if cart is empty
                     const remainingRows = document.querySelectorAll(".cart-row");
-                    if (remainingRows.length === 0) location.reload();
+                    if (remainingRows.length === 0) {
+                        location.reload();
+                    }
                 } else {
                     console.error(data.message);
                 }
             })
             .catch(error => {
-                console.error("Server error", error);
+                console.error("Server error while removing item", error);
             });
         });
     });
 
-    // PLUS / MINUS HANDLER
+    // ========================================
+    // 6. QUANTITY INCREASE/DECREASE
+    // ========================================
+    
     document.addEventListener("click", function (e) {
-        const plusBtn  = e.target.closest(".qty-btn.plus");
+        const plusBtn = e.target.closest(".qty-btn.plus");
         const minusBtn = e.target.closest(".qty-btn.minus");
         if (!plusBtn && !minusBtn) return;
 
         e.preventDefault();
 
-        const btn    = plusBtn || minusBtn;
+        const btn = plusBtn || minusBtn;
         const itemId = btn.getAttribute("data-item-id");
-        const row    = document.querySelector(`.cart-row[data-item-id="${itemId}"]`);
+        const row = document.querySelector(`.cart-row[data-item-id="${itemId}"]`);
         if (!row) return;
 
         const qtySpan = row.querySelector(".qty-value");
@@ -290,42 +370,43 @@ document.addEventListener("DOMContentLoaded", function () {
         const stockAttr = row.getAttribute("data-stock") || "0";
         const stock = parseInt(stockAttr, 10);
 
+        // Don't allow quantity below 1
         if (newQty < 1) return;
 
         const effectiveLimit = Math.min(stock, USER_LIMIT);
 
-        if (plusBtn) {
-            if (newQty > effectiveLimit) {
-                // Limit reached - silently return (no toast)
-                console.log("Stock limit reached");
-                return;
-            }
+        // Check if we're hitting the limit
+        if (plusBtn && newQty > effectiveLimit) {
+            console.log("Stock limit reached");
+            return;
         }
 
         // Update UI immediately
         qtySpan.textContent = newQty;
+        
         const unitPrice = parseFloat(row.getAttribute("data-price")) || 0;
+        const discount = parseFloat(row.getAttribute("data-discount")) || 0;
         const newSubtotal = unitPrice * newQty;
 
+        // Update row subtotal
         const rowSubtotalEl = row.querySelector(".cart-subtotal");
         if (rowSubtotalEl) rowSubtotalEl.textContent = formatCurrency(newSubtotal);
 
+        // Update summary sidebar
         const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
         if (summaryItem) {
             const qtyTextEl = summaryItem.querySelector(".summary-qty");
-            const sumSubEl  = summaryItem.querySelector(".summary-subtotal");
+            const sumSubEl = summaryItem.querySelector(".summary-subtotal");
 
             if (qtyTextEl) {
-                let text = qtyTextEl.textContent;
-                if (text.includes("Qty:")) {
-                    qtyTextEl.innerHTML = text.replace(/Qty:\s*\d+/, `Qty: ${newQty}`);
-                } else {
-                     qtyTextEl.textContent = `Qty: ${newQty}`;
-                }
+                qtyTextEl.textContent = `Qty: ${newQty}`;
             }
-            if (sumSubEl) sumSubEl.textContent = formatCurrency(newSubtotal);
+            if (sumSubEl) {
+                sumSubEl.textContent = formatCurrency(newSubtotal);
+            }
         }
 
+        // Recalculate all totals
         recalcTotals();
 
         // Sync with backend
@@ -336,15 +417,16 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => {
             const data = response.data;
             if (data.status === "success") {
+                // Optionally update with server-calculated totals
                 if (data.cart_total !== undefined) {
-                    const leftSubtotal  = document.getElementById("summary-left-subtotal");
+                    const leftSubtotal = document.getElementById("summary-left-subtotal");
                     const rightSubtotal = document.getElementById("summary-right-subtotal");
-                    const rightTotal    = document.getElementById("summary-right-total");
+                    const rightTotal = document.getElementById("summary-right-total");
                     
                     const fmt = formatCurrency(data.cart_total);
-                    if (leftSubtotal)  leftSubtotal.textContent  = fmt;
+                    if (leftSubtotal) leftSubtotal.textContent = fmt;
                     if (rightSubtotal) rightSubtotal.textContent = fmt;
-                    if (rightTotal)    rightTotal.textContent    = fmt;
+                    if (rightTotal) rightTotal.textContent = fmt;
                 }
             } else if (data.status === "error") {
                 console.error(data.message);

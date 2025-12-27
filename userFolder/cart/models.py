@@ -11,10 +11,6 @@ class Cart(models.Model):
     def __str__(self):
         return f"Cart {self.id} for {self.user.first_name}"
 
-    # Geting total_price value from this
-    @property
-    def total_price(self):
-        return sum(item.subtotal for item in self.items.all())
 
     # Geting total_quantity value from this
     @property
@@ -41,11 +37,6 @@ class CartItems(models.Model):
     def price(self):
         return self.variant.offer_price
 
-    # Finding the subtotal of the product
-    @property
-    def subtotal(self):
-        return self.price * self.quantity
-    
     def save(self, *args, **kwargs):
         if self.quantity > self.variant.stock:
             self.quantity = self.variant.stock
