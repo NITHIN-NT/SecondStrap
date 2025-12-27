@@ -14,7 +14,7 @@
         <div class="product-detail-container">
             <div class="product-gallery">
                 <div class="gallery-main img-zoom-container">
-                   {% if product.annotated_variants.0.best_discount > 0 %}
+                   {% if product.annotated_variants and product.annotated_variants.0.best_discount > 0  %}
                         <span class="product-offer-tag" id="gallery-offer-tag">₹{{ product.annotated_variants.0.best_discount }} OFF</span>
                     {% endif %}
 
@@ -55,14 +55,22 @@
                     </div>
                     <span class="review-count">(128 reviews)</span>
                 </div>
-
                 <div class="product-price-container">
-                    <del id="base-price-display">₹ {{ product.annotated_variants.0.base_price }}</del>
-                    <span class="offer-price" id="offer-price-display">₹ {{ product.annotated_variants.0.discounted_price }}</span>
-
-                    <p id="discount-amount-display" style="display: {% if product.annotated_variants.0.best_discount > 0 %}inline{% else %}none{% endif %};"> 
-                        ₹{{ product.annotated_variants.0.best_discount }} OFF
-                    </p>
+                    {% if product.annotated_variants.0.actual_discount > 0 %}
+                        <del id="base-price-display" class="old-price">
+                            ₹ {{ product.annotated_variants.0.base_price }}
+                        </del>
+                        <span class="offer-price" id="offer-price-display">
+                            ₹ {{ product.annotated_variants.0.discounted_price }}
+                        </span>
+                        <p id="discount-amount-display" class="discount-info">
+                           You save ₹{{ product.annotated_variants.0.actual_discount }} !!
+                        </p>
+                    {% else %}
+                        <span class="offer-price" id="offer-price-display">
+                            ₹ {{ product.annotated_variants.0.base_price }}
+                        </span>
+                    {% endif %}
                 </div>
 
                 <div class="product-options">
@@ -442,7 +450,7 @@
                 const galleryOfferTag = document.getElementById('gallery-offer-tag');
 
                 if (discount > 0) {
-                    const text = `₹${discount} OFF`;
+                    const text = `You save ₹ ${discount} !!`;
                     if (discountDisplay) {
                         discountDisplay.textContent = text;
                         discountDisplay.style.display = 'inline';

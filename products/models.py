@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from autoslug import AutoSlugField
 from decimal import Decimal
 from django.db.models import Q
-from datetime import timezone
+from django.utils import timezone
 
 def product_image_upload_to(instance, filename):
     return f"products/{instance.slug}/{filename}"
@@ -78,7 +78,6 @@ class ProductVariant(models.Model):
     offer_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    discount_price = models.DecimalField(max_digits=10,decimal_places=2,default=0)
     stock = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -103,11 +102,7 @@ class ProductVariant(models.Model):
         price = self.offer_price
 
         if offer and offer.active:
-            if offer.discount_type == "percentage":
-                discount = (price * offer.discount_value) / Decimal("100")
-                price -= discount
-
-            elif offer.discount_type == "fixed_amount":
+            if offer.discount_type == "fixed_amount":
                 price -= offer.discount_value
 
         return max(price, Decimal("0.00")) 

@@ -9,9 +9,10 @@ from django.db.models import Min, Max, Sum, Count
 from django.db.models.functions import Coalesce
 from offer.models import Offer
 from django.http import JsonResponse
-from django.db.models import OuterRef,Subquery,F,Value,DecimalField,ExpressionWrapper,When,Case,Prefetch
+from django.db.models import OuterRef,Subquery,F,Value,DecimalField,When,Case,Prefetch,Q
 from django.db.models.functions import Coalesce, Greatest
-from offer.models import DiscountType,OfferType
+from offer.models import OfferType
+from offer.selectors import get_active_offer_subqueries
 # Create your views here.
 """
 def home_page_view(request):
@@ -120,32 +121,19 @@ def product_list_view(request):
         )
         .order_by("?")
     )
-    now = timezone.now()
-    # Subquery to find the products offer
-    product_offer_subquery = Offer.objects.filter(
-        products=OuterRef('id'),       
-        offer_type=OfferType.PRODUCT,
-        active=True,
-        start_date__lte=now,
-        end_date__gte=now
-    ).order_by('-discount_value').values('discount_value')[:1]
     
-    category_offer_subquery = Offer.objects.filter(
-        categories=OuterRef('category'),
-        offer_type=OfferType.CATEGORY,
-        active=True,
-        start_date__lte=now,
-        end_date__gte=now
-    ).order_by('-discount_value').values('discount_value')[:1]
+    # Here we are just calling the function because i need all the products offers
+    product_offer_subquery, category_offer_subquery = get_active_offer_subqueries()
     
     products = products.annotate(
-        min_variant_price=Min("variants__offer_price"),
-        offer_prod_val=Coalesce(Subquery(product_offer_subquery), Value(0, output_field=DecimalField())),
-        offer_cat_val=Coalesce(Subquery(category_offer_subquery), Value(0, output_field=DecimalField())),
+        min_variant_price=Min("variants__base_price"),
+        offer_prod_val=Coalesce(product_offer_subquery, Value(0, output_field=DecimalField())),
+        offer_cat_val=Coalesce(category_offer_subquery, Value(0, output_field=DecimalField())),
     ).annotate(
         best_discount=Greatest('offer_prod_val', 'offer_cat_val'),
     ).annotate(
-        min_discounted_price=F('min_variant_price') - F('best_discount')
+        min_discounted_price=Greatest(F('min_variant_price') - F('best_discount'),
+        Value(0), output_field=DecimalField(max_digits=10, decimal_places=2))
     )
 
     # Query Params
@@ -158,9 +146,9 @@ def product_list_view(request):
     if selected_sort == "newest":
         products = products.order_by("-created_at")
     elif selected_sort == "price-low-high":
-        products = products.order_by("variants__offer_price")
+        products = products.order_by("min_variant_price")
     elif selected_sort == "price-high-low":
-        products = products.order_by("-variants__offer_price")
+        products = products.order_by("-min_variant_price")
     elif selected_sort == "name-asc":
         products = products.order_by("name")
     elif selected_sort == "name-desc":
@@ -176,13 +164,13 @@ def product_list_view(request):
     if selected_price:
         try:
             price_limit = float(selected_price)
-            products = products.filter(variants__offer_price__lte=price_limit)
+            products = products.filter(min_variant_price__lte=price_limit).distinct()
         except ValueError:
             pass
 
     # Search Filter
     if search:
-        products = products.filter(name__icontains=search)
+        products = products.filter(name__icontains=search).distinct()
 
     # Price Range
     price_range = Product.objects.filter(is_active=True).aggregate(
@@ -233,37 +221,59 @@ class ProductDetailedView(DetailView):
     slug_url_kwarg = "slug"
 
     def get_queryset(self):
-        now = timezone.now()
-        
-        # Subquery to find the products offer
-        product_offer_subquery = Offer.objects.filter(
-            products=OuterRef('product_id'),       
-            offer_type=OfferType.PRODUCT,
-            active=True,
-            start_date__lte=now,
-            end_date__gte=now
-        ).order_by('-discount_value').values('discount_value')[:1]
-        
-        category_offer_subquery = Offer.objects.filter(
-            categories=OuterRef('product__category'),
-            offer_type=OfferType.CATEGORY,
-            active=True,
-            start_date__lte=now,
-            end_date__gte=now
-        ).order_by('-discount_value').values('discount_value')[:1]
-        
-        # creating a custome queryset for variants with discount logic
-        
-        variants_queryset = ProductVariant.objects.annotate(
-            offer_prod_value = Coalesce(Subquery(product_offer_subquery),Value(0,output_field=DecimalField())),
-            offer_cate_value = Coalesce(Subquery(category_offer_subquery),Value(0,output_field=DecimalField()))
-        ).annotate(
-            best_discount = Greatest('offer_prod_value','offer_cate_value'),
-        ).annotate(
-            discounted_price = F('offer_price') - F('best_discount')
+        product_offer_subquery, category_offer_subquery = get_active_offer_subqueries(
+            product_ref='product',
+            category_ref='product__category'
         )
+
+        variants_queryset = ProductVariant.objects.annotate(
+            offer_prod_value=Coalesce(
+                Subquery(product_offer_subquery), 
+                Value(0, output_field=DecimalField())
+            ),
+            offer_cate_value=Coalesce(
+                Subquery(category_offer_subquery), 
+                Value(0, output_field=DecimalField())
+            )
+        ).annotate(
+            best_discount=Greatest('offer_prod_value', 'offer_cate_value'),
+        ).annotate(
+            # Calculate discount from offer_price if it exists, otherwise from base_price
+            discounted_price=Case(
+                When(
+                    Q(best_discount__gt=0),
+                    then=F('base_price') - F('best_discount')
+                ),
+                When(
+                    Q(offer_price__isnull=False),
+                    then=F('offer_price')
+                ),
+                default=F('base_price'),
+                output_field=DecimalField()
+            ),
+            # Calculate actual discount amount
+            actual_discount=Case(
+                When(
+                    Q(best_discount__gt=0),
+                    then=F('best_discount')
+                ),
+                When(
+                    Q(offer_price__isnull=False),
+                    then=F('base_price') - F('offer_price')
+                ),
+                default=Value(0),
+                output_field=DecimalField()
+            )
+        )
+        
         return (
-            Product.objects.filter(is_active=True).select_related('category').prefetch_related( Prefetch("variants",queryset = variants_queryset,to_attr="annotated_variants"),"images")
+            Product.objects.filter(is_active=True)
+            .annotate(base_price=Min("variants__base_price"))
+            .select_related('category')
+            .prefetch_related(
+                Prefetch("variants", queryset=variants_queryset, to_attr="annotated_variants"),
+                "images"
+            )
         )
         
         # the to_attr is store the data in a new list on the product object called annotated_variants
