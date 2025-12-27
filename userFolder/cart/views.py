@@ -5,14 +5,9 @@ from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import *
 from products.models import *
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
 from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from offer.selectors import get_active_offer_subqueries_cart
-from django.db.models.functions import Coalesce,Greatest
-from django.db.models import Value,F,Q,DecimalField,Case,When,ExpressionWrapper
+from .utils import get_annotated_cart_items
 # Create your views here.
 class CartView(LoginRequiredMixin, ListView):
     template_name = "cart/cart.html"
@@ -23,60 +18,8 @@ class CartView(LoginRequiredMixin, ListView):
         user = self.request.user
 
         cart, created = Cart.objects.get_or_create(user=user)
-        
-        product_offer_subquery, category_offer_subquery = get_active_offer_subqueries_cart()
 
-        return cart.items.select_related(
-            "variant",
-            "variant__product",
-            "variant__product__category",
-            "variant__size"
-        ).annotate(
-            product_base_price = F('variant__base_price'),
-            product_offer_price =F('variant__offer_price'),
-            
-            offer_prod_val=Coalesce(product_offer_subquery, Value(0, output_field=DecimalField())),
-            offer_cat_val=Coalesce(category_offer_subquery, Value(0, output_field=DecimalField())),
-            
-            best_discount = Greatest("offer_prod_val","offer_cat_val"),
-            
-            final_price = Case(
-                When(
-                    Q(best_discount__gt=0),
-                    then=F('product_base_price') - F('best_discount'),
-                ),
-                When(
-                    Q(product_offer_price__isnull=False),
-                    then=F('product_offer_price'),
-                ),
-                default=F('product_offer_price'),
-                output_field=DecimalField(),
-            ),
-            
-            actual_discount = Case(
-                When(
-                    Q(best_discount__gt=0),
-                    then=F('best_discount')
-                ),
-                When(
-                    Q(product_offer_price__isnull=False),
-                    then=F('product_base_price') - F('product_offer_price')
-                ),
-                default=F('product_base_price'),
-                output_field=DecimalField()
-            ),
-            
-            # Calculate line total (final_price * quantity)
-            product_total=ExpressionWrapper(
-                F('final_price') * F('quantity'),
-                output_field=DecimalField()
-            ),
-
-            subtotal = ExpressionWrapper(
-                F('product_base_price') * F('quantity'),
-                output_field = DecimalField()
-            )
-        ).order_by("-item_added")
+        return get_annotated_cart_items(self.request.user).order_by("-item_added")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

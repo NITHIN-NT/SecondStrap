@@ -215,14 +215,14 @@
                     <div class="item-info">
                         <h4>{{ item.variant.product.name }}</h4>
                         <p>Size: {{ item.size }} X {{item.quantity}}</p>
-                        <span class="price">₹{{ item.variant.offer_price}} x {{item.quantity}}</span>
+                        <span class="price">₹{{ item.final_price}} x {{item.quantity}}</span>
                     </div>
                 </div>
                 {% endfor %}
             </div>
             <div class="delivery-estimate">
                 <span>Estimated Delivery</span>
-                <strong>Oct 15 - Oct 18</strong>
+                <strong>withen 3-5 Days</strong>
             </div>
         </div>
 
@@ -230,7 +230,7 @@
             <h3 class="summary-title">Order Summary</h3>
             <div class="summary-row">
                 <span>Total ({{ cart_items|length }} items)</span>
-                <span>₹{{ cart.total_price }}</span>
+                <span>₹{{ total_price }}</span>
             </div>
             <div class="summary-row">
                 <span>Shipping</span>
