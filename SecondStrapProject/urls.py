@@ -19,6 +19,7 @@ urlpatterns = [
     path("profile/", include("userFolder.userprofile.urls"), name="userprofile"),
     path('payment/', include('userFolder.payment.urls')),
     path('wallet/',include("userFolder.wallet.urls")),
+    path('refaral/',include("userFolder.refaral.urls")),
     path("superuser/", include("Admin.urls")),
 ]
 
