@@ -80,7 +80,7 @@
                         {% if order.get_progress_status == 4 %}
                             <p>Delivered on {{ order.updated_at|date:"M d, Y" }}</p>
                         {% else %}
-                            <p>Estimated Delivery: {{ order.created_at|date:"M d" }} - {{ order.updated_at|date:"M d" }}</p>
+                            <p>Estimated Delivery: 3-5 days</p>
                         {% endif %}
                     </div>
                 </div>
@@ -182,20 +182,14 @@
                     </div>
                     
                     <div class="item-price-group">
-                        {% if order_item.status == 'return_approved' %}
+                        {% if order_item.status == 'return_approved' or  order_item.status == 'return_approved' %}
                            <del>
                                <span class="item-unit-price">₹{{ order_item.price_at_purchase }}</span>
                             </del> 
                         {% else %}
-                            <span class="item-unit-price">₹{{ order_item.price_at_purchase }}</span>
+                            <span class="item-unit-price">₹{{ order_item.get_total_price }}</span>
                         {% endif %}
-                        {% if order_item.status == 'return_approved' %}
-                            <del>
-                                <span class="item-total-price">₹{{ order_item.get_total_price }}</span>
-                            </del>
-                        {% else %}
-                            <span class="item-total-price">₹{{ order_item.get_total_price }}</span>
-                        {% endif %}
+
                     </div>
                 </div>
             {% endfor %}
@@ -240,9 +234,11 @@
         <div class="od-card order-summary-card">
             <h3 class="od-card-title">Order Summary</h3>
             <div class="summary-row"><span>Subtotal</span><span>₹{{ order.total_price }}</span></div>
-            <div class="summary-row"><span>Shipping</span><span>₹49.00</span></div>
-            <div class="summary-row"><span>Tax (18%)</span><span>₹18.00</span></div>
+            <div class="summary-row"><span>Shipping</span><span>+₹{{order.shipping_amount}}</span></div>
             <div class="summary-row"><span>Discount</span><span style="color: #10b981;">-₹{{ order.discount_amount }}</span></div>
+            {% if order.wallet_deduction %}
+                <div class="summary-row"><span>Discount</span><span style="color: #10b981;">-₹{{ order.wallet_deduction }}</span></div>
+            {% endif %}
             <div class="summary-row total"><span>Total</span><span>₹{{ order.final_price }}</span></div>
         </div>
 

@@ -14,11 +14,15 @@ from django.http import JsonResponse
 import json
 from django.db import transaction
 from django.views.decorators.cache import never_cache
-
+from userFolder.cart.utils import get_annotated_cart_items
 @never_cache
 @login_required(login_url='login')
 def order(request):
     if request.method != 'POST':
+        return redirect('checkout')
+    
+    if request.session.get('draft_order_id'):
+        messages.error(request,'wallet applyed so you have to make the payment with UPI')
         return redirect('checkout')
 
     try:
@@ -35,15 +39,13 @@ def order(request):
                 messages.info(request, 'No cart Found')
                 return redirect('Home_page_user')
             
-            cart_items = CartItems.objects.filter(cart=cart).select_related('variant')
+            cart_items = get_annotated_cart_items(user=user)
             variant_ids = [item.variant.id for item in cart_items]
             
             locked_variants = ProductVariant.objects.filter(id__in=variant_ids).select_for_update()
             variant_map = {variant.id: variant for variant in locked_variants}
-            print("variant Map : ",variant_map)
             
-            calculated_total_price = 0
-            
+            # calculated_total_price = 0
             for item in cart_items:
                 current_variant = variant_map.get(item.variant.id)
                 
@@ -55,7 +57,7 @@ def order(request):
                     messages.error(request, f'Out of stock: {current_variant.product.name}')
                     return redirect('cart')
 
-                calculated_total_price += (current_variant.offer_price * item.quantity)
+                # calculated_total_price += item.product_total
             
             add_id = request.POST.get('selected_address')
             if not add_id:
@@ -77,12 +79,11 @@ def order(request):
                 messages.warning(request, 'Only COD is available right now!')
                 return redirect('checkout')
             
-
-            if Decimal(calculated_total_price) != Decimal(cart.total_price):
-                messages.error(request, 'Price mismatch detected. Cart updated.')
-                cart.total_price = calculated_total_price
-                cart.save()
-                return redirect('cart')
+            subtotal = sum(item.subtotal for item in cart_items)
+            cart_total_price = sum(item.product_total for item in cart_items)
+            cart_discount = sum(item.actual_discount for item in cart_items)
+            shipping = Decimal(30)
+            grand_total = cart_total_price + shipping
             
             order = OrderMain.objects.create(
                 user=user,
@@ -93,32 +94,41 @@ def order(request):
                 shipping_pincode=address.postal_code,
                 shipping_phone=address.phone_number,
                 payment_method=payment_method,
-                total_price=calculated_total_price,
+                total_price=subtotal,
+                discount_amount = cart_discount,
+                shipping_amount = shipping,
+                final_price = grand_total
+                
             )
             
             order_items_to_create = []
+            variants_to_update = []
+            
             for item in cart_items:
                 current_variant = variant_map.get(item.variant.id)
-                
+                print(current_variant)
                 order_items_to_create.append(
                     OrderItem(
                         order=order,
                         variant=current_variant,
                         product_name=current_variant.product.name,
                         quantity=item.quantity,
-                        price_at_purchase=current_variant.offer_price
+                        price_at_purchase=item.final_price
                     )
                 )
                 
                 current_variant.stock -= item.quantity
-                current_variant.save()
-                
+                variants_to_update.append(current_variant)
+                                
             OrderItem.objects.bulk_create(order_items_to_create)
             
+            ProductVariant.objects.bulk_update(variants_to_update,['stock'])
+                
             cart_items.delete()
             
             request.session['order_id'] = order.order_id
             
+        try:
             user_email = order.user.email
             
             plain_message = f'Order Successful Places!.'
@@ -130,6 +140,10 @@ def order(request):
             )
             msg.attach_alternative(html_message,'text/html')
             msg.send()
+        except Exception as e:
+            print(f"Email sending failed: {e}")
+            
+        return render(request, 'orders/order_success.html', {'order': order})
             
     except ValueError as e:
         messages.error(request, f"Value Error: {str(e)}")
@@ -141,13 +155,6 @@ def order(request):
         messages.error(request, "An error occurred while placing your order. Please try again.")
         return redirect('checkout')
 
-    # Success
-    context = {
-        'order': order
-    }
-    
-    return render(request, 'orders/order_success.html', context)
-
 @never_cache
 @login_required
 def order_details_view(request,order_id):
@@ -155,17 +162,10 @@ def order_details_view(request,order_id):
         
     order = get_object_or_404(OrderMain,order_id = order_id ,user=request.user)
     order_items = OrderItem.objects.filter(order=order)
-    tax = Decimal(18)
-    shipping =Decimal(49.00)
-    discount = Decimal(12)
     context = {
         'order' : order,
         'order_items' : order_items,
-        'tax' : tax,
-        'discount' : discount,
-        'shipping' : shipping
     }
-    print(order.has_return_requested)
     return render(request,'orders/order_details.html',context)
 
 @never_cache

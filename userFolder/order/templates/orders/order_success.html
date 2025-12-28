@@ -203,13 +203,29 @@
                 <span class="label">Date:</span>
                 <span class="value">{{ order.created_at }}</span>
             </div>
+            {% if order.wallet_deduction %}
+                <div class="detail-row">
+                    <span class="label">Wallet Deduction:</span>
+                    <span class="value">{{ order.wallet_deduction }}</span>
+                </div>
+            {% endif %}
             <div class="detail-row">
                 <span class="label">Total:</span>
-                <span class="value">₹{{ order.final_price }}</span>
+                {% if order.final_amount %}
+                    <span class="value">₹{{ order.final_amount }}</span>
+                {% else %}
+                    <span class="value">₹{{ order.final_price }}</span>
+                {% endif %}
             </div>
             <div class="detail-row">
                 <span class="label">Email:</span>
                 <span class="value">{{ order.user.email }}</span>
+            </div>
+            <div style="background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 12px 15px; margin: 10px 0;">
+                <span class="value" style="color: #155724; font-weight: 700; font-size: 15px; display: flex; align-items: center;">
+                    <span style="margin-right: 8px;">🎉</span>
+                    On this order you save ₹{{ order.discount_amount }} !!
+                </span>
             </div>
         </div>
         <a href="{% url 'products_page_user' %}">

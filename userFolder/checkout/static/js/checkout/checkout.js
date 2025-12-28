@@ -245,19 +245,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ==========================================
-    // 4. ANIMATED CHECKOUT BUTTON LOGIC (UPDATED)
-    // ==========================================
-    const mainCheckoutForm = document.getElementById("checkoutForm");
-    const placeOrderBtn = document.querySelector(".place-order-btn");
-
-    if (mainCheckoutForm && placeOrderBtn) {
-        mainCheckoutForm.addEventListener("submit", function () {
-            // Adds the 'loading' class which triggers the CSS animation
-            // Hides .btn-original-text and shows .btn-loading-content
-            placeOrderBtn.classList.add("loading");
-            placeOrderBtn.disabled = true;
-        });
-    }
-
 });

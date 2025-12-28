@@ -9,6 +9,7 @@ from django.db.models import Sum
 from datetime import timedelta
 
 ORDER_STATUS_CHOICES = [
+    ('draft','Draft'),
     ('pending', 'Pending'),
     ('confirmed', 'Confirmed'),
     ('shipped', 'Shipped'),
@@ -93,16 +94,16 @@ class OrderMain(models.Model):
     
     is_paid = models.BooleanField(default=False)
     
-    order_status = models.CharField(max_length=150, choices=ORDER_STATUS_CHOICES, default='pending')
+    order_status = models.CharField(max_length=150, choices=ORDER_STATUS_CHOICES, default='draft')
+    expires_at = models.DateTimeField(null=True, blank=True)  
     
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
-    shipping_amount = models.DecimalField(max_digits=10,decimal_places=2,default=49)
-    tax_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0)
+    shipping_amount = models.DecimalField(max_digits=10,decimal_places=2,default=30)
     final_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     
     coupon_code = models.CharField(max_length=50, null=True, blank=True)
-    
+    wallet_deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0,help_text="Amount deducted from user's wallet")
     is_returned = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -136,15 +137,10 @@ class OrderMain(models.Model):
     # if don't use that we call like has_return_requested() like this 
     class Meta:
         ordering = ['-created_at'] 
-
-    def save(self, *args, **kwargs):
-        total = self.total_price or Decimal('0.00')
-        discount = self.discount_amount or Decimal('0.00')
-        shipping = self.shipping_amount or Decimal('0.00')
-        tax = self.tax_amount or Decimal('0.00')
         
-        self.final_price = (total + tax + shipping) - discount
-        super().save(*args, **kwargs)
+    def is_draft(self):
+        return self.status == 'draft'
+
         
     def __str__(self):
         return f"{self.order_id}"

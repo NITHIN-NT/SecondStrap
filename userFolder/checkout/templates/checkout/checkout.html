@@ -232,26 +232,22 @@
                 <span>Total ({{ cart_items|length }} items)</span>
                 <span>₹{{ total_price }}</span>
             </div>
-            <div class="summary-row">
-                <span>Shipping</span>
-                <span>₹{{ shipping_fee|default:"30" }}</span>
-            </div>
-            <div class="summary-row">
-                <span>Tax</span>
-                <span>{{ tax }}%</span>
-            </div>
             <div class="summary-row discount">
                 <span>Discount</span>
                 <span>-₹{{ discount }}</span>
             </div>
-            
-            {# NEW: Wallet Deduction Row #}
             {% if wallet_applied_amount %}
             <div class="summary-row discount">
                 <span>Wallet Deduction</span>
                 <span>-₹{{ wallet_applied_amount }}</span>
             </div>
             {% endif %}
+            
+            <div class="summary-row">
+                <span>Shipping</span>
+                <span>+₹{{ shipping_fee|default:"30" }}</span>
+            </div>
+           
 
             <div class="summary-divider"></div>
             <div class="summary-row total">
@@ -278,7 +274,92 @@
 
 {# Address Modal HTML (Omitted for brevity, no changes required) #}
 <div id="addressModal" class="modal-overlay" aria-hidden="true">
-    {# ... modal content ... #}
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="addressModalTitle">
+        <div class="modal-header">
+            <h3 id="addressModalTitle">Add New Address</h3> 
+            <button class="close-modal-btn" id="closeAddressModalBtn" aria-label="Close">&times;</button>
+        </div>
+        
+        <form id="addressForm" method="POST" action='{% url "add_address" %}'>
+            {% csrf_token %}
+            <input type="hidden" name="address_id" id="address_id" value=""> 
+
+            <div class="form-group address-type-group">
+                <label class="input-label">Address Type</label>
+                <div class="radio-icon-container">
+                    <input type="radio" id="type_home" name="address_type" value="HOME" required>
+                    <label for="type_home" class="radio-icon-label">
+                        <i class="bx bxs-home-alt"></i> 
+                        <span>Home</span>
+                    </label>
+
+                    <input type="radio" id="type_work" name="address_type" value="WORK" required>
+                    <label for="type_work" class="radio-icon-label">
+                        <i class="bx bxs-briefcase"></i> 
+                        <span>Work</span>
+                    </label>
+                    
+                    <input type="radio" id="type_other" name="address_type" value="OTHER" required>
+                    <label for="type_other" class="radio-icon-label">
+                        <i class="bx bxs-map"></i> 
+                        <span>Other</span>
+                    </label>
+                </div>
+            </div>  
+
+            <div class="form-group">
+                <label for="full_name">Recipient Full Name</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address_line_1">Address Line 1</label>
+                <input type="text" id="address_line_1" name="address_line_1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="address_line_2">Address Line 2 (Optional)</label>
+                <input type="text" id="address_line_2" name="address_line_2">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City/Town</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" id="state" name="state" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="postal_code">Postal Code</label>
+                    <input type="text" id="postal_code" name="postal_code" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="country">Country</label>
+                <input type="text" id="country" name="country" value="India" required>
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="is_default" name="is_default">
+                <label for="is_default">Set as default address</label>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="cancel-btn" id="cancelAddressBtn">Cancel</button>
+                <button type="submit" class="save-btn" id="saveAddressBtn">Save Address</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <span id="fetchUrlBase" data-url-base="{% url "fetch_address" address_id=0 %}"></span>
@@ -290,233 +371,256 @@
 <script src="{% static 'js/checkout/checkout.js' %}"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('checkoutForm');
-        const placeOrderBtn = document.querySelector('.place-order-btn');
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('checkoutForm');
+    const placeOrderBtn = document.querySelector('.place-order-btn');
 
-        // Payment method variables (may be null if the condition is not met in Django context)
-        const codRadio  = document.getElementById('pay_cod');
-        const upiRadio  = document.getElementById('pay_upi');
-        const walletFullRadio = document.getElementById('pay_wallet'); 
-        
-        // Partial wallet deduction elements (only exist if wallet < grand_total)
-        const applyWalletBtn = document.getElementById('applyWalletBtn');
-        const useWalletDeductionCheckbox = document.getElementById('use_wallet_deduction'); 
+    // Payment method elements
+    const codRadio = document.getElementById('pay_cod');
+    const upiRadio = document.getElementById('pay_upi');
+    const walletFullRadio = document.getElementById('pay_wallet'); 
+    
+    // Wallet deduction elements
+    const applyWalletBtn = document.getElementById('applyWalletBtn');
+    const useWalletDeductionCheckbox = document.getElementById('use_wallet_deduction'); 
 
-        const addressRadios = document.querySelectorAll('input[name="selected_address"]');
+    const addressRadios = document.querySelectorAll('input[name="selected_address"]');
 
-        const codUrl = "{% url 'order' %}";
-        const createOrderUrl = "{% url 'create_razorpay_order' %}";
-        const walletFullUrl = "{% url 'pay_using_wallet' %}"; 
-        const deductWalletUrl = "{% url 'deduct_amount_from_wallet' %}"; // Target for AJAX draft order creation
+    // URLs
+    const codUrl = "{% url 'order' %}";
+    const createOrderUrl = "{% url 'create_razorpay_order' %}";
+    const walletFullUrl = "{% url 'pay_using_wallet' %}"; 
+    const deductWalletUrl = "{% url 'deduct_amount_from_wallet' %}";
 
-        const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+    const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
 
-        // --- 1. AXIOS Event listener for the "Apply wallet amount" button ---
-        if (applyWalletBtn) {
-            applyWalletBtn.addEventListener('click', async function() {
-                // Prevent concurrent submissions
-                if (placeOrderBtn.classList.contains('loading')) return; 
+    // ========== 1. APPLY WALLET BUTTON ==========
+    if (applyWalletBtn) {
+        applyWalletBtn.addEventListener('click', async function() {
+            // Prevent concurrent submissions
+            if (placeOrderBtn.classList.contains('loading')) return; 
 
-                // Check for selected address first
-                const selectedAddress = document.querySelector('input[name="selected_address"]:checked');
-                if (!selectedAddress) {
-                    toastr.error('Please select a delivery address before applying wallet.');
-                    return;
-                }
-                
-                placeOrderBtn.classList.add('loading');
+            // Check for selected address first
+            const selectedAddress = document.querySelector('input[name="selected_address"]:checked');
+            if (!selectedAddress) {
+                toastr.error('Please select a delivery address before applying wallet.');
+                return;
+            }
+            
+            placeOrderBtn.classList.add('loading');
 
-                // Prepare data for the Draft Order creation view
-                const dataToSend = new FormData();
-                dataToSend.append('selected_address', selectedAddress.value);
-                dataToSend.append('apply_wallet', 'true'); // Intent flag
-                
-                // Add all form fields to ensure cart/total context is passed
-                new FormData(form).forEach((value, key) => {
-                    dataToSend.append(key, value);
+            // Prepare form data
+            const formData = new FormData(form);
+            
+            try {
+                // Send AJAX request
+                const response = await axios.post(deductWalletUrl, formData, {
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    }
                 });
-                
-                try {
-                    // Send AJAX request using Axios
-                    const response = await axios.post(deductWalletUrl, dataToSend, {
-                        headers: {
-                            'X-CSRFToken': csrfToken,
-                        }
-                    });
 
-                    if (response.data.success) {
-                        toastr.success('Wallet amount applied successfully! Totals updated.');
-                        
-                        // Reload the page to display the new Grand Total and Wallet Deduction row 
-                        // from the session data retrieved by the Django view.
-                        window.location.reload(); 
-                        
-                    } else {
-                        toastr.error(response.data.error || 'Failed to apply wallet amount.');
-                    }
+                if (response.data.success) {
+                    toastr.success('Wallet amount applied successfully!');
                     
-                } catch (err) {
-                    console.error('Wallet deduction error:', err);
-                    toastr.error('An unexpected error occurred while applying wallet.');
-                } finally {
-                    placeOrderBtn.classList.remove('loading');
-                }
-            });
-        }
-        
-        // --- 2. CRITICAL: Payment Method Listeners for Checkbox Management ---
-        // Ensure the `use_wallet_deduction` state is reset if a user selects a main payment method
-        const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
-        paymentRadios.forEach(radio => {
-            radio.addEventListener('change', () => {
-                if (useWalletDeductionCheckbox) {
-                    // Uncheck the deduction box if they select a primary payment method
-                    useWalletDeductionCheckbox.checked = false;
-                }
-            });
-        });
-        
-        
-        // --- 3. Final PLACE ORDER button submission handler ---
-        form.addEventListener('submit', async function (e) {
-            const addressSelected = Array.from(addressRadios).some(r => r.checked);
-            
-            // Determine which payment method is selected for final checkout
-            const isCod = codRadio ? codRadio.checked : false;
-            const isUpi = upiRadio ? upiRadio.checked : false;
-            const isWalletFull = walletFullRadio ? walletFullRadio.checked : false; 
-            
-            // Check if wallet deduction was applied previously via AJAX (and thus a draft order exists)
-            const isDeductionApplied = useWalletDeductionCheckbox ? useWalletDeductionCheckbox.checked : false;
-
-            if (!addressSelected) {
-                e.preventDefault();
-                toastr.error('Please select a delivery address.');
-                return;
-            }
-
-            // Validation for selecting a primary payment method
-            if (!isCod && !isUpi && !isWalletFull) {
-                e.preventDefault();
-                // If deduction was applied, they still need to pick COD or UPI for the remaining balance.
-                if (isDeductionApplied) {
-                    toastr.error('Wallet deduction applied. Please select COD or UPI/Online payment to complete the order.');
+                    // Reload to show updated totals
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                    
                 } else {
-                    toastr.error('Please select a payment method.');
-                }
-                return;
-            }
-            
-            // Crucial: When placing the final order, if a partial deduction was applied, 
-            // the form must be submitted to the final payment view (COD/UPI). 
-            // The final payment view will look up the Draft Order ID from the session.
-
-            // 1. Full Wallet Payment
-            if (isWalletFull) {
-                form.action = walletFullUrl;
-                placeOrderBtn.classList.add('loading');
-                return; // Allow normal submit to pay_using_wallet
-            }
-
-            // 2. COD Payment (Uses Draft Order if it exists)
-            if (isCod) {
-                form.action = codUrl;
-                placeOrderBtn.classList.add('loading');
-                return; // Allow normal submit to order
-            }
-
-            // 3. ONLINE (UPI/Razorpay) Payment (Uses Draft Order if it exists)
-            if (isUpi) {
-                e.preventDefault();
-                placeOrderBtn.classList.add('loading');
-
-                // Prepare data for create_razorpay_order (must include the Draft Order ID from the session 
-                // if it was created in the AJAX step, or the Django view will create a new one).
-                const formData = new FormData(form);
-
-                try {
-                    const response = await fetch(createOrderUrl, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': csrfToken
-                        },
-                        body: formData
-                    });
-
-                    const data = await response.json();
-
-                    if (!data.success) {
-                        placeOrderBtn.classList.remove('loading');
-                        toastr.error(data.error || 'Unable to create payment.');
-                        return;
-                    }
-
-                    // Build Razorpay options from backend data
-                    const options = {
-                        key: data.razorpay_key_id,
-                        amount: data.amount_paise,
-                        currency: data.currency,
-                        name: "SecondStrap",
-                        description: "Order Payment",
-                        order_id: data.razorpay_order_id,
-                        handler: function (response) {
-                            // Send Razorpay response to callback view
-                            const callbackForm = document.createElement('form');
-                            callbackForm.method = "POST";
-                            callbackForm.action = "{% url 'razorpay_callback' %}";
-                            
-                            const fields = {
-                                "csrfmiddlewaretoken": csrfToken,
-                                "razorpay_payment_id": response.razorpay_payment_id,
-                                "razorpay_order_id": response.razorpay_order_id,
-                                "razorpay_signature": response.razorpay_signature,
-                            };
-
-                            for (let key in fields) {
-                                const input = document.createElement('input');
-                                input.type = "hidden";
-                                input.name = key;
-                                input.value = fields[key];
-                                callbackForm.appendChild(input);
-                            }
-
-                            document.body.appendChild(callbackForm);
-                            callbackForm.submit();
-                        },
-                        prefill: {
-                            name: data.user_name,
-                            email: data.user_email,
-                            contact: data.user_phone
-                        },
-                        theme: {
-                            color: "#3399cc"
-                        }
-                    };
-
-                    const rzp = new Razorpay(options);
-                    rzp.on('payment.failed', function (resp) {
-                        placeOrderBtn.classList.remove('loading');
-                        let errorReason = 'Please try again or select a different method.';
-                        if (resp.error && resp.error.description) {
-                            errorReason = resp.error.description;
-                        }
-                        
-                        // Show a detailed error
-                        toastr.error(`Payment failed: ${errorReason}`);
-                        // Optionally redirect back to checkout to clear session state
-                        window.location.href = "{% url 'cart' %}"; 
-                    });
-
-                    rzp.open();
-
-                } catch (err) {
-                    console.error(err);
                     placeOrderBtn.classList.remove('loading');
-                    toastr.error('Something went wrong while initiating payment.');
+                    toastr.error(response.data.error || 'Failed to apply wallet amount.');
                 }
+                
+            } catch (err) {
+                console.error('Wallet deduction error:', err);
+                placeOrderBtn.classList.remove('loading');
+                toastr.error(err.response?.data?.error || 'An unexpected error occurred while applying wallet.');
+            }
+        });
+    }
+    
+    // ========== 2. PAYMENT METHOD CHANGE LISTENERS ==========
+    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (useWalletDeductionCheckbox) {
+                useWalletDeductionCheckbox.checked = false;
             }
         });
     });
+    
+    // ========== 3. PLACE ORDER FORM SUBMISSION ==========
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault(); // CRITICAL: Prevent form submission FIRST
+        
+        console.log('Form submitted'); // DEBUG
+        
+        const addressSelected = Array.from(addressRadios).some(r => r.checked);
+        
+        // Check which payment method is selected
+        const isCod = codRadio ? codRadio.checked : false;
+        const isUpi = upiRadio ? upiRadio.checked : false;
+        const isWalletFull = walletFullRadio ? walletFullRadio.checked : false; 
+
+        console.log('Payment methods:', { isCod, isUpi, isWalletFull }); // DEBUG
+
+        // Validation
+        if (!addressSelected) {
+            toastr.error('Please select a delivery address.');
+            return;
+        }
+
+        if (!isCod && !isUpi && !isWalletFull) {
+            toastr.error('Please select a payment method.');
+            return;
+        }
+        
+        // Prevent double submission
+        if (placeOrderBtn.classList.contains('loading')) {
+            console.log('Already loading, preventing double submit'); // DEBUG
+            return;
+        }
+        
+        // 1. FULL WALLET PAYMENT
+        if (isWalletFull) {
+            console.log('Processing wallet payment'); // DEBUG
+            form.action = walletFullUrl;
+            placeOrderBtn.classList.add('loading');
+            form.submit(); // Normal form submission
+            return;
+        }
+
+        // 2. COD PAYMENT
+        if (isCod) {
+            console.log('Processing COD payment'); // DEBUG
+            form.action = codUrl;
+            placeOrderBtn.classList.add('loading');
+            form.submit(); // Normal form submission
+            return;
+        }
+
+        // 3. RAZORPAY (UPI/ONLINE) PAYMENT
+        if (isUpi) {
+            console.log('Processing Razorpay payment'); // DEBUG
+            placeOrderBtn.classList.add('loading');
+
+            const formData = new FormData(form);
+
+            try {
+                console.log('Fetching Razorpay order from:', createOrderUrl); // DEBUG
+                
+                const response = await fetch(createOrderUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                });
+
+                console.log('Response status:', response.status); // DEBUG
+
+                const data = await response.json();
+                console.log('Response data:', data); // DEBUG
+
+                if (!data.success) {
+                    placeOrderBtn.classList.remove('loading');
+                    toastr.error(data.error || 'Unable to create payment.');
+                    return;
+                }
+
+                // Verify Razorpay is loaded
+                if (typeof Razorpay === 'undefined') {
+                    console.error('Razorpay library not loaded!'); // DEBUG
+                    placeOrderBtn.classList.remove('loading');
+                    toastr.error('Payment gateway not loaded. Please refresh and try again.');
+                    return;
+                }
+
+                console.log('Building Razorpay options...'); // DEBUG
+
+                // Build Razorpay options
+                const options = {
+                    key: data.razorpay_key_id,
+                    amount: data.amount_paise,
+                    currency: data.currency,
+                    name: "SecondStrap",
+                    description: "Order Payment",
+                    order_id: data.razorpay_order_id,
+                    handler: function (response) {
+                        console.log('Payment successful!', response); // DEBUG
+                        
+                        // Payment successful - submit to callback
+                        const callbackForm = document.createElement('form');
+                        callbackForm.method = "POST";
+                        callbackForm.action = "{% url 'razorpay_callback' %}";
+                        
+                        const fields = {
+                            "csrfmiddlewaretoken": csrfToken,
+                            "razorpay_payment_id": response.razorpay_payment_id,
+                            "razorpay_order_id": response.razorpay_order_id,
+                            "razorpay_signature": response.razorpay_signature,
+                        };
+
+                        for (let key in fields) {
+                            const input = document.createElement('input');
+                            input.type = "hidden";
+                            input.name = key;
+                            input.value = fields[key];
+                            callbackForm.appendChild(input);
+                        }
+
+                        document.body.appendChild(callbackForm);
+                        callbackForm.submit();
+                    },
+                    prefill: {
+                        name: data.user_name,
+                        email: data.user_email,
+                        contact: data.user_phone
+                    },
+                    theme: {
+                        color: "#3399cc"
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            console.log('Razorpay modal dismissed'); // DEBUG
+                            placeOrderBtn.classList.remove('loading');
+                        }
+                    }
+                };
+
+                console.log('Razorpay options:', options); // DEBUG
+
+                const rzp = new Razorpay(options);
+                
+                // Handle payment failures
+                rzp.on('payment.failed', function (resp) {
+                    console.log('Payment failed:', resp); // DEBUG
+                    placeOrderBtn.classList.remove('loading');
+                    
+                    let errorReason = 'Please try again or select a different method.';
+                    if (resp.error && resp.error.description) {
+                        errorReason = resp.error.description;
+                    }
+                    
+                    toastr.error(`Payment failed: ${errorReason}`);
+                });
+
+                console.log('Opening Razorpay modal...'); // DEBUG
+                
+                // Open Razorpay
+                rzp.open();
+                
+                console.log('Razorpay modal opened'); // DEBUG
+
+            } catch (err) {
+                console.error('Razorpay error:', err);
+                placeOrderBtn.classList.remove('loading');
+                toastr.error('Something went wrong while initiating payment.');
+            }
+        }
+    });
+});
 </script>
 {% endblock %}

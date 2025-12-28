@@ -6,7 +6,6 @@ from django.shortcuts import render,get_object_or_404,redirect
 from django.views.generic import TemplateView
 from .models import Wallet,Transaction,TransactionStatus,TransactionType
 from userFolder.userprofile.views import SecureUserMixin
-from django.http import HttpResponse
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
@@ -16,12 +15,14 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import F
 
-from userFolder.cart.models import Cart,CartItems
-from products.models import ProductVariant,Product
+from userFolder.cart.models import Cart
+from products.models import ProductVariant
 from userFolder.userprofile.models import Address
 from userFolder.order.models import OrderItem,OrderMain
+from userFolder.cart.utils import get_annotated_cart_items
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+
 # Create your views here.
 class ProfileWalletView(SecureUserMixin, TemplateView):
     template_name = "wallet/wallet.html"
@@ -162,8 +163,7 @@ def pay_using_wallet(request):
         messages.error(request, "Cart not found.")
         return redirect('Home_page_user')
 
-    cart_items = CartItems.objects.filter(cart=cart).select_related('variant', 'variant__product')
-
+    cart_items = get_annotated_cart_items(user=request.user)
     variant_ids = [item.variant.id for item in cart_items]
 
     # Lock product variants
@@ -184,14 +184,7 @@ def pay_using_wallet(request):
             messages.error(request,f"Out of stock: {variant.product.name}")
             return redirect('cart')
 
-        calculated_total_amount += variant.offer_price * item.quantity
-
-    # Price  check
-    if calculated_total_amount != cart.total_price:
-        cart.total_price = calculated_total_amount
-        cart.save(update_fields=['total_price'])
-        messages.error(request,"Price updated due to recent changes. Please review your cart.")
-        return redirect('cart')
+        calculated_total_amount += item.product_total
 
     # ADDRESS VALIDATION 
     address_id = request.POST.get('selected_address')
@@ -221,6 +214,12 @@ def pay_using_wallet(request):
     if wallet.balance < calculated_total_amount:
         messages.error(request, "Insufficient wallet balance.")
         return redirect('checkout')
+    
+    subtotal = sum(item.subtotal for item in cart_items)
+    cart_total_price = sum(item.product_total for item in cart_items)
+    cart_discount = sum(item.actual_discount for item in cart_items)
+    shipping = Decimal(30)
+    grand_total = cart_total_price + shipping
 
     # CREATE ORDER 
     order = OrderMain.objects.create(
@@ -233,7 +232,11 @@ def pay_using_wallet(request):
         shipping_phone=address.phone_number,
         payment_method=payment_method,
         payment_status='pending',
-        total_price=calculated_total_amount,
+        total_price=subtotal,
+        discount_amount=cart_discount,
+        shipping_amount=shipping,
+        wallet_deduction=Decimal('0'),
+        final_price=grand_total,
     )
 
     # WALLET DEDUCTION 
@@ -266,7 +269,7 @@ def pay_using_wallet(request):
                 variant=variant,
                 product_name=variant.product.name,
                 quantity=item.quantity,
-                price_at_purchase=variant.offer_price
+                price_at_purchase=item.final_price
             )
         )
 
@@ -305,9 +308,3 @@ def pay_using_wallet(request):
 
     return render(request, 'orders/order_success.html', {'order': order})
 
-@require_POST
-@never_cache
-@login_required
-@transaction.atomic
-def deduct_amount_from_wallet(request):
-    pass

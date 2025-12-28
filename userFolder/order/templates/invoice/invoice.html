@@ -166,11 +166,7 @@
         </tr>
         <tr>
             <td>Shipping</td>
-            <td>Rs. 49.00</td> 
-        </tr>
-        <tr>
-            <td>Tax (18%)</td>
-            <td>Rs. 18.00</td>
+            <td>Rs. {{order.shipping_amount}}</td> 
         </tr>
         {% if order.discount_amount > 0 %}
         <tr>
@@ -178,6 +174,13 @@
             <td style="color: green;">- Rs. {{ order.discount_amount }}</td>
         </tr>
         {% endif %}
+
+        <div style="background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 12px 15px; margin: 10px 0;">
+            <span class="value" style="color: #155724; font-weight: 700; font-size: 15px; display: flex; align-items: center;">
+                <span style="margin-right: 8px;">🎉</span>
+                On this order you save ₹{{ order.discount_amount }} !!
+            </span>
+        </div>
         <tr>
             <td class="final-total">Amount Due</td>
             <td class="final-total">Rs. {{ order.final_price }}</td>
