@@ -597,9 +597,14 @@ class StockManagementView(ListView):
     paginate_by = 9
 
     def get_queryset(self, **kwargs):
-        return Product.objects.annotate(
-            total_stock=Sum("variants__stock"), variant_count=Count("variants")
-        ).prefetch_related("variants", "variants__size")
+        queryset = Product.objects.prefetch_related("variants", "variants__size").annotate(total_stock=Sum("variants__stock"), variant_count=Count("variants"))
+        
+        search = self.request.GET.get("search")
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+            
+
+        return queryset
         
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
