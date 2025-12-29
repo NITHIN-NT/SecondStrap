@@ -3,10 +3,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==================================================
     // 1. COPY REFERRAL CODE LOGIC
     // ==================================================
-    const copyButton = document.getElementById("copyBtn");
+    const copyButton = document.getElementById("shareBtn");
     const referralInput = document.getElementById("referralLink");
-    const copyText = document.getElementById("copyText");
-    const copyIcon = document.getElementById("copyIcon");
+    const copyText = document.getElementById("shareText");
+    const copyIcon = document.getElementById("shareIcon");
 
     if (copyButton && referralInput) {
         copyButton.addEventListener("click", () => {
@@ -18,12 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (copyIcon) copyIcon.className = "bx bx-check";
                 copyButton.classList.add("copied");
                 setTimeout(() => {
-                    if (copyText) copyText.textContent = "Copy";
-                    if (copyIcon) copyIcon.className = "bx bx-copy";
+                    if (copyText) copyText.textContent = "Share";
+                    if (copyIcon) copyIcon.className = "bx bx-share";
                     copyButton.classList.remove("copied");
                 }, 2000);
             } catch (err) {
-                console.error("Failed to copy text: ", err);
+                console.error("Failed to share text: ", err);
             }
         });
     }

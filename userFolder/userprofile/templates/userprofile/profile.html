@@ -74,9 +74,13 @@
                            id="referralLink"
                            value="{{referral_code}}" 
                            readonly>
-                    <button class="copy-link-btn" id="copyBtn">
+                    {% comment %} <button class="copy-link-btn" id="copyBtn">
                         <i class='bx bx-copy' id="copyIcon"></i>
                         <span id="copyText">Copy</span>
+                    </button> {% endcomment %}
+                    <button class="copy-link-btn" id="shareBtn">
+                        <i class='bx bx-share' id="shareIcon"></i>
+                        <span id="shareText">Share</span>
                     </button>
                 </div>
             </div>
