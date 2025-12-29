@@ -21,6 +21,7 @@ from .models import Address
 from django.db import IntegrityError
 from django.contrib.auth import update_session_auth_hash
 from userFolder.order.models import OrderMain
+from userFolder.referral.models import *
 
 # Create your views here.
 
@@ -34,7 +35,13 @@ class ProfileView(SecureUserMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        user_referral,_ = Referral.objects.get_or_create(user=self.request.user)
+        total_refer_count = ReferralUsage.objects.filter(referrer=user_referral,is_reward_credited=True).count()
+        print(total_refer_count)
         context['user'] = self.request.user
+        context['referral_code'] = user_referral.referral_code
+        context['total_refer_count'] = total_refer_count
         return context
 
 @login_required
