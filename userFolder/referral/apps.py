@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class RefaralConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'userFolder.refaral'
+    name = 'userFolder.referral'

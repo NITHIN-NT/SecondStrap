@@ -120,7 +120,7 @@ def activate_account(request):
             backend = settings.AUTHENTICATION_BACKENDS[0] 
             login(request, user,backend=backend)
             messages.success(request, "Your email has been verified successfully!")
-            return redirect('Home_page_user')
+            return redirect('referral_view')
         else:
             messages.error(request, 'Invalid or expired OTP. Please try again.')
             return render(request, 'accounts/activate_account.html', {'email': user.email})
@@ -184,7 +184,7 @@ def login_view(request):
                     login(request, user)
                     request.session.cycle_key()
                     messages.success(request, f"Welcome back, {user.first_name or user.email}!")
-                    return redirect('Home_page_user')
+                    return redirect('referral_view')
                 else:
                     messages.error(request, "Please verify your email first.")
                     return render(request, 'accounts/activate_account.html', {'email': user.email})

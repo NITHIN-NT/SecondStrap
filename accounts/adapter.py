@@ -12,7 +12,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         Saving their Data to the database .
     '''
     def is_open_for_signup(self, request, sociallogin):
-        return False
+        return True
 
     def pre_social_login(self, request, sociallogin):
         # This is called when the user is about to be logged in.

@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Referral Program{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* Styling to match the uploaded image perfectly */
+    .referral-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 60px 20px;
+        min-height: 70vh;
+    }
+
+    .gift-icon-container {
+        background-color: #EEF2FF;
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+    }
+
+    .gift-icon-container i {
+        font-size: 30px;
+        color: #6366F1;
+    }
+
+    .referral-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #111;
+        letter-spacing: -0.5px;
+    }
+
+    .referral-subtitle {
+        font-size: 18px;
+        color: #6B7280;
+        max-width: 480px;
+        margin-bottom: 40px;
+        line-height: 1.5;
+    }
+
+    .referral-card {
+        background: #fff;
+        border: 1px solid #F3F4F6;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        border-radius: 24px;
+        width: 100%;
+        max-width: 460px;
+        padding: 32px;
+    }
+
+    .input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 18px 65px 18px 20px;
+        border: 1.5px solid #E5E7EB;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        color: #111;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: #6366F1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .submit-btn {
+        position: absolute;
+        right: 8px;
+        width: 46px;
+        height: 46px;
+        background-color: #F3F4F6;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .submit-btn:hover { background-color: #E5E7EB; }
+    
+    /* Loading/Success States */
+    .submit-btn.loading { pointer-events: none; }
+    .submit-btn.success { background-color: #10B981 !important; }
+    
+    .submit-btn i { font-size: 22px; color: #9CA3AF; }
+    .submit-btn.success i { color: white; }
+
+    .benefits-list {
+        text-align: left;
+        border-top: 1px solid #F9FAFB;
+        padding-top: 24px;
+    }
+
+    .benefits-label {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #9CA3AF;
+        margin-bottom: 16px;
+        display: block;
+        letter-spacing: 0.5px;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+        font-size: 15px;
+        color: #4B5563;
+        font-weight: 500;
+    }
+
+    .benefit-item i {
+        font-size: 20px;
+        color: #6366F1;
+    }
+
+    .skip-link {
+        margin-top: 32px;
+        color: #9CA3AF;
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .skip-link:hover { color: #6B7280; }
+
+    .terms-text {
+        margin-top: 40px;
+        font-size: 12px;
+        color: #9CA3AF;
+        max-width: 380px;
+        line-height: 1.6;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .bx-loader-alt { animation: spin 0.8s linear infinite; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="referral-wrapper">
+    {% csrf_token %}
+    
+    <div class="gift-icon-container">
+        <i class='bx bx-gift'></i>
+    </div>
+
+    <h1 class="referral-title">Have a referral code?</h1>
+    <p class="referral-subtitle">Enter your code below to unlock exclusive rewards and lower transaction fees.</p>
+
+    <div class="referral-card">
+        <div class="input-group">
+            <input type="text" id="referralCode" placeholder="ENTER CODE" spellcheck="false">
+            <button class="submit-btn" id="submitBtn">
+                <i class='bx bx-right-arrow-alt' id="btnIcon"></i>
+            </button>
+        </div>
+
+        <div class="benefits-list">
+            <span class="benefits-label">Benefits included</span>
+            <div class="benefit-item">
+                <i class='bx bxs-zap'></i>
+                <span>Instant $10 signup bonus</span>
+            </div>
+            <div class="benefit-item">
+                <i class='bx bxs-check-shield'></i>
+                <span>Verified account status</span>
+            </div>
+            <div class="benefit-item">
+                <i class='bx bxs-gift'></i>
+                <span>Zero fees on first deposit</span>
+            </div>
+        </div>
+    </div>
+
+    <a href="/" class="skip-link">Skip for now</a>
+
+    <p class="terms-text">
+        By entering a code, you agree to our Terms of Service and Referral Program rules.
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+    // 1. Helper to get CSRF from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const submitBtn = document.getElementById('submitBtn');
+    const btnIcon = document.getElementById('btnIcon');
+    const inputField = document.getElementById('referralCode');
+
+    // 2. Define the dynamic URL using Django template tag
+    const referralUrl = "{% url 'referral_view' %}";
+
+    submitBtn.addEventListener('click', async () => {
+        const code = inputField.value.trim();
+        const csrftoken = getCookie('csrftoken');
+        
+        if (!code) {
+            toastr.warning("Please enter a code");
+            return;
+        }
+
+        // --- LOADING STATE ---
+        submitBtn.classList.add('loading');
+        btnIcon.className = 'bx bx-loader-alt';
+        submitBtn.disabled = true; // Prevent double clicks
+
+        try {
+            // --- POST REQUEST ---
+            const response = await axios.post(referralUrl, 
+                { referral_code: code }, 
+                { 
+                    headers: { 
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest' // Helps Django identify AJAX
+                    } 
+                }
+            );
+            
+            if (response.data.status === 'success') {
+                // --- SUCCESS STATE ---
+                submitBtn.classList.remove('loading');
+                submitBtn.classList.add('success');
+                btnIcon.className = 'bx bx-check';
+                
+                toastr.success(response.data.message || "Code applied!");
+
+                // Small delay for the user to see the "Tick" before redirecting
+                setTimeout(() => {
+                    window.location.href = response.data.redirect_url || '/';
+                }, 1000);
+            } else {
+                // Logic error from backend
+                handleError(response.data.message);
+            }
+        } catch (error) {
+            // Server error or 400/500 codes
+            const errorMsg = error.response?.data?.message || "Something went wrong";
+            handleError(errorMsg);
+        }
+    });
+
+    function handleError(msg) {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        btnIcon.className = 'bx bx-right-arrow-alt';
+        toastr.error(msg);
+    }
+
+    // Support Enter Key
+    inputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') submitBtn.click();
+    });
+</script>
+{% endblock %}
