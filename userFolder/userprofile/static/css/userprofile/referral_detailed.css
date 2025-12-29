@@ -1,0 +1,360 @@
+/* --- Global Dashboard Container --- */
+.referral-dashboard {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #ffffff;
+}
+
+/* --- Header Section --- */
+.referral-header {
+    margin-bottom: 3rem;
+}
+
+/* --- Header Gradient Styling --- */
+.referral-header h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
+    color: #0f172a; /* Dark color for 'Refer Friends,' */
+}
+
+.referral-header h1 span {
+    /* Apply the specific gradient from your image */
+    background: linear-gradient(90deg, #1752D4 0%, #9333EA 100%);
+    
+    /* Clip the background to the text */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    
+    /* Ensure it stands out */
+    display: inline-block;
+}
+
+/* --- Base Stat Icon Styling --- */
+.stat-icon {
+    background: #f8fafc;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: #64748b;
+    margin-bottom: 1.25rem;
+    font-size: 1.25rem;
+    border: 1px solid #f1f5f9;
+    
+    /* Smooth Transition for all properties */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Hover Effect Triggered by the Card --- */
+.stat-box:hover .stat-icon {
+    background: black;
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(23, 82, 212, 0.3);
+    transform: scale(1.05);
+}
+
+.stat-box {
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.referral-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 700px;
+}
+
+/* --- Stats Grid --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3.5rem;
+}
+
+.stat-box {
+    background: #ffffff;
+    padding: 1.75rem;
+    border-radius: 16px;
+    border: 1px solid #f1f5f9;
+    /* Layered Box Shadow for Depth */
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.02),
+        0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-box:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.08),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-color: #e2e8f0;
+}
+
+.stat-icon {
+    background: #f8fafc;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: #64748b;
+    margin-bottom: 1.25rem;
+    font-size: 1.25rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+/* --- Referrals Table Card --- */
+.referrals-list-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    margin-bottom: 3.5rem;
+    overflow: hidden;
+}
+
+.list-header {
+    padding: 1.75rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.list-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.view-all {
+    color: #6366f1;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.view-all:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+.referral-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.referral-table td {
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid #f8fafc;
+    vertical-align: middle;
+}
+
+.referral-table tr:last-child td {
+    border-bottom: none;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.user-email {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+/* --- Status Pills --- */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-pill.rewarded {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.status-pill.active {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.status-pill.pending {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.date-cell {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.amount-cell {
+    font-weight: 700;
+    text-align: right;
+    color: #0f172a;
+    font-size: 1rem;
+}
+
+/* --- Milestone Card --- */
+.milestone-card {
+    background: #fffcf0;
+    /* Warm highlight */
+    border: 1px solid #fef3c7;
+    border-radius: 20px;
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    position: relative;
+    box-shadow: 0 4px 20px -2px rgba(251, 191, 36, 0.08);
+}
+
+.milestone-icon {
+    flex-shrink: 0;
+    background: #ffffff;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    color: #d97706;
+    font-size: 1.75rem;
+}
+
+.milestone-content h4 {
+    margin-bottom: 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #92400e;
+}
+
+.milestone-content p {
+    font-size: 1rem;
+    color: #b45309;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    max-width: 500px;
+}
+
+.expected-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #d97706;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 4px 12px;
+    border-radius: 8px;
+}
+
+.milestone-badge {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid rgba(146, 64, 14, 0.1);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .referral-dashboard {
+        padding: 1.25rem;
+    }
+
+    .referral-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .milestone-card {
+        flex-direction: column;
+        text-align: center;
+        padding-top: 5rem;
+    }
+
+    .milestone-badge {
+        top: 1.5rem;
+        right: 50%;
+        transform: translateX(50%);
+    }
+
+    .date-cell {
+        display: none;
+    }
+
+    /* Hide date on smaller mobile if space is tight */
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .list-header {
+        padding: 1.25rem;
+    }
+
+    .referral-table td {
+        padding: 1rem;
+    }
+}

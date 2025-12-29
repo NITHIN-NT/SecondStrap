@@ -2,12 +2,13 @@ import json
 from decimal import Decimal
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.db.models import F
+from django.db.models import F,Sum
 from django.db import transaction
+from django.views.generic import TemplateView
 
 from .models import *
 from userFolder.wallet.models import *
-
+from userFolder.userprofile.views import SecureUserMixin
 
 def referral_view(request):
     if not request.user.is_authenticated:
@@ -40,6 +41,7 @@ def referral_view(request):
                     referrer=referral,
                     receiver=user,
                     referral_reward=Decimal('49'),
+                    status=ReferralUsage.Status.ACTIVE,
                     is_reward_credited=False
                 )
                 
@@ -70,6 +72,7 @@ def referral_view(request):
                 )
                 
                 referral_usage.is_reward_credited = True
+                referral_usage.status=ReferralUsage.Status.REWARDED
                 referral_usage.save()
                 
                 referral.used_count = F('used_count') + 1
@@ -81,3 +84,19 @@ def referral_view(request):
             return JsonResponse({"status": "error", "message": f"Something went wrong: {str(e)}"})
     
     return render(request, 'referral/referral.html')
+
+class ReferralDetailView(SecureUserMixin,TemplateView):
+    template_name = 'userprofile/referral_detailed.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_referral,_ = Referral.objects.get_or_create(user=self.request.user)
+        referrals = ReferralUsage.objects.filter(referrer=user_referral)
+        total_refer_count = ReferralUsage.objects.filter(referrer=user_referral,is_reward_credited=True).count()
+        total_rewards = ReferralUsage.objects.filter(referrer=user_referral).aggregate(total_reward=Sum('referral_reward'))
+        
+        context['total_refer_count'] = total_refer_count
+        context['total_rewards'] = total_rewards['total_reward']
+        context['referrals'] = referrals
+        return context
+    

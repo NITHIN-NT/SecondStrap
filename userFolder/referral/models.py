@@ -30,10 +30,16 @@ class Referral(models.Model):
 
 
 class ReferralUsage(models.Model):
+    class Status(models.TextChoices):
+        REWARDED = 'Rewarded', 'Rewarded'
+        ACTIVE = 'Active', 'Active'
+        PENDING = 'Pending', 'Pending'
+        
     referrer = models.ForeignKey(Referral, on_delete=models.CASCADE,related_name='usages')
     receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='referral_usages')
     referral_reward = models.PositiveIntegerField()
     is_reward_credited = models.BooleanField(default=False)
+    status = models.CharField(max_length=50,choices=Status.choices,default=Status.PENDING,)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

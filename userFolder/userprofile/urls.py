@@ -2,6 +2,7 @@ from django.urls import path
 from .views import * 
 from userFolder.order.views import *
 from userFolder.wallet.views import *
+from userFolder.referral.views import ReferralDetailView
 urlpatterns = [
     path('',ProfileView.as_view(),name = 'profile_view_user'),
     path('address/',ProfileAddressView.as_view(),name = 'profile_address'),
@@ -24,4 +25,6 @@ urlpatterns = [
     path('addresses/manage/',manage_address, name='add_address'),
     path('addresses/fetch/<int:address_id>/',manage_address, name='fetch_address'),
     path('addresses/delete/<int:address_id>/',delete_address, name='delete_address'),
+    
+    path('referral-detail/',ReferralDetailView.as_view(),name='referral_deatils')
 ]

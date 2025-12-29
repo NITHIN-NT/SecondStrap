@@ -1,0 +1,90 @@
+{% extends 'userprofile/profile_base.html' %}
+{% load static %}
+
+{% block title %}Referrals - Earn Rewards{% endblock %}
+
+{% block profile_extra_style %}
+<link rel="stylesheet" href="{% static 'css/userprofile/referral_detailed.css' %}">
+{% endblock profile_extra_style %}
+
+{% block profile_content %}
+
+<div class="referral-dashboard">
+    <div class="referral-header">
+        <h1>Refer Friends, <span>Earn Rewards</span></h1>
+        <p>Invite your network to join our platform. You'll earn $50 for every active user, plus bonus rewards for hitting milestones.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-icon"><i class='bx bx-group'></i></div>
+            <span class="stat-label">Total Referrals</span>
+            <span class="stat-number">{{ total_refer_count|default:"0" }}</span>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon"><i class='bx bx-gift'></i></div>
+            <span class="stat-label">Rewards Earned</span>
+            <span class="stat-number">₹{{ total_rewards|default:"0" }}</span>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon"><i class='bx bx-time-five'></i></div>
+            <span class="stat-label">Pending Rewards</span>
+            <span class="stat-number">N/A</span>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon"><i class='bx bx-trending-up'></i></div>
+            <span class="stat-label">Conversion Rate</span>
+            <span class="stat-number">N/A</span>
+        </div>
+    </div>
+
+    <div class="referrals-list-card">
+        <div class="list-header">
+            <h3>Your Referrals</h3>
+            <a href="#" class="view-all">View All</a>
+        </div>
+        <div class="table-responsive">
+            <table class="referral-table">
+                <tbody>
+                    {% for referral in referrals %}
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <span class="user-name">{{ referral.receiver.first_name }}</span>
+                                <span class="user-email">{{ referral.receiver.email }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-pill {{ referral.is_reward_credited|lower }}">
+                                <i class='bx {% if referral.status == "Rewarded" %}bx-check-circle{% elif referral.status == "Active" %}bx-bolt-circle{% else %}bx-time{% endif %}'></i>
+                                {{ referral.status }}
+                            </span>
+                        </td>
+                        <td class="date-cell">{{ referral.created_at|date:"M d, Y" }}</td>
+                        <td class="amount-cell">₹{{ referral.referral_reward }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align:center; padding: 2rem; color: #666;">No referrals yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="milestone-card">
+        <div class="milestone-icon">
+            <i class='bx bxs-trophy'></i>
+        </div>
+        <div class="milestone-content">
+            <h4>Milestone Rewards - In Development</h4>
+            <p>We're building an exciting milestone rewards system that will let you earn bonuses as you reach referral goals. Stay tuned!</p>
+
+        </div>
+        <div class="milestone-badge">
+            Coming Soon
+        </div>
+    </div>
+</div>
+{% endblock profile_content %}
