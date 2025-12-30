@@ -129,43 +129,23 @@
                 </details>
 
                 <details class="info-accordion">
-                    <summary class="info-accordion-header">Available Offers</summary>
-                    <div class="info-accordion-content">
-                        <ul class="offer-list">
-                            <li class="offer-item">
-                                <span class="offer-tag offer-tag-sale">SALE</span>
-                                <span>Get 30% off on all orders above ₹1500</span>
-                            </li>
-                            <li class="offer-item">
-                                <span class="offer-tag offer-tag-bogo">BOGO</span>
-                                <span>Buy 2 t-shirts and get 1 free</span>
-                            </li>
-                            <li class="offer-item">
-                                <span class="offer-tag offer-tag-ship">SHIP</span>
-                                <span>Free shipping on all orders above ₹999</span>
-                            </li>
-                        </ul>
-                    </div>
-                </details>
-
-                <details class="info-accordion">
                     <summary class="info-accordion-header">Discount Coupons</summary>
                     <div class="info-accordion-content">
                         <ul class="coupon-list">
-                            <li class="coupon-item">
-                                <div class="coupon-details">
-                                    <span class="coupon-code">NEWUSER20</span>
-                                    <span class="coupon-description">20% off for new users</span>
-                                </div>
-                                <a href="#" class="coupon-apply-link">Apply</a>
-                            </li>
-                            <li class="coupon-item">
-                                <div class="coupon-details">
-                                    <span class="coupon-code">SUMMER10</span>
-                                    <span class="coupon-description">10% off on summer collection</span>
-                                </div>
-                                <a href="#" class="coupon-apply-link">Apply</a>
-                            </li>
+                            {% for coupon in coupons %}
+                                <li class="coupon-item"> 
+                                    <div class="coupon-details">
+                                        <span class="coupon-code">{{coupon.name}}</span>
+                                        <span class="coupon-description">
+                                            {% if coupon.coupon_amount %}
+                                                {{coupon.coupon_amount}}Rs off on {{coupon.description}}
+                                            {% else %}
+                                                {{coupon.coupon_percentage}}%  off on {{coupon.description}}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </details>

@@ -13,6 +13,7 @@ from django.db.models import OuterRef,Subquery,F,Value,DecimalField,When,Case,Pr
 from django.db.models.functions import Coalesce, Greatest
 from offer.models import OfferType
 from offer.selectors import get_active_offer_subqueries
+from coupon.models import Coupon
 # Create your views here.
 """
 def home_page_view(request):
@@ -285,6 +286,10 @@ class ProductDetailedView(DetailView):
         context["images_list_limited"] = all_images[:4]
         context["sizes"] = product.annotated_variants
         product_category = product.category
+        
+        now = timezone.now()
+        coupons = Coupon.objects.filter(start_date__lte=now,end_date__gte=now,is_active=True)
+        print(coupons)
 
         related_products = (
             Product.objects.filter(category=product.category, is_active=True)
@@ -308,6 +313,7 @@ class ProductDetailedView(DetailView):
         )
         context["related_products"] = related_products[:4]
         context["random_products"] = random_products[:4]
+        context["coupons"] = coupons
         return context
 
 def get_offers(request):
