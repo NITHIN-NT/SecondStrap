@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import AdminProductsView,AdminCategoryView,AdminUserView,AdminHome,StockManagementView,AdminOrderView
+from .views import *
 from offer.views import *
 from django.conf import settings
 from django.conf.urls.static import static
@@ -42,6 +42,12 @@ urlpatterns = [
     path('offer/delete/',delete_offer_view,name='Offer_delete_view'),
     path('offer/manage-offer/products/search/',search_products,name='search_products'),
     path('offer/manage-offer/categories/search/',search_category,name='search_categories'),
+    
+    path('coupon/',CouponAdminView.as_view(),name='admin_coupons'),
+    path('coupon/manage/',views.manage_coupon_view,name='admin_manage_coupon'),
+    path('coupon/manage/<int:id>/',views.manage_coupon_view,name='admin_manage_coupon'),
+    path('coupon/delete/<int:pk>/',CouponDeleteView.as_view(),name='admin_coupon_delete_view'),
+    path('coupon/history',CouponHistoryView.as_view(),name='admin_coupon_history'),
 ]
 
 if settings.DEBUG:

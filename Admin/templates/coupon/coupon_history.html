@@ -1,0 +1,254 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block title %}<title>Coupon Analytics</title>{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bg-color: #f8fafc;
+        --card-bg: #ffffff;
+        --primary-blue: #3b82f6;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+    }
+
+    .analytics-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .header-title h2 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+    .header-title p { color: var(--text-muted); font-size: 0.9rem; }
+
+    .time-filters {
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 8px;
+        display: flex;
+        gap: 4px;
+    }
+
+    .filter-btn {
+        padding: 6px 16px;
+        border-radius: 6px;
+        border: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        background: transparent;
+        color: var(--text-muted);
+        transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+        background: white;
+        color: var(--text-main);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Stat Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        position: relative;
+    }
+
+    .stat-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; display: block; }
+    .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-main); display: flex; align-items: baseline; gap: 8px; }
+    .stat-trend { font-size: 0.85rem; font-weight: 600; }
+    .trend-up { color: #10b981; }
+    .trend-down { color: #ef4444; }
+    .stat-icon { position: absolute; top: 1.5rem; right: 1.5rem; color: var(--text-muted); opacity: 0.5; }
+
+    /* Chart Section */
+    .chart-container {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Table Section */
+    .table-container {
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .table-header {
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-box {
+        position: relative;
+        width: 300px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 8px 12px 8px 35px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        outline: none;
+    }
+
+    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 12px 1.5rem; background: #f8fafc; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
+    td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+    
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-travel { background: #f3e8ff; color: #7e22ce; }
+    .code-pill { background: #f1f5f9; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-family: monospace; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-wrapper">
+    <div class="analytics-header">
+        <div class="header-title">
+            <h2>Coupon Analytics</h2>
+            <p>Track usage, savings, and performance metrics</p>
+        </div>
+        <div class="header-actions">
+            <div class="time-filters">
+                <button class="filter-btn">Last 7 Days</button>
+                <button class="filter-btn active">Last 30 Days</button>
+                <button class="filter-btn">Last 90 Days</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">Total Savings</span>
+            <div class="stat-value">₹{{total_savings}} <span class="stat-trend trend-up"></span></div>
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Total value of discounts redeemed</p>
+            <i class="fa-solid fa-dollar-sign stat-icon"></i>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Total Redemptions</span>
+            <div class="stat-value">{{total_coupon_used}} <span class="stat-trend trend-up"></span></div>
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Number of coupons used</p>
+            <i class="fa-solid fa-ticket stat-icon"></i>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Avg. Discount Rate</span>
+            <div class="stat-value">N/A <span class="stat-trend trend-down"></span></div>
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">Average percentage saved per order</p>
+            <i class="fa-solid fa-percent stat-icon"></i>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Usage Trends</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Daily coupon redemption volume</p>
+        <canvas id="usageChart" height="100"></canvas>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header">
+            <h3>Transaction History</h3>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search code or category...">
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date <i class="fa-solid fa-arrow-down-long"></i></th>
+                    <th>Code</th>
+                    <th>User</th>
+                    <th>Coupon Type</th>
+                    <th>Coupon Amount</th>
+                    <th>Discount</th>
+                    <th>order</th>
+                    <th>Cart Amount</th>
+                    <th>Amount Saved</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usage in usages %}
+                <tr>
+                    <td>{{usage.used_at}}</td>
+                    <td><span class="code-pill">{{usage.coupon.name}}</span></td>
+                    <td>{{usage.user}}</td>
+                    <td><span class="badge badge-travel">{{usage.coupon.coupon_type}}</span></td>
+                    <td>{{usage.coupon.coupon_amount}}</td>
+                    <td>{{usage.discount_amount}}Rs</td>
+                    <td>{{usage.order}}</td>
+                    <td>{{usage.cart_total_before_discount}}</td>
+                    <td style="color: #10b981; font-weight: 600;">-₹{{usage.cart_total_before_discount}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extraJs %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('usageChart').getContext('2d');
+    
+    // Gradient background for the line
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+    gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{label|safe}},
+            datasets: [{
+                label: 'Redemptions',
+                data: {{data|safe}},
+                borderColor: '#3b82f6',
+                borderWidth: 2,
+                fill: true,
+                backgroundColor: gradient,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f1f5f9', drawBorder: false },
+                    ticks: { color: '#64748b' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -39,6 +39,11 @@ class Coupon(models.Model):
             return f"{self.code} - {self.coupon_percentage}% off"
         return f"{self.code} - ₹{self.coupon_amount} off"
     
+    @property
+    def is_scheduled(self):
+        now = timezone.now()
+        return self.start_date > now if self.start_date else False
+    
     def clean(self):
         errors = {}
         

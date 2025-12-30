@@ -1,0 +1,144 @@
+{% extends "adminbase.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/coupons/manage_coupon.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<a href="{% url 'admin_coupons' %}" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Back to Coupons
+</a>
+<div class="form-container">
+
+    <div class="form-header">
+        <h1> {% if coupon %} Update Coupon{% else %} Create New Coupon{% endif %}</h1>
+        <p>{% if coupon %} Update the details below to update coupon for your customers.{% else %} Fill in the details below to create a new coupon code for your customers.{% endif %}</p>
+    </div>
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-error">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <form method="POST" class="coupon-form-card" novalidate>
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Internal Name</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <span class="error">{{ form.name.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.code.id_for_label }}">Coupon Code</label>
+            {{ form.code }}
+            {% if form.code.errors %}
+                <span class="error">{{ form.code.errors.0 }}</span>
+            {% endif %}
+            <small class="form-hint">Uppercase letters, numbers, hyphens, and underscores only.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <span class="error">{{ form.description.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.coupon_type.id_for_label }}">Type</label>
+                {{ form.coupon_type }}
+                {% if form.coupon_type.errors %}
+                    <span class="error">{{ form.coupon_type.errors.0 }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.coupon_amount.id_for_label }}">Discount Amount ($)</label>
+                {{ form.coupon_amount }}
+                {% if form.coupon_amount.errors %}
+                    <span class="error">{{ form.coupon_amount.errors.0 }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.coupon_percentage.id_for_label }}">Discount Percentage (%)</label>
+                {{ form.coupon_percentage }}
+                {% if form.coupon_percentage.errors %}
+                    <span class="error">{{ form.coupon_percentage.errors.0 }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.min_purchase_amount.id_for_label }}">Minimum Purchase Amount</label>
+            {{ form.min_purchase_amount }}
+            {% if form.min_purchase_amount.errors %}
+                <span class="error">{{ form.min_purchase_amount.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.start_date.id_for_label }}">Start Date</label>
+                {{ form.start_date }}
+                {% if form.start_date.errors %}
+                    <span class="error">{{ form.start_date.errors.0 }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.end_date.id_for_label }}">End Date</label>
+                {{ form.end_date }}
+                {% if form.end_date.errors %}
+                    <span class="error">{{ form.end_date.errors.0 }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.usage_limit.id_for_label }}">Usage Limit (Optional)</label>
+            {{ form.usage_limit }}
+            {% if form.usage_limit.errors %}
+                <span class="error">{{ form.usage_limit.errors.0 }}</span>
+            {% endif %}
+            <small class="form-hint">Leave blank for unlimited usage</small>
+        </div>
+
+        <hr class="form-divider">
+
+        <div class="toggle-group">
+            <div class="toggle-text">
+                <label>Active Status</label>
+                <p>Enable or disable this coupon immediately</p>
+            </div>
+            <label class="switch">
+                {{ form.is_active }}
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <div class="toggle-group">
+            <div class="toggle-text">
+                <label>Limit One Per User</label>
+                <p>Prevent users from using this code multiple times</p>
+            </div>
+            <label class="switch">
+                {{ form.one_time_per_user }}
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url "admin_coupons" %}" class="btn-cancel">Cancel</a>
+            <button type="submit" class="btn-submit">Create Coupon</button>
+        </div>
+    </form>
+</div>
+{% endblock content %}

@@ -1,6 +1,9 @@
 from django import forms
 from django.forms import inlineformset_factory
 from  products.models import Product,ProductVariant,ProductImage,Size,Category
+from coupon.models import Coupon,CouponType
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 class AdminLoginForm(forms.Form):
     email = forms.EmailField(
@@ -165,3 +168,61 @@ class CategoryForm(forms.ModelForm):
         if len(description) > 200:
             raise forms.ValidationError('Description needs to be shorter than 200 characters.')
         return description
+    
+class CouponForm(forms.ModelForm):
+    class Meta:
+        model = Coupon
+        exclude = ['created_at', 'updated_at', 'times_used']
+        widgets = {
+            'code': forms.TextInput(attrs={'class': 'form-control','placeholder': 'e.g., SUMMER20'}),
+            'name': forms.TextInput(attrs={'class': 'form-control','placeholder': 'e.g., Summer Sale 2024'}),
+            'description': forms.Textarea(attrs={'class': 'form-control','placeholder': 'Internal notes about this coupon...'}),
+            'coupon_type': forms.Select(attrs={'class': 'form-control'}),
+            'coupon_amount': forms.NumberInput(attrs={'class': 'form-control','placeholder': '0.00',}),
+            'coupon_percentage': forms.NumberInput(attrs={'class': 'form-control','placeholder': '0.00',}),
+            'min_purchase_amount': forms.NumberInput(attrs={'class': 'form-control','placeholder': '0.00',}),
+            'start_date': forms.DateTimeInput(attrs={'class': 'form-control','type': 'datetime-local'}),
+            'end_date': forms.DateTimeInput(attrs={'class': 'form-control','type': 'datetime-local'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'usage_limit': forms.NumberInput(attrs={'class': 'form-control','placeholder': 'Leave empty for unlimited'}),
+            'one_time_per_user': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code')
+        if code:
+            code = code.strip().upper()
+            if len(code) < 5:
+                raise ValidationError("Coupon code must be at least 3 characters long")
+        return code
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        coupon_type = cleaned_data.get('coupon_type')
+        coupon_amount = cleaned_data.get('coupon_amount')
+        coupon_percentage = cleaned_data.get('coupon_percentage')
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        usage_limit = cleaned_data.get('usage_limit')
+        
+        if coupon_type == CouponType.FIXED_AMOUNT:
+            if not coupon_amount or coupon_amount <= 0:
+                raise ValidationError({'coupon_amount': 'Fixed amount is required and must be greater than 0 for fixed amount coupons'})
+            cleaned_data['coupon_percentage'] = None
+            
+        elif coupon_type == CouponType.PERCENTAGE:
+            if not coupon_percentage or coupon_percentage <= 0:
+                raise ValidationError({'coupon_percentage': 'Percentage is required and must be greater than 0 for percentage coupons'})
+            if coupon_percentage > 100:
+                raise ValidationError({'coupon_percentage': 'Percentage cannot exceed 100%'})
+            cleaned_data['coupon_amount'] = None
+        
+        if start_date and end_date:
+            if end_date <= start_date:
+                raise ValidationError({'end_date': 'End date must be after start date'})
+        
+        if usage_limit is not None and usage_limit < 1:
+            raise ValidationError({'usage_limit': 'Usage limit must be at least 1 or leave blank for unlimited'})
+
+        return cleaned_data
