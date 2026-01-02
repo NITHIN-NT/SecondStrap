@@ -132,6 +132,42 @@
                     </div>
                 </div>
 
+                <h2 class="section-title mt-large">Apply Offers</h2>
+                <div class="promo-container">
+                    <div class="promo-header">
+                        <h2>Promo Code</h2>
+                    </div>
+
+                    <div class="promo-form-row">
+                        <input type="text" placeholder="Enter promo code" value={{coupon_code}}>
+                        <button class="promo-apply-btn">APPLY</button>
+                    </div>
+
+                    <p class="offers-label">AVAILABLE OFFERS</p>
+
+                    <div class="offers-grid">
+                        {% for coupon in coupons %}
+                            <div class="offer-item-card 
+                                {% if coupon_code == coupon.code %}active{% endif %}"
+                                data-code="{{coupon.code}}" style="cursor: pointer;">
+                                <div class="offer-icon-box">🎟️</div>
+                                <div class="offer-details">
+                                    <strong>{{coupon.code}}</strong>
+                                    <small>{{coupon.name}}</small>
+                                    <span>
+                                        {% if coupon.coupon_amount %}
+                                            {{coupon.coupon_amount}} Rs off on {{coupon.description}}
+                                        {% else %}
+                                            {{coupon.coupon_percentage}}% off on {{coupon.description}}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                    </div>
+                </div>
+
                 <h2 class="section-title mt-large">Payment Method</h2>
                 <div class="payment-selection-list">
 
@@ -236,18 +272,30 @@
                 <span>Discount</span>
                 <span>-₹{{ discount }}</span>
             </div>
-            {% if wallet_applied_amount %}
-            <div class="summary-row discount">
-                <span>Wallet Deduction</span>
-                <span>-₹{{ wallet_applied_amount }}</span>
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>₹{{ cart_total_price }}</span>
             </div>
+
+            {% if wallet_applied_amount %}
+                <div class="summary-row discount">
+                    <span>Wallet Deduction</span>
+                    <span>-₹{{ wallet_applied_amount }}</span>
+                </div>
             {% endif %}
+
+            {% if coupon_discount %}
+                <div class="summary-row discount">
+                    <span>Coupon Deduction</span>
+                    <span>-₹{{ coupon_discount }}</span>
+                </div>
+            {% endif %}
+
             
             <div class="summary-row">
                 <span>Shipping</span>
                 <span>+₹{{ shipping_fee|default:"30" }}</span>
             </div>
-           
 
             <div class="summary-divider"></div>
             <div class="summary-row total">
@@ -255,10 +303,6 @@
                 <span>₹{{ grand_total }}</span>
             </div>
 
-            <div class="promo-code-box">
-                <input type="text" placeholder="Promo Code" value="SAVE20">
-                <button type="button">APPLY</button>
-            </div>
             <p class="terms-text">By placing your order, you agree to our Terms of Service.</p>
         </div>
 
@@ -383,24 +427,26 @@ document.addEventListener('DOMContentLoaded', function () {
     // Wallet deduction elements
     const applyWalletBtn = document.getElementById('applyWalletBtn');
     const useWalletDeductionCheckbox = document.getElementById('use_wallet_deduction'); 
+    const promoInput = document.querySelector('.promo-form-row input');
+    const applyCouponBtn = document.querySelector('.promo-apply-btn');
 
     const addressRadios = document.querySelectorAll('input[name="selected_address"]');
 
     // URLs
     const codUrl = "{% url 'order' %}";
     const createOrderUrl = "{% url 'create_razorpay_order' %}";
-    const walletFullUrl = "{% url 'pay_using_wallet' %}"; 
+    const walletFullUrl = "{% url 'pay_using_wallet' %}";
     const deductWalletUrl = "{% url 'deduct_amount_from_wallet' %}";
+    const couponUrl = "{% url 'coupon_discount' %}";
+    const removeCouponUrl = "{% url 'remove_coupon' %}";
 
     const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
 
     // ========== 1. APPLY WALLET BUTTON ==========
     if (applyWalletBtn) {
         applyWalletBtn.addEventListener('click', async function() {
-            // Prevent concurrent submissions
             if (placeOrderBtn.classList.contains('loading')) return; 
 
-            // Check for selected address first
             const selectedAddress = document.querySelector('input[name="selected_address"]:checked');
             if (!selectedAddress) {
                 toastr.error('Please select a delivery address before applying wallet.');
@@ -408,63 +454,159 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             
             placeOrderBtn.classList.add('loading');
-
-            // Prepare form data
             const formData = new FormData(form);
             
             try {
-                // Send AJAX request
                 const response = await axios.post(deductWalletUrl, formData, {
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                    }
+                    headers: { 'X-CSRFToken': csrfToken }
                 });
 
                 if (response.data.success) {
                     toastr.success('Wallet amount applied successfully!');
-                    
-                    // Reload to show updated totals
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
-                    
+                    setTimeout(() => { window.location.reload(); }, 500);
                 } else {
                     placeOrderBtn.classList.remove('loading');
                     toastr.error(response.data.error || 'Failed to apply wallet amount.');
                 }
-                
             } catch (err) {
                 console.error('Wallet deduction error:', err);
                 placeOrderBtn.classList.remove('loading');
-                toastr.error(err.response?.data?.error || 'An unexpected error occurred while applying wallet.');
+                toastr.error('Error applying wallet.');
             }
         });
     }
+
+    // ========== 2. COUPON SELECTION ==========
+    document.querySelectorAll('.offer-item-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const code = this.querySelector('strong').innerText;
+            promoInput.value = code;
+            
+            document.querySelectorAll('.offer-item-card').forEach(c => c.style.borderColor = '#eee');
+            this.style.borderColor = '#3399cc';
+            toastr.info(`Coupon ${code} selected`);
+        });
+    });
+
+    // ========== 3. APPLY COUPON ==========
+    if (applyCouponBtn) {
+        applyCouponBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const couponCode = promoInput.value.trim();
+
+            if (!couponCode) {
+                toastr.error('Please enter or select a promo code.');
+                return;
+            }
+
+            applyCouponBtn.disabled = true;
+            applyCouponBtn.innerText = 'WAIT...';
+
+            try {
+                const formData = new FormData();
+                formData.append('coupon_code', couponCode);
+                
+                const selectedAddress = document.querySelector('input[name="selected_address"]:checked');
+                if(selectedAddress) formData.append('selected_address', selectedAddress.value);
+
+                const response = await axios.post(couponUrl, formData, {
+                    headers: { 'X-CSRFToken': csrfToken }
+                });
+
+                if (response.data.success) {
+                    toastr.success(response.data.message || 'Coupon applied successfully!');
+                    setTimeout(() => { window.location.reload(); }, 800);
+                } else {
+                    applyCouponBtn.disabled = false;
+                    applyCouponBtn.innerText = 'APPLY';
+                    toastr.error(response.data.error || 'Invalid coupon.');
+                }
+            } catch (err) {
+                applyCouponBtn.disabled = false;
+                applyCouponBtn.innerText = 'APPLY';
+                const backendError = err.response?.data?.error;
+                toastr.error(backendError || 'An unexpected error occurred.');
+            }
+        });
+    }
+
+    // ========== 4. REMOVE COUPON ==========
+    const allDiscountRows = document.querySelectorAll('.summary-row.discount');
+    let couponDiscountRow = null;
     
-    // ========== 2. PAYMENT METHOD CHANGE LISTENERS ==========
+    allDiscountRows.forEach(row => {
+        const firstSpan = row.querySelector('span:first-child');
+        if (firstSpan && firstSpan.textContent.trim() === 'Coupon Deduction') {
+            couponDiscountRow = row;
+        }
+    });
+    
+    if (couponDiscountRow) {
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-coupon-btn';
+        removeBtn.innerHTML = '✕';
+        removeBtn.style.cssText = 'margin-left: 8px; background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; line-height: 1; transition: all 0.2s;';
+        
+        removeBtn.addEventListener('mouseenter', function() {
+            this.style.background = '#cc0000';
+            this.style.transform = 'scale(1.1)';
+        });
+        removeBtn.addEventListener('mouseleave', function() {
+            this.style.background = '#ff4444';
+            this.style.transform = 'scale(1)';
+        });
+        
+        couponDiscountRow.querySelector('span:last-child').appendChild(removeBtn);
+        
+        removeBtn.addEventListener('click', async function() {
+            if (confirm('Remove applied coupon?')) {
+                removeBtn.disabled = true;
+                removeBtn.style.opacity = '0.5';
+                
+                try {
+                    const response = await axios.post(removeCouponUrl, {}, {
+                        headers: { 'X-CSRFToken': csrfToken }
+                    });
+
+                    if (response.data.success) {
+                        toastr.success('Coupon removed successfully!');
+                        setTimeout(() => { window.location.reload(); }, 500);
+                    } else {
+                        removeBtn.disabled = false;
+                        removeBtn.style.opacity = '1';
+                        toastr.error(response.data.error || 'Failed to remove coupon.');
+                    }
+                } catch (err) {
+                    console.error('Remove coupon error:', err);
+                    removeBtn.disabled = false;
+                    removeBtn.style.opacity = '1';
+                    toastr.error('Error removing coupon.');
+                }
+            }
+        });
+    }
+
+    // ========== 5. PAYMENT METHOD LISTENERS ==========
     const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
     paymentRadios.forEach(radio => {
         radio.addEventListener('change', () => {
-            if (useWalletDeductionCheckbox) {
-                useWalletDeductionCheckbox.checked = false;
-            }
+            if (useWalletDeductionCheckbox) useWalletDeductionCheckbox.checked = false;
         });
     });
     
-    // ========== 3. PLACE ORDER FORM SUBMISSION ==========
+    // ========== 6. PLACE ORDER FORM SUBMISSION ==========
     form.addEventListener('submit', async function (e) {
-        e.preventDefault(); // CRITICAL: Prevent form submission FIRST
+        e.preventDefault();
         
-        console.log('Form submitted'); // DEBUG
+        console.log('Form submitted');
         
         const addressSelected = Array.from(addressRadios).some(r => r.checked);
-        
-        // Check which payment method is selected
-        const isCod = codRadio ? codRadio.checked : false;
-        const isUpi = upiRadio ? upiRadio.checked : false;
-        const isWalletFull = walletFullRadio ? walletFullRadio.checked : false; 
+        const isCod = codRadio?.checked;
+        const isUpi = upiRadio?.checked;
+        const isWalletFull = walletFullRadio?.checked;
 
-        console.log('Payment methods:', { isCod, isUpi, isWalletFull }); // DEBUG
+        console.log('Payment methods:', { isCod, isUpi, isWalletFull });
 
         // Validation
         if (!addressSelected) {
@@ -479,50 +621,46 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Prevent double submission
         if (placeOrderBtn.classList.contains('loading')) {
-            console.log('Already loading, preventing double submit'); // DEBUG
+            console.log('Already loading, preventing double submit');
             return;
         }
         
         // 1. FULL WALLET PAYMENT
         if (isWalletFull) {
-            console.log('Processing wallet payment'); // DEBUG
-            form.action = walletFullUrl;
+            console.log('Processing wallet payment');
             placeOrderBtn.classList.add('loading');
-            form.submit(); // Normal form submission
+            form.action = walletFullUrl;
+            form.method = 'POST';
+            form.submit();
             return;
         }
 
         // 2. COD PAYMENT
         if (isCod) {
-            console.log('Processing COD payment'); // DEBUG
-            form.action = codUrl;
+            console.log('Processing COD payment');
             placeOrderBtn.classList.add('loading');
-            form.submit(); // Normal form submission
+            form.action = codUrl;
+            form.method = 'POST';
+            form.submit();
             return;
         }
 
         // 3. RAZORPAY (UPI/ONLINE) PAYMENT
         if (isUpi) {
-            console.log('Processing Razorpay payment'); // DEBUG
+            console.log('Processing UPI payment');
             placeOrderBtn.classList.add('loading');
-
             const formData = new FormData(form);
+            
+            if (promoInput.value.trim()) {
+                formData.append('coupon_code', promoInput.value.trim());
+            }
 
             try {
-                console.log('Fetching Razorpay order from:', createOrderUrl); // DEBUG
-                
-                const response = await fetch(createOrderUrl, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: formData
+                const response = await axios.post(createOrderUrl, formData, {
+                    headers: { 'X-CSRFToken': csrfToken }
                 });
 
-                console.log('Response status:', response.status); // DEBUG
-
-                const data = await response.json();
-                console.log('Response data:', data); // DEBUG
+                const data = response.data;
 
                 if (!data.success) {
                     placeOrderBtn.classList.remove('loading');
@@ -530,28 +668,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                // Verify Razorpay is loaded
-                if (typeof Razorpay === 'undefined') {
-                    console.error('Razorpay library not loaded!'); // DEBUG
-                    placeOrderBtn.classList.remove('loading');
-                    toastr.error('Payment gateway not loaded. Please refresh and try again.');
-                    return;
-                }
-
-                console.log('Building Razorpay options...'); // DEBUG
-
-                // Build Razorpay options
                 const options = {
                     key: data.razorpay_key_id,
                     amount: data.amount_paise,
                     currency: data.currency,
                     name: "SecondStrap",
-                    description: "Order Payment",
                     order_id: data.razorpay_order_id,
                     handler: function (response) {
-                        console.log('Payment successful!', response); // DEBUG
-                        
-                        // Payment successful - submit to callback
+                        // Payment successful
                         const callbackForm = document.createElement('form');
                         callbackForm.method = "POST";
                         callbackForm.action = "{% url 'razorpay_callback' %}";
@@ -570,7 +694,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             input.value = fields[key];
                             callbackForm.appendChild(input);
                         }
-
                         document.body.appendChild(callbackForm);
                         callbackForm.submit();
                     },
@@ -584,40 +707,64 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     modal: {
                         ondismiss: function() {
-                            console.log('Razorpay modal dismissed'); // DEBUG
-                            placeOrderBtn.classList.remove('loading');
+                            // User closed modal
+                            axios.post("{% url 'payment_failed_logging' %}", {
+                                failure_type: 'MODAL_DISMISSED',
+                                order_id: data.razorpay_order_id,
+                                error_description: 'User closed payment modal',
+                                amount: data.amount_paise / 100,
+                                user_email: data.user_email,
+                                user_phone: data.user_phone
+                            }, {
+                                headers: { 'X-CSRFToken': csrfToken }
+                            }).finally(() => {
+                                window.location.href = "{% url 'payment_failed_page' %}";
+                            });
                         }
                     }
                 };
 
-                console.log('Razorpay options:', options); // DEBUG
-
                 const rzp = new Razorpay(options);
                 
-                // Handle payment failures
-                rzp.on('payment.failed', function (resp) {
-                    console.log('Payment failed:', resp); // DEBUG
-                    placeOrderBtn.classList.remove('loading');
+                // Payment failed
+                rzp.on('payment.failed', async function (resp) {
+                    console.error('Payment failed:', resp);
                     
-                    let errorReason = 'Please try again or select a different method.';
-                    if (resp.error && resp.error.description) {
-                        errorReason = resp.error.description;
-                    }
+                    await axios.post("{% url 'payment_failed_logging' %}", {
+                        failure_type: 'PAYMENT_FAILED',
+                        order_id: data.razorpay_order_id,
+                        error_code: resp.error.code,
+                        error_description: resp.error.description,
+                        amount: data.amount_paise / 100,
+                        user_email: data.user_email,
+                        user_phone: data.user_phone
+                    }, {
+                        headers: { 'X-CSRFToken': csrfToken }
+                    }).catch(err => console.error('Failed to log:', err));
                     
-                    toastr.error(`Payment failed: ${errorReason}`);
+                    setTimeout(() => {
+                        window.location.href = "{% url 'payment_failed_page' %}";
+                    }, 500);
                 });
-
-                console.log('Opening Razorpay modal...'); // DEBUG
                 
-                // Open Razorpay
                 rzp.open();
-                
-                console.log('Razorpay modal opened'); // DEBUG
 
             } catch (err) {
                 console.error('Razorpay error:', err);
                 placeOrderBtn.classList.remove('loading');
-                toastr.error('Something went wrong while initiating payment.');
+                
+                axios.post("{% url 'payment_failed_logging' %}", {
+                    failure_type: 'INITIALIZATION_ERROR',
+                    error_description: err.message || 'Failed to initialize Razorpay',
+                    error_code: 'INIT_FAILED'
+                }, {
+                    headers: { 'X-CSRFToken': csrfToken }
+                }).catch(logErr => console.error('Failed to log:', logErr));
+                
+                toastr.error('Payment initialization failed.');
+                setTimeout(() => {
+                    window.location.href = "{% url 'payment_failed_page' %}";
+                }, 1500);
             }
         }
     });

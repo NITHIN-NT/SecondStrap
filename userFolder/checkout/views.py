@@ -7,7 +7,9 @@ from decimal import Decimal
 from userFolder.wallet.models import Wallet
 from userFolder.cart.utils import get_annotated_cart_items
 from userFolder.order.models import OrderMain
+from coupon.models import Coupon
 from django.utils import timezone
+from userFolder.payment.utils import calculate_cart_totals
 
 class CheckOutView(View):
     def get(self, request, *args, **kwargs):
@@ -21,28 +23,32 @@ class CheckOutView(View):
         if not cart_items.exists():
             return redirect("products_page_user")
         
-        # Stock validation
-        if cart_items.exists():
-            for item in cart_items:
-                if int(item.variant.stock) <= 0 or item.quantity > item.variant.stock:
-                    messages.error(request, "Remove the out-of-stock product from the cart to proceed")
-                    return redirect("cart")
-        else:
-            return redirect("products_page_user")
+        for item in cart_items:
+            if int(item.variant.stock) <= 0 or item.quantity > item.variant.stock:
+                messages.error(request, "Remove the out-of-stock product from the cart to proceed")
+                return redirect("cart")
         
         addresses = Address.objects.filter(user=request.user)
         
-        # Calculate base totals
-        total_price = sum(item.subtotal for item in cart_items)
-        cart_total_price = sum(item.product_total for item in cart_items)
-        discount = sum(item.actual_discount for item in cart_items)
-        shipping = Decimal(30)
+        totals = calculate_cart_totals(cart_items=cart_items)
         
-        grand_total = cart_total_price + shipping
+        try:
+            wallet = Wallet.objects.get(user=request.user)
+        except Wallet.DoesNotExist:
+            wallet = None
         
-        # Check if there's a draft order with wallet deduction applied
-        draft_order_id = request.session.get('draft_order_id')
+        try:
+            now = timezone.now()
+            coupons = Coupon.objects.filter(start_date__lte=now,end_date__gte=now,is_active=True)
+        except Coupon.DoesNotExist:
+            coupons = None
+        
         wallet_applied_amount = Decimal('0')
+        coupon_discount = Decimal('0')
+        coupon_code = None
+        grand_total = totals['grand_total']
+        
+        draft_order_id = request.session.get('draft_order_id')
         
         if draft_order_id:
             try:
@@ -52,32 +58,31 @@ class CheckOutView(View):
                     order_status='draft',
                     expires_at__gt=timezone.now()
                 )
-            
-                wallet_applied_amount = draft_order.wallet_deduction
-            
-                grand_total = draft_order.final_price - wallet_applied_amount
                 
+                wallet_applied_amount = draft_order.wallet_deduction
+                coupon_discount = draft_order.coupon_discount
+                coupon_code = draft_order.coupon_code
+                grand_total = draft_order.final_price
+
             except OrderMain.DoesNotExist:
                 if 'draft_order_id' in request.session:
                     del request.session['draft_order_id']
-                wallet_applied_amount = Decimal('0')
-        
-        try:
-            wallet = Wallet.objects.get(user=request.user)
-        except Wallet.DoesNotExist:
-            wallet = None
-        
-        grand_total = grand_total.quantize(Decimal('0.01'))
-        
         context = {
-            "cart_items": cart_items,
-            "addresses": addresses,
-            'total_price': total_price,
             'cart': cart,
-            'discount': discount, 
-            'grand_total': grand_total,
             'wallet': wallet,
+            'coupons': coupons,
+            'addresses': addresses,
+            'cart_items': cart_items,
+            
+            'total_price': totals['subtotal'],
+            'discount': totals['cart_discount'],
+            'cart_total_price': totals['cart_total_price'],
+            'shipping_fee': totals['shipping'],
+            
             'wallet_applied_amount': wallet_applied_amount if wallet_applied_amount > 0 else None,
-            'shipping_fee': shipping,
+            'coupon_discount': coupon_discount if coupon_discount > 0 else None,
+            'coupon_code': coupon_code if coupon_code else None,
+            
+            'grand_total': grand_total,
         }
         return render(request, "checkout/checkout.html", context)

@@ -12,7 +12,6 @@
     align-items: center;
     padding: 40px 20px;
     min-height: 60vh;
-    background-color: #f7f7f7; /* Light background for contrast */
 }
 
 /* The Main Card */
@@ -106,6 +105,7 @@
     transition: background-color 0.3s;
     border: none;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .btn-black:hover {
@@ -144,8 +144,7 @@
 
         <h2>Payment Failed</h2>
         <p class="subtext">
-            Your payment could not be processed. Please check 
-            your payment details and try again.
+            Your payment could not be processed. No amount has been deducted from your account.
         </p>
 
         <div class="error-reasons-box">
@@ -158,9 +157,9 @@
             </ul>
         </div>
 
-        <button class="btn-black">Try Again</button>
+        <a href="{% url 'checkout' %}" class="btn-black">Try Again</a>
         
-        <a href="#" class="link-grey contact-link">Contact Support</a>
+        <a href="mailto:support@secondstrap.com" class="link-grey contact-link">Contact Support</a>
     </div>
 </div>
 {% endblock content %}

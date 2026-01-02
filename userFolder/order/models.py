@@ -103,6 +103,7 @@ class OrderMain(models.Model):
     final_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     
     coupon_code = models.CharField(max_length=50, null=True, blank=True)
+    coupon_discount = models.DecimalField(max_digits=10,decimal_places=2,default=0)
     wallet_deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0,help_text="Amount deducted from user's wallet")
     is_returned = models.BooleanField(default=False)
     

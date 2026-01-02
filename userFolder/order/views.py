@@ -22,9 +22,9 @@ def order(request):
         return redirect('checkout')
     
     if request.session.get('draft_order_id'):
-        messages.error(request,'wallet applyed so you have to make the payment with UPI')
+        messages.error(request,'Only UPI applicable')
         return redirect('checkout')
-
+    
     try:
         
         with transaction.atomic():
@@ -85,6 +85,10 @@ def order(request):
             shipping = Decimal(30)
             grand_total = cart_total_price + shipping
             
+            if grand_total > Decimal('1000'):
+                messages.info(request,'Order above 1000 , only UPI')
+                return redirect('checkout')
+            
             order = OrderMain.objects.create(
                 user=user,
                 shipping_address_name=address.full_name,
@@ -94,6 +98,7 @@ def order(request):
                 shipping_pincode=address.postal_code,
                 shipping_phone=address.phone_number,
                 payment_method=payment_method,
+                order_status = 'pending',
                 total_price=subtotal,
                 discount_amount = cart_discount,
                 shipping_amount = shipping,

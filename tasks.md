@@ -154,3 +154,101 @@ g. Inventory Management
 [x] Create Inventory/Stock Overview page.
 
 [x] (Optional based on requirements) Interface to manually adjust stock levels.
+
+
+
+ if (isUpi) {
+            placeOrderBtn.classList.add('loading');
+            const formData = new FormData(form);
+            
+            // IMPORTANT: Ensure the coupon code is sent to the Razorpay order creation view
+            if (promoInput.value.trim()) {
+                formData.append('coupon_code', promoInput.value.trim());
+            }
+
+            try {
+                const response = await fetch(createOrderUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    placeOrderBtn.classList.remove('loading');
+                    toastr.error(data.error || 'Unable to create payment.');
+                    return;
+                }
+
+                const options = {
+                    key: data.razorpay_key_id,
+                    amount: data.amount_paise,
+                    currency: data.currency,
+                    name: "SecondStrap",
+                    order_id: data.razorpay_order_id,
+                    handler: function (response) {
+                        const callbackForm = document.createElement('form');
+                        callbackForm.method = "POST";
+                        callbackForm.action = "{% url 'razorpay_callback' %}";
+                        
+                        const fields = {
+                            "csrfmiddlewaretoken": csrfToken,
+                            "razorpay_payment_id": response.razorpay_payment_id,
+                            "razorpay_order_id": response.razorpay_order_id,
+                            "razorpay_signature": response.razorpay_signature,
+                        };
+
+                        for (let key in fields) {
+                            const input = document.createElement('input');
+                            input.type = "hidden";
+                            input.name = key;
+                            input.value = fields[key];
+                            callbackForm.appendChild(input);
+                        }
+                        document.body.appendChild(callbackForm);
+                        callbackForm.submit();
+                    },
+                    prefill: {
+                        name: data.user_name,
+                        email: data.user_email,
+                        contact: data.user_phone
+                    },
+                    modal: { ondismiss: function() { placeOrderBtn.classList.remove('loading'); } }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (resp) {
+                    placeOrderBtn.classList.remove('loading');
+                    toastr.error(`Payment failed: ${resp.error.description}`);
+                    console.log(resp)
+                }); 
+                rzp.on('payment.failed', function (resp) {
+                    axios.post(
+                        "{% url 'payment_failed_logging' %}",
+                        {
+                            error: resp.error.description,
+                            order_id: resp.error.metadata.order_id,
+                        },
+                        {
+                            headers: {
+                                "X-CSRFToken": csrfToken,
+                                "Content-Type": "application/json",
+                            }
+                        }
+                    ).catch((err) => {
+                        console.error("Logging failed:", err);
+                    }).finally(() => {
+                        window.location.href = "{% url 'payment_failed_page' %}";
+                    });
+
+                }); 
+                rzp.open();
+
+            } catch (err) {
+                placeOrderBtn.classList.remove('loading');
+                toastr.error('Razorpay initialization failed.');
+            }
+        }
+
+            
