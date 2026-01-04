@@ -1,10 +1,9 @@
 from django.shortcuts import render
 from .models import Product, ProductVariant, Category
 from django.utils import timezone
-from datetime import date, timedelta
 from django.core.paginator import Paginator
 from django.db.models import Max, Min
-from django.views.generic import TemplateView, DetailView, ListView
+from django.views.generic import TemplateView, DetailView
 from django.db.models import Min, Max, Sum, Count
 from django.db.models.functions import Coalesce
 from offer.models import Offer
@@ -14,6 +13,8 @@ from django.db.models.functions import Coalesce, Greatest
 from offer.models import OfferType
 from offer.selectors import get_active_offer_subqueries
 from coupon.models import Coupon
+from userFolder.review.models import Review
+from django.db.models import Avg
 # Create your views here.
 """
 def home_page_view(request):
@@ -286,10 +287,19 @@ class ProductDetailedView(DetailView):
         context["images_list_limited"] = all_images[:4]
         context["sizes"] = product.annotated_variants
         product_category = product.category
+        reviews = Review.objects.filter(product=product)
+        avg_rating = Review.objects.filter(product=product).aggregate(Avg('rating'))['rating__avg'] or 0
+        ratings = reviews.count()
+        
+        rating_range = range(int(avg_rating))
+        
+        for review in reviews:
+            review.filled_stars = range(review.rating)
+            review.empty_stars = range(5-review.rating)
+        
         
         now = timezone.now()
         coupons = Coupon.objects.filter(start_date__lte=now,end_date__gte=now,is_active=True)
-        print(coupons)
 
         related_products = (
             Product.objects.filter(category=product.category, is_active=True)
@@ -314,6 +324,10 @@ class ProductDetailedView(DetailView):
         context["related_products"] = related_products[:4]
         context["random_products"] = random_products[:4]
         context["coupons"] = coupons
+        context['reviews'] = reviews
+        context['avg_rating'] = avg_rating 
+        context['rating_range'] = rating_range
+        context['ratings'] = ratings
         return context
 
 def get_offers(request):

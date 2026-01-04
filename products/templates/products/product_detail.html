@@ -46,14 +46,25 @@
                 <input type="text" id="product-id" value="{{ product.id }}" hidden>
 
                 <div class="product-review-summary">
-                    <div class="stars">
-                        <i class='bx bxs-star'></i>
-                        <i class='bx bxs-star'></i>
-                        <i class='bx bxs-star'></i>
-                        <i class='bx bxs-star'></i>
-                        <i class='bx bxs-star-half'></i>
-                    </div>
-                    <span class="review-count">(128 reviews)</span>
+                    {% if ratings > 1 %}
+                        <div class="stars">
+                            {% for i in rating_range %}
+                                <i class='bx bxs-star'></i>
+                            {% endfor %}
+                        </div>
+                        <span class="review-count">({{ratings}} reviews)</span>
+                    {% else %}
+                        <div class="stars no-rating">
+                            {# Render 5 empty stars to maintain layout consistency #}
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                        </div>
+                        <span class="review-count">No reviews yet. Be the first to review!</span>
+                    {% endif %}
+
                 </div>
                 <div class="product-price-container">
                     {% if product.annotated_variants.0.actual_discount > 0 %}
@@ -156,53 +167,51 @@
             <h2>Customer Reviews</h2>
             <div class="reviews-summary">
                 <div class="average-rating">
-                    <span class="rating-value">4.5</span>
+                    {% if avg_rating > 1 %}
+                        <span class="rating-value">{{avg_rating}}</span>
+                    {% endif %}
                     <div class="stars">
-                        <i class='bx bxs-star'></i>
-                        <i class='bx bxs-star'></i>
-                        <i class='bx bxs-star'></i>
-                        <i class='bx bxs-star'></i>
-                        <i class='bx bxs-star-half'></i>
+                        {% for i in rating_range %}
+                                <i class='bx bxs-star'></i>
+                        {% empty %}
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                            <i class='bx bx-star'></i>
+                        {% endfor %}
+                        
                     </div>
-                    <span class="total-reviews">(Based on 12 reviews)</span>
+                    {% if ratings > 1 %}
+                        <span class="total-reviews">(Based on {{ratings}} reviews)</span>
+                    {% else %}
+                        <span class="review-count">No reviews yet. Be the first to review!</span>
+                    {% endif %}
                 </div>
                 <button class="btn btn-outline" id="btn-write-review">Write a Review</button>
             </div>
 
             <div class="review-list">
+                {% for review in reviews %}
                 <div class="review-item">
                     <div class="review-header">
-                        <span class="review-author">Nithin S.</span>
+                        <span class="review-author">{{review.user.first_name}}</span>
                         <div class="review-rating stars">
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                        </div>
-                    </div>
-                    <span class="review-date">October 28, 2025</span>
-                    <p class="review-text">
-                        Excellent quality shirt! The fit is perfect and the material feels very premium. Exactly as described. Highly recommend.
-                    </p>
-                </div>
+                            {% for i in review.filled_stars %}
+                                <i class='bx bxs-star'></i>
+                            {% endfor %}
+                            {% for i in review.empty_stars %}
+                                <i class='bx bx-star'></i>
+                            {% endfor %}
 
-                <div class="review-item">
-                    <div class="review-header">
-                        <span class="review-author">Arjun</span>
-                        <div class="review-rating stars">
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bxs-star'></i>
-                            <i class='bx bx-star'></i>
                         </div>
                     </div>
-                    <span class="review-date">October 25, 2025</span>
+                    <span class="review-date">{{review.created_at}}</span>
                     <p class="review-text">
-                        Good shirt, but the color was slightly different than the picture. Still, the quality is nice.
+                        {{review.comment}}
                     </p>
                 </div>
+                {% endfor %}
             </div>
         </div>
 
@@ -244,8 +253,37 @@
             </div>
         </div>
     </div>
-{% endblock content %}
 
+<div id="reviewModal" class="review-modal-overlay">
+    <div class="review-modal-card">
+        <div class="review-modal-header">
+            <h2>Rate this Product!</h2> <button class="close-review-modal">&times;</button>
+        </div>
+        <p class="review-subtext">Share your experience with this item to help other shoppers make a choice!</p>
+        
+        <form id="reviewForm">
+            <div class="star-rating-input">
+                <i class='bx bx-star' data-value="1"></i>
+                <i class='bx bx-star' data-value="2"></i>
+                <i class='bx bx-star' data-value="3"></i>
+                <i class='bx bx-star' data-value="4"></i>
+                <i class='bx bx-star' data-value="5"></i>
+            </div>
+            <input type="hidden" name="rating" id="rating-value" value="0">
+
+            <div class="form-group">
+                <label>Write your review</label>
+                <textarea name="comment" placeholder="What did you like or dislike about this product?" rows="4"></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="closeReviewBtn">Cancel</button>
+                <button type="submit" class="btn-submit">Submit Review</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
 {% block extra_script %}
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
@@ -277,20 +315,42 @@
     }
     const csrftoken = getCookie('csrftoken');
 
+    // --- ERROR HANDLING FOR AXIOS ---
+    function handleAxiosError(error, actionName) {
+        console.error(actionName + " Error:", error);
+
+        if (error.response) {
+            const status = error.response.status;
+            const serverMessage = error.response.data?.message;
+
+            if (status === 401) {
+                toastr.error(serverMessage || "Please log in to continue.");
+                setTimeout(function() {
+                    window.location.href = "{% url 'login' %}?next={{ request.path }}";
+                }, 1500);
+                return;
+            }
+
+            if (status === 400) {
+                toastr.error(serverMessage || "Invalid request. Please select a valid size and quantity.");
+                return;
+            }
+
+            if (status >= 500) {
+                toastr.error("Server Error: We encountered an issue. Please try again.");
+                return;
+            }
+
+            toastr.error(serverMessage || "Something went wrong. Please try again.");
+        } else {
+            toastr.error("Network error. Please check your internet connection and try again.");
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        // --- Thumbnail Switcher ---
+        // --- DOM Element References ---
         const mainImage = document.getElementById('main-product-image');
         const thumbnails = document.querySelectorAll('.thumbnail-img');
-
-        thumbnails.forEach(thumb => {
-            thumb.addEventListener('click', function() {
-                mainImage.src = this.dataset.image;
-                thumbnails.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        // --- Variables for Stock & Logic ---
         const sizeButtons = document.querySelectorAll('.btn-size');
         const selectedSize = document.getElementById('selected-size');
         const offerPriceDisplay = document.getElementById('offer-price-display');
@@ -306,11 +366,22 @@
         const galleryMain = document.querySelector('.gallery-main');
         const galleryContainer = galleryMain;
         const productIdInput = document.getElementById('product-id');
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeModal = document.querySelector('.close-modal');
+        const reviewModal = document.getElementById('reviewModal');
+        const btnWriteReview = document.getElementById('btn-write-review');
+        const closeReviewModal = document.querySelector('.close-review-modal');
+        const closeReviewBtn = document.getElementById('closeReviewBtn');
+        const starsInput = document.querySelectorAll('.star-rating-input i');
+        const ratingValueInput = document.getElementById('rating-value');
         
+        // --- State Variables ---
         let quantity = 1;
         const USER_MAX_LIMIT = 10;
         let currentStockLimit = 10;
 
+        // --- Helper Functions ---
         function updateQuantityDisplay() {
             if (quantity > currentStockLimit) {
                 quantity = currentStockLimit > 0 ? currentStockLimit : 1;
@@ -322,7 +393,6 @@
             increaseBtn.disabled = quantity >= currentStockLimit;
         }
 
-        // --- Helper: Get data for Add to Cart / Wishlist ---
         function getActionData(forWishlist = false) {
             if (!productIdInput) {
                 toastr.error("Something went wrong. Please refresh and try again.");
@@ -331,14 +401,13 @@
 
             const activeSizeBtn = document.querySelector('.btn-size.active');
             const size = activeSizeBtn ? activeSizeBtn.dataset.size : null;
-            const variantId = activeSizeBtn ? activeSizeBtn.dataset.variantId : null; // Added variant ID
+            const variantId = activeSizeBtn ? activeSizeBtn.dataset.variantId : null;
 
             if (!size || !variantId) {
                 toastr.error("Please select a size.");
                 return null;
             }
             
-            // For Cart, return all details
             if (!forWishlist) {
                 return {
                     product_id: productIdInput.value,
@@ -346,14 +415,12 @@
                     quantity: quantity,
                 };
             } else {
-                // For Wishlist, only the variant ID is strictly necessary
                 return {
                     variant_id: variantId,
                 };
             }
         }
 
-        // --- Stock Info Logic, with red alert on gallery when stock low ---
         function updateStockInfo(button) {
             const stock = parseInt(button.dataset.stock) || 0;
             currentStockLimit = Math.min(USER_MAX_LIMIT, stock);
@@ -373,7 +440,6 @@
                 }
             }
 
-            // Also manage the state of the Wishlist button based on stock 
             if (addToWishlistBtn) {
                  addToWishlistBtn.disabled = stock === 0;
             }
@@ -414,7 +480,16 @@
             }
         }
 
-        // --- Size Click Logic (Removed Wishlist URL update) ---
+        // --- Thumbnail Switcher ---
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                mainImage.src = this.dataset.image;
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // --- Size Selection ---
         sizeButtons.forEach(button => {
             button.addEventListener('click', function() {
                 sizeButtons.forEach(btn => btn.classList.remove('active'));
@@ -424,7 +499,6 @@
                 if (this.dataset.offerPrice) offerPriceDisplay.textContent = `₹ ${this.dataset.offerPrice}`;
                 if (this.dataset.basePrice) basePriceDisplay.textContent = `₹ ${this.dataset.basePrice}`;
 
-                // Update Discount Labels
                 const discount = parseFloat(this.dataset.discount);
                 const discountDisplay = document.getElementById('discount-amount-display');
                 const galleryOfferTag = document.getElementById('gallery-offer-tag');
@@ -448,7 +522,7 @@
             });
         });
 
-        // --- Quantity Click Logic ---
+        // --- Quantity Controls ---
         decreaseBtn.addEventListener('click', function() {
             if (quantity > 1) {
                 quantity--;
@@ -482,10 +556,8 @@
             if (addToCartBtn) addToCartBtn.disabled = true;
             if (buyNowBtn) buyNowBtn.disabled = true;
             if (globalStockLabel) globalStockLabel.textContent = '';
-            if (addToWishlistBtn) addToWishlistBtn.disabled = true; // Disable if no size/variant exists
+            if (addToWishlistBtn) addToWishlistBtn.disabled = true;
         }
-        // --- End Initialization ---
-
 
         // --- Image Zoom & Modal ---
         if (galleryMain && mainImage) {
@@ -502,60 +574,27 @@
             });
         }
 
-        const modal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImage');
-        const closeModal = document.querySelector('.close-modal');
-
         if (mainImage) {
             mainImage.addEventListener('click', function() {
                 modal.style.display = 'block';
                 modalImg.src = this.src;
             });
         }
+
         thumbnails.forEach(thumb => {
             thumb.addEventListener('dblclick', function() {
                 modal.style.display = 'block';
                 modalImg.src = this.dataset.image;
             });
         });
+
         if (closeModal) closeModal.addEventListener('click', () => modal.style.display = 'none');
+        
         window.addEventListener('click', (e) => {
             if (e.target === modal) modal.style.display = 'none';
         });
 
-        // --- ERROR HANDLING FOR AXIOS ---
-        function handleAxiosError(error, actionName) {
-            console.error(actionName + " Error:", error);
-
-            if (error.response) {
-                const status = error.response.status;
-                const serverMessage = error.response.data?.message;
-
-                if (status === 401) {
-                    toastr.error(serverMessage || "Please log in to continue.");
-                    setTimeout(function() {
-                        window.location.href = "{% url 'login' %}?next={{ request.path }}";
-                    }, 1500);
-                    return;
-                }
-
-                if (status === 400) {
-                    toastr.error(serverMessage || "Invalid request. Please select a valid size and quantity.");
-                    return;
-                }
-
-                if (status >= 500) {
-                    toastr.error("Server Error: We encountered an issue. Please try again.");
-                    return;
-                }
-
-                toastr.error(serverMessage || "Something went wrong. Please try again.");
-            } else {
-                toastr.error("Network error. Please check your internet connection and try again.");
-            }
-        }
-
-        // --- Add To Cart Logic (UNCHANGED) ---
+        // --- Add To Cart ---
         if (addToCartBtn && productIdInput) {
             addToCartBtn.addEventListener('click', function() {
                 const data = getActionData(false);
@@ -568,7 +607,6 @@
                 )
                 .then(function(response) {
                     toastr.success(response.data.message || "Item added to the Cart");
-                    // TODO: update cart count UI here if needed
                 })
                 .catch(function(error) {
                     handleAxiosError(error, "Cart Add");
@@ -576,41 +614,85 @@
             });
         }
         
-        // --- Add To Wishlist Logic ---
+        // --- Add To Wishlist ---
         if (addToWishlistBtn) {
             addToWishlistBtn.addEventListener('click', function() {
                 const data = getActionData(true);
                 if (!data) return;
                 
-                // Disable button to prevent double-click
                 addToWishlistBtn.disabled = true;
                 
                 axios.post(
-                    "{% url 'add_to_wishlist' %}", // Assumes you create a new AJAX-specific URL
+                    "{% url 'add_to_wishlist' %}",
                     data,
                     { headers: { 'X-CSRFToken': csrftoken } }
                 )
                 .then(function(response) {
                     toastr.success(response.data.message || "Item added to your Wishlist");
-                    // Optional: Change icon/text to "Added to Wishlist"
                 })
                 .catch(function(error) {
                     handleAxiosError(error, "Wishlist Add");
                 })
                 .finally(function() {
-                    
                     addToWishlistBtn.disabled = false;
-                    // Note: If you have existing stock checks in updateStockInfo, the button might get re-disabled there on size change.
                 });
             });
         }
 
-        // --- Buy Now Logic (placeholder) ---
+        // --- Buy Now ---
         if (buyNowBtn && productIdInput) {
             buyNowBtn.addEventListener('click', () => {
                 toastr.info("Function not implemented. To purchase, please add the item to your cart first.");
             });
         }
+
+        // --- Review Modal ---
+        const closeModalFunc = () => { reviewModal.style.display = 'none'; };
+
+        btnWriteReview.addEventListener('click', () => {
+            reviewModal.style.display = 'flex';
+        });
+
+        closeReviewModal.addEventListener('click', closeModalFunc);
+        closeReviewBtn.addEventListener('click', closeModalFunc);
+
+        starsInput.forEach(star => {
+            star.addEventListener('click', function() {
+                const val = this.getAttribute('data-value');
+                ratingValueInput.value = val;
+                
+                starsInput.forEach(s => {
+                    if(s.getAttribute('data-value') <= val) {
+                        s.classList.replace('bx-star', 'bxs-star');
+                    } else {
+                        s.classList.replace('bxs-star', 'bx-star');
+                    }
+                });
+            });
+        });
+
+        document.getElementById('reviewForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const rating = ratingValueInput.value;
+            const comment = this.querySelector('textarea').value;
+
+            if (rating == 0) {
+                toastr.warning("Please select a star rating.");
+                return;
+            }
+
+            axios.post("{% url 'submit_review' %}", {
+                product_id: document.getElementById('product-id').value,
+                rating: rating,
+                comment: comment
+            }, { headers: { 'X-CSRFToken': csrftoken } })
+            .then(res => {
+                toastr.success("Review submitted! Thank you.");
+                closeModalFunc();
+                location.reload();
+            })
+            .catch(err => handleAxiosError(err, "Review"));
+        });
     });
     </script>
 {% endblock extra_script %}
