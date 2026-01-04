@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .views import *
+from .sales_view import *
 from offer.views import *
 from django.conf import settings
 from django.conf.urls.static import static
@@ -48,6 +49,12 @@ urlpatterns = [
     path('coupon/manage/<int:id>/',views.manage_coupon_view,name='admin_manage_coupon'),
     path('coupon/delete/<int:pk>/',CouponDeleteView.as_view(),name='admin_coupon_delete_view'),
     path('coupon/history',CouponHistoryView.as_view(),name='admin_coupon_history'),
+    
+    path('sales/report/',sale_report_view,name='admin_sale_report'),
+    path('sales/order/<str:order_id>/',views.admin_order_detailed_view,name='report_order_status_update'),
+    path('sales-report/export/pdf/', sales_report_pdf, name='sales_report_pdf'),
+    path('sales-report/export/excel/', sales_report_excel, name='sales_report_excel'),
+
 ]
 
 if settings.DEBUG:

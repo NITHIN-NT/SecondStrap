@@ -1,0 +1,25 @@
+{% for order in orders %}
+<tr>
+    <td>{{ order.created_at|date:"d M Y" }}</td>
+    <td><strong>{{ order.order_id }}</strong></td>
+    <td style="{% if order.coupon_code %}color:green{% else %}color:red{% endif %}">
+        {{ order.coupon_code|default:"NOT APPLIED" }}
+    </td>
+    <td>{{ order.items_count }}</td>
+    <td>₹{{ order.final_price }}</td>
+    <td>
+        <span class="status-badge status-{{ order.order_status }}">
+            {{ order.get_order_status_display }}
+        </span>
+    </td>
+    <td>
+        <a href="{% url 'report_order_status_update' order.order_id %}">Details</a>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="7" style="text-align:center;padding:2rem;color:#999;">
+        No records found
+    </td>
+</tr>
+{% endfor %}
