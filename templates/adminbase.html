@@ -121,12 +121,18 @@
                 
                 <div class="topbar-right">
                     <button class="icon-btn">
-                        <i class="fa-regular fa-bell"></i>
+                        {% comment %} <i class="fa-regular fa-bell"></i> {% endcomment %}
                     </button>
-                    <div class="user-profile">
-                        <div class="user-avatar">A</div>
-                        <span>{{user.email}}</span>
+                    <div class="user-avatar">
+                        {% if user.profile %}
+                            <img src="{{ user.profile }}" alt="User Avatar">
+                        {% else %}
+                            {{ user.email|first|upper }}
+                        {% endif %}
+
                     </div>
+                    <span>{{user.first_name}}</span> 
+
                 </div>
             </header>
             
