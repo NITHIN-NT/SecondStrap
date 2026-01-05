@@ -1,9 +1,10 @@
-/* Container adjustment to sit nicely within the inherited profile-content */
+
 .otp-page-container {
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Changed from center to look better in the profile flow */
-    padding-top: 2rem;
+    align-items: flex-start;
+    /* Changed from center to look better in the profile flow */
+    padding-top: 5rem;
     min-height: 60vh;
     font-family: 'Inter', sans-serif;
 }
@@ -135,7 +136,7 @@
         box-shadow: none;
         border: none;
     }
-    
+
     .otp-letters {
         width: 45px;
         height: 55px;

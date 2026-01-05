@@ -12,7 +12,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST,require_http_methods
 from django.http import JsonResponse
 from accounts.models import EmailOTP,CustomUser
-from .utils import generate_alphabetical_code,send_email_otp
+from .utils import send_email_otp
 from .forms import AddressForm,ChangePasswordForm
 from .models import Address
 from django.db import IntegrityError
@@ -36,9 +36,11 @@ class SecureUserMixin(LoginRequiredMixin):
             messages.error(request, "Your account is disabled.")
             return redirect('login')
 
-        # if not user.is_verified:
-        #     messages.warning(request, "Please verify your email to continue.")
-        #     return redirect('profile_view_user')  
+        if not user.is_verified:
+            messages.warning(request, "Please verify your email to continue.")
+            messages.info(request, "OTP send to your Mail.")
+            send_email_otp(user, request)
+            return redirect('otp_page')  
 
         return super().dispatch(request, *args, **kwargs)
 class ProfileView(SecureUserMixin, TemplateView):

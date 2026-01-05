@@ -1,11 +1,11 @@
-{% extends "./profile_base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block profile_extra_style %}
+{% block extra_styles %}
     <link rel="stylesheet" href="{% static "css/userprofile/OTP-verification.css" %}">
-{% endblock profile_extra_style %}
+{% endblock extra_styles %}
 
-{% block profile_content %}
+{% block content %}
 <div class="otp-page-container">
     <div class="otp-card">
         <div class="otp-header">
@@ -40,7 +40,7 @@
     </div>
 </div>
 {% endblock %}
-{% block profile_script %}
+{% block extra_script %}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -167,4 +167,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-{% endblock profile_script %}
+{% endblock extra_script %}
