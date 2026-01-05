@@ -1,0 +1,144 @@
+/* Container adjustment to sit nicely within the inherited profile-content */
+.otp-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Changed from center to look better in the profile flow */
+    padding-top: 2rem;
+    min-height: 60vh;
+    font-family: 'Inter', sans-serif;
+}
+
+.otp-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 2.5rem;
+    background: #ffffff;
+    /* Matching the profile-card style from your base */
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+    text-align: center;
+}
+
+.otp-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 0.75rem;
+}
+
+.otp-header p {
+    color: #777;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+#otpEmailDisplay {
+    color: #000;
+    font-weight: 600;
+}
+
+/* OTP Input Group */
+.otp-input-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 2.5rem 0;
+}
+
+.otp-letters {
+    width: 55px;
+    height: 65px;
+    font-size: 1.75rem;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: all 0.2s ease;
+}
+
+.otp-letters:focus {
+    outline: none;
+    border-color: #000;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Verify Button - matching your black theme */
+.verify-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.verify-btn:hover {
+    background-color: #333;
+}
+
+.verify-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Resend Section */
+.resend-container {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.resend-container p {
+    font-size: 0.9rem;
+    color: #777;
+    margin-bottom: 0.5rem;
+}
+
+.resend-link {
+    background: none;
+    border: none;
+    color: #000;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.resend-link:hover:not(:disabled) {
+    text-decoration: underline;
+}
+
+.resend-link:disabled {
+    color: #bbb;
+    cursor: not-allowed;
+}
+
+#resendTimer {
+    font-weight: 400;
+    color: #999;
+    margin-left: 4px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+    .otp-card {
+        padding: 1.5rem;
+        box-shadow: none;
+        border: none;
+    }
+    
+    .otp-letters {
+        width: 45px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+}

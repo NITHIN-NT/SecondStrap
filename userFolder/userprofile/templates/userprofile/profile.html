@@ -124,42 +124,7 @@
         </form>
     </div>
 </div>
-<div id="otpModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Email Verification</h3>
-            <button class="close-modal-btn" id="closeOtpBtn">&times;</button>
-        </div>
 
-        <p>
-            Enter the 4-digit code sent to <br>
-            <strong id="otpEmailDisplay">{{ user.email }}</strong>
-        </p>
-        
-        <form id="otpForm" action='{% url "verify_otp_axios" %}'>
-            {% csrf_token %}
-            
-            <div class="otp-input-group">
-                <input type="text" class="otp-letters" maxlength="1" required>
-                <input type="text" class="otp-letters" maxlength="1" required>
-                <input type="text" class="otp-letters" maxlength="1" required>
-                <input type="text" class="otp-letters" maxlength="1" required>
-            </div>
-
-            <input type="hidden" name="otp" id="realOtpValue">
-
-            <div class="modal-actions" style="justify-content: center; margin-top: 1.5rem;">
-                <button type="submit" class="save-btn" id="verifyBtn" style="width: 100%;">Verify Account</button>
-            </div>
-            
-            <div style="text-align: center;">
-                <button type="button" id="resendOtpBtn" disabled>
-                    Didn't receive code? <strong>Resend</strong> <span id="resendTimer">(60s)</span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 {% endblock profile_content %}
 {% block profile_script %}
 <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>

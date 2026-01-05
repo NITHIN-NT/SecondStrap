@@ -1,0 +1,170 @@
+{% extends "./profile_base.html" %}
+{% load static %}
+
+{% block profile_extra_style %}
+    <link rel="stylesheet" href="{% static "css/userprofile/OTP-verification.css" %}">
+{% endblock profile_extra_style %}
+
+{% block profile_content %}
+<div class="otp-page-container">
+    <div class="otp-card">
+        <div class="otp-header">
+            <h1>Identity Verification</h1>
+            <p>Enter the 4-character code sent to</p>
+            <strong id="otpEmailDisplay">{{ user.email }}</strong>
+        </div>
+        
+        <form id="otpForm" action='{% url "verify_otp_axios" %}'>
+            {% csrf_token %}
+            
+            <div class="otp-input-group">
+                <input type="text" class="otp-letters" maxlength="1" required autofocus>
+                <input type="text" class="otp-letters" maxlength="1" required>
+                <input type="text" class="otp-letters" maxlength="1" required>
+                <input type="text" class="otp-letters" maxlength="1" required>
+            </div>
+
+            <input type="hidden" name="otp" id="realOtpValue">
+
+            <div class="otp-actions">
+                <button type="submit" class="verify-btn" id="verifyBtn">Verify Account</button>
+            </div>
+            
+            <div class="resend-container">
+                <p>Didn't receive the code?</p>
+                <button type="button" id="resendOtpBtn" class="resend-link" disabled>
+                    Resend Code <span id="resendTimer">(60s)</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block profile_script %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const inputs = document.querySelectorAll('.otp-letters');
+    const hiddenInput = document.getElementById('realOtpValue');
+    const form = document.getElementById('otpForm');
+    const resendBtn = document.getElementById('resendOtpBtn');
+    const timerSpan = document.getElementById('resendTimer');
+    const verifyBtn = document.getElementById('verifyBtn');
+
+    let resendInterval;
+
+    // ===============================
+    // Auto focus & backspace handling
+    // ===============================
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', () => {
+            if (input.value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !input.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+
+    // ===============================
+    // Resend Timer (60s)
+    // ===============================
+    function startResendTimer() {
+        let timeLeft = 60;
+        resendBtn.disabled = true;
+        timerSpan.textContent = `(${timeLeft}s)`;
+
+        clearInterval(resendInterval);
+
+        resendInterval = setInterval(() => {
+            timeLeft--;
+            timerSpan.textContent = `(${timeLeft}s)`;
+
+            if (timeLeft <= 0) {
+                clearInterval(resendInterval);
+                resendBtn.disabled = false;
+                timerSpan.textContent = "";
+            }
+        }, 1000);
+    }
+
+    startResendTimer();
+
+    // ===============================
+    // OTP VERIFY (AJAX)
+    // ===============================
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        let otpValue = "";
+        inputs.forEach(input => otpValue += input.value.toUpperCase());
+
+        if (otpValue.length !== 4) {
+            toastr.error("Enter complete OTP");
+            return;
+        }
+
+        hiddenInput.value = otpValue;
+
+        const csrfToken =
+            document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+
+        verifyBtn.disabled = true;
+        verifyBtn.innerText = "Verifying...";
+
+        axios.post(form.action, new FormData(form), {
+            headers: { "X-CSRFToken": csrfToken }
+        })
+        .then(response => {
+            if (response.data.status === "success") {
+                toastr.success(response.data.message);
+
+                setTimeout(() => {
+                    window.location.href = "/profile/"; // change if needed
+                }, 1500);
+            } else {
+                toastr.error(response.data.message);
+            }
+        })
+        .catch(() => {
+            toastr.error("Verification failed");
+        })
+        .finally(() => {
+            verifyBtn.disabled = false;
+            verifyBtn.innerText = "Verify Account";
+        });
+    });
+
+    // ===============================
+    // RESEND OTP
+    // ===============================
+    resendBtn.addEventListener('click', () => {
+        const csrfToken =
+            document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+        axios.post("{% url 'send_otp' %}", {}, {
+            headers: {
+                "X-CSRFToken": csrfToken
+            }
+        })
+        .then(res => {
+            if (res.data.status === 'success') {
+                toastr.success(res.data.message || "OTP resent successfully");
+                startResendTimer();
+            } else {
+                toastr.error(res.data.message || "Something went wrong");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            toastr.error("Failed to resend OTP");
+        });
+    });
+
+});
+</script>
+
+{% endblock profile_script %}

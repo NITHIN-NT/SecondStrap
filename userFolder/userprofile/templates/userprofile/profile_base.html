@@ -43,7 +43,6 @@
                 {# FIXED: Typo 'adress' -> 'address' #}
                 <li><a href="{% url "profile_address" %}" class="{% if request.resolver_match.url_name == 'profile_address' %}active{% endif %}"><i class='bx bx-map'></i><span>Addresses</span></a></li>
                 
-                <li><a href="{% url "profile_payment" %}" class="{% if request.resolver_match.url_name == 'profile_payment' %}active{% endif %}"><i class='bx bx-credit-card'></i><span>Payment Methods</span></a></li>
                 <li><a href="{% url "profile_order" %}" class="{% if request.resolver_match.url_name == 'profile_order' %}active{% endif %}"><i class='bx bx-receipt'></i><span>Order History</span></a></li>
                 <li><a href="{% url "profile_wallet" %}" class="{% if request.resolver_match.url_name == 'profile_wallet' %}active{% endif %}"><i class='bx bx-wallet'></i><span>Wallet</span></a></li>
                 {% if request.user.password %}

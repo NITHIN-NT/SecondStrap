@@ -6,7 +6,6 @@ from userFolder.referral.views import ReferralDetailView
 urlpatterns = [
     path('',ProfileView.as_view(),name = 'profile_view_user'),
     path('address/',ProfileAddressView.as_view(),name = 'profile_address'),
-    path('payment/',ProfilePaymentView.as_view(),name = 'profile_payment'),
     path('order/',ProfileOrderView.as_view(),name = 'profile_order'),
     path("order/<str:order_id>/",order_details_view,name="order_details"),
     path("order/<str:order_id>/download-invoice",download_invoice_view,name='download_invoice'),
@@ -18,8 +17,9 @@ urlpatterns = [
 
     path('api/update-info',edit_action,name='update_info_axios'),
 
-    path('info/email/send',verify_action,name='send_otp'),
-    path('info/email/verify',otp_verification,name='verify_otp_axios'),
+    path('info/email/send',resend_otp_view,name='send_otp'),
+    path('info/email/verify/', otp_page, name='otp_page'),
+    path('info/email/verification/',verify_otp_axios,name='verify_otp_axios'),
     path('profile/edit',update_profile_picture,name='update_profile_picture'),
 
     path('addresses/manage/',manage_address, name='add_address'),
