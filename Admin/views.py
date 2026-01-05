@@ -61,28 +61,29 @@ def custom_404_handler(request, exception):
 @never_cache
 @redirect_if_authenticated
 def admin_login(request):
+    form = AdminLoginForm(request.POST)
     if request.method == "POST":
-        form = AdminLoginForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
             user = authenticate(username=email, password=password)
-            if user is not None and user.is_superuser:
-                login(request, user)
-                return redirect("admin_home")
-            else:
-                messages.error(
-                    request,
-                    "Invalid email or password, or you don't have admin access.",
-                    extra_tags="admin",
-                )
+            if user is None:
+                messages.error(request,"Invalid email or password.",extra_tags="admin")
                 return redirect("admin_login")
-    else:
-        form = AdminLoginForm()
+            
+            if not user.is_active:
+                messages.error(request,"Your account is inactive. Contact support.",extra_tags="admin")
+                return redirect("admin_login")
+            if not user.is_superuser:
+                messages.error(request,"You do not have admin access.",extra_tags="admin")
+                return redirect("admin_login")
+            
+            login(request, user)
+            messages.success(request, f"Welcome {user.first_name}")
+            return redirect("admin_home")
     return render(request, "adminAuth/login.html", {"form": form})
 
 
-@redirect_if_authenticated
 def admin_forgot(request):
     form = AdminForgotPasswordEmailForm()
     if request.method == "POST":
@@ -139,7 +140,6 @@ def admin_forgot(request):
     return render(request, "adminAuth/forgot-password.html", {"form": form})
 
 
-@redirect_if_authenticated
 def admin_otp_verification(request):
 
     if not request.session.get("reset_admin_email"):
@@ -195,7 +195,6 @@ def admin_otp_verification(request):
     return render(request, "adminAuth/otp-verification.html", {"form": form})
 
 
-@redirect_if_authenticated
 def admin_reset(request):
     if not request.session.get(
         "admin_reset_password_allowed"
@@ -239,6 +238,7 @@ def admin_reset(request):
     return render(request, "adminAuth/reset-password.html", {"form": form})
 
 @never_cache
+@staff_member_required(login_url='admin_login')
 def admin_logout(request):
     if not request.user.is_authenticated and not request.user.is_superuser:
         return redirect('admin_login')

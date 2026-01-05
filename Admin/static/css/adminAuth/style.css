@@ -11,6 +11,90 @@ html {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: #333;
 }
+/* ============================
+   Admin Messages (Login Page)
+   ============================ */
+
+.messages {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.message {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeSlideIn 0.25s ease-out;
+}
+
+/* ✅ Error */
+.message.error {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* ✅ Success */
+.message.success {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+/* ✅ Warning */
+.message.warning {
+    background-color: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+/* ✅ Info */
+.message.info {
+    background-color: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+/* Optional icon support */
+.message::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+.message.error::before {
+    content: "\f071"; /* exclamation-circle */
+}
+
+.message.success::before {
+    content: "\f058"; /* check-circle */
+}
+
+.message.warning::before {
+    content: "\f06a"; /* triangle-exclamation */
+}
+
+.message.info::before {
+    content: "\f05a"; /* info-circle */
+}
+
+/* Entry animation */
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 /* --- Main Layout Container --- */
 .login-container {
