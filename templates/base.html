@@ -192,7 +192,13 @@
                     <a href="{% url "login" %}">Login</a>
                 {% endif %}
                 <a href="{% url "wishlist" %}" aria-label="Wishlist"><i class='bx bx-heart'></i></a>
-                <a href="{% url "cart" %}" aria-label="Cart"><i class='bx bx-shopping-bag'></i></a>
+                <a href="{% url 'cart' %}" aria-label="Cart" class="cart-icon-wrapper">
+                    <i class='bx bx-shopping-bag'></i>
+                    <span id="cart-count-badge" class="cart-count {% if cart_count == 0 %}hidden{% endif %}">
+                        {{ cart_count }}
+                    </span>
+                </a>
+
             </div>
 
             <input type="checkbox" id="menu-toggle" class="menu-toggle">
@@ -360,7 +366,46 @@
                 syncAnimationState(track);
             });
     });
+    /* ================================
+   CART COUNT BADGE – FINAL JS
+   ================================ */
 
+    (function () {
+        const badge = document.getElementById("cart-count-badge");
+
+        /**
+        * Update cart badge UI
+        * @param {number} count
+        */
+        window.updateCartBadge = function (count) {
+            if (!badge) return;
+
+            count = parseInt(count) || 0;
+
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove("hidden");
+            } else {
+                badge.textContent = "0";
+                badge.classList.add("hidden");
+            }
+        };
+
+        /**
+        * Sync cart count from backend (optional usage)
+        */
+        window.syncCartCount = function () {
+            axios.get("/cart/count/")
+                .then(res => {
+                    if (res.data && typeof res.data.cart_count !== "undefined") {
+                        updateCartBadge(res.data.cart_count);
+                    }
+                })
+                .catch(() => {
+                    console.warn("Cart count sync failed");
+                });
+        };
+    })();
     // --- 2. TOASTR SETTINGS ---
     toastr.options = {
         "closeButton": true,
