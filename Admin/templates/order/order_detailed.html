@@ -342,7 +342,7 @@
                                     {% endwith %}
                                 </div>
                             </td>
-                            <td>₹{{ item.price_at_purchase }}</td>
+                            <td>₹{{ item.price_at_purchase }} x {{item.quantity}}</td>
                             <td>₹{{ item.get_total_price }}</td>
                             
                             <td style="text-align: right;">
@@ -423,23 +423,32 @@
             </div>
 
             <div class="card">
-                <h3 class="card-title">Order Financials</h3>
+                <h3 class="card-title">Order Financials</h3> 
                 <div class="info-row">
                     <span class="info-label">Subtotal</span>
                     <span class="info-val">₹{{ order.total_price }}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Shipping</span>
-                    <span class="info-val">₹49.00</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Tax</span>
-                    <span class="info-val">₹18.00</span>
+                    <span class="info-val">₹{{order.shipping_amount}}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Discount</span>
                     <span class="info-val" style="color: green;">-₹{{ order.discount_amount }}</span>
                 </div>
+                {% if order.wallet_deduction %}
+                    <div class="info-row">
+                        <span class="info-label">Wallet Deduction</span>
+                        <span class="info-val" style="color: green;">-₹{{ order.wallet_deduction }}</span>
+                    </div>
+                {% endif %}
+
+                {% if order.coupon_discount %}
+                    <div class="info-row">
+                        <span class="info-label">Coupon Discount</span>
+                        <span class="info-val" style="color: green;">-₹{{ order.coupon_discount }}</span>
+                    </div>
+                {% endif %}
                 <div class="info-row total-row">
                     <span class="info-label">Grand Total</span>
                     <span class="info-val">₹{{ order.final_price }}</span>
@@ -495,6 +504,20 @@
                 {% else %}
                     <p style="font-size: 14px; color: #666;">Customer information not available.</p>
                 {% endif %}
+            </div>
+
+            <div class="card">
+                <h3 class='card-title'>Payment Method</h3>
+                {% if order.payment_method == 'razorpay' %}
+                    <i class="fa-brands fa-google-pay"></i>
+                    <span class="info-val"> {{order.get_payment_method_display}}</span>
+                {% elif order.payment_method == 'cod' %}
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                    <span class="info-val"> {{order.get_payment_method_display}}</span>
+                {% elif order.payment_method == 'wallet' %}
+                    <i class="fa-solid fa-wallet"></i>
+                    <span class="info-val"> {{order.get_payment_method_display}}</span>
+                {% endif %} 
             </div>
 
             <div class="card">
