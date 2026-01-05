@@ -5,6 +5,9 @@ from .sales_view import *
 from offer.views import *
 from django.conf import settings
 from django.conf.urls.static import static
+from django.conf.urls import handler404
+
+handler404 = 'Admin.views.custom_404_handler'
 
 urlpatterns = [
 
@@ -54,6 +57,9 @@ urlpatterns = [
     path('sales/order/<str:order_id>/',views.admin_order_detailed_view,name='report_order_status_update'),
     path('sales-report/export/pdf/', sales_report_pdf, name='sales_report_pdf'),
     path('sales-report/export/excel/', sales_report_excel, name='sales_report_excel'),
+
+    path('customer-messages/',CustomerMessageView.as_view(),name='admin_customer_message_view'),
+    path('customer-messages/mark-read/', views.mark_message_read, name='mark_message_read'),
 
 ]
 

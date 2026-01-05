@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy - SecondStrap{% endblock %}
+
+{% block extra_styles %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+    /* Reset and Page Container */
+    .privacy-container {
+        max-width: 800px;
+        margin: 60px auto;
+        padding: 0 20px;
+        color: #333333;
+        line-height: 1.8;
+        background-color: #ffffff;
+    }
+
+    /* Header Section */
+    .privacy-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .privacy-header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 42px;
+        font-weight: 700;
+        color: #0d1b2a;
+        margin-bottom: 10px;
+    }
+
+    .effective-date {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #999;
+        letter-spacing: 0.5px;
+    }
+
+    /* Introduction Text */
+    .privacy-intro {
+        text-align: center;
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 60px;
+        max-width: 650px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Content Sections */
+    .policy-section {
+        margin-bottom: 45px;
+    }
+
+    .policy-section h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+    }
+
+    .policy-section p {
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        color: #4a4a4a;
+        text-align: justify;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .privacy-header h1 { font-size: 32px; }
+        .policy-section h2 { font-size: 20px; }
+    }
+</style>
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="privacy-container">
+    <header class="privacy-header">
+        <h1>Privacy Policy</h1>
+        <p class="effective-date">Effective Date: October 24, 2023</p>
+    </header>
+
+    <div class="privacy-intro">
+        We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website.
+    </div>
+
+    <section class="policy-section">
+        <h2>Information We Collect</h2>
+        <p>
+            We may collect, use, store and transfer different kinds of personal data about you which we have grouped together follows: Identity Data, Contact Data, Technical Data, Usage Data, and Marketing and Communications Data.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h2>How We Use Your Data</h2>
+        <p>
+            We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances: Where we need to perform the contract we are about to enter into or have entered into with you. Where it is necessary for our legitimate interests.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h2>Data Security</h2>
+        <p>
+            We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorized way, altered or disclosed. In addition, we limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h2>Your Legal Rights</h2>
+        <p>
+            Under certain circumstances, you have rights under data protection laws in relation to your personal data. You have the right to request access, correction, erasure, restriction, transfer, to object to processing, to portability of data and (where the lawful ground of processing is consent) to withdraw consent.
+        </p>
+    </section>
+</div>
+{% endblock content %}

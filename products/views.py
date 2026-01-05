@@ -33,71 +33,6 @@ def home_page_view(request):
 """
 
 
-class HomePageView(TemplateView):
-    template_name = "products/home.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        products = (
-            Product.objects.select_related("category")
-            .prefetch_related("variants")
-            .filter(is_active=True, variants__stock__gte=1)
-            .annotate(offer_price=Min("variants__offer_price"))
-            .order_by("?")[:4]
-        )
-        featured_products = (
-            Product.objects.filter(is_featured=True, is_active=True)
-            .prefetch_related("variants")
-            .filter(is_active=True, variants__stock__gte=1)
-            .annotate(offer_price=Min("variants__offer_price"))
-            .order_by("?")[:4]
-        )
-        most_demanded = (
-            Product.objects.filter(is_most_demanded=True, is_active=True)
-            .prefetch_related("variants")
-            .filter(is_active=True, variants__stock__gte=1)
-            .annotate(offer_price=Min("variants__offer_price"))
-            .order_by("?")[:4]
-        )
-        today = timezone.now().date()
-        new_arrivals = (
-            Product.objects.filter(created_at__date=today, is_active=True)
-            .prefetch_related("variants")
-            .filter(is_active=True, variants__stock__gte=1)
-            .annotate(offer_price=Min("variants__offer_price"))
-            .order_by("?")[:4]
-        )
-
-        categories = Category.objects.filter(is_active=True).prefetch_related(
-            "products"
-        )[:5]
-        categories_for_template = []
-        for category in categories:
-            product = category.products.filter(
-                is_active=True, image__isnull=False
-            ).first()
-            if product:
-                categories_for_template.append(
-                    {
-                        "id": category.id,
-                        "name": category.name,
-                        "image": product.image,
-                        "alt_text": product.name,
-                    }
-                )
-
-        context["products"] = products
-        context["featured_products"] = featured_products
-        context["most_demanded"] = most_demanded
-        context["new_arrivals"] = new_arrivals
-        context["categories_for_template"] = categories_for_template
-
-        return context
-
-
-class AboutView(TemplateView):
-    template_name = "products/about.html"
 
 def product_list_view(request):
     categories = (
@@ -329,41 +264,6 @@ class ProductDetailedView(DetailView):
         context['rating_range'] = rating_range
         context['ratings'] = ratings
         return context
-
-def get_offers(request):
-    '''
-        This view is used to get the offers for the offer track
-    '''
-    offers_from_db = list(Offer.objects.filter(active=True,display_home=True).values_list('description',flat=True))
-    return JsonResponse({'offers': offers_from_db})
-
-def samble(request):
-    now = timezone.now()
-    
-
-    product_offer_subquery = Offer.objects.filter(
-        products=OuterRef('id'),       
-        offer_type=OfferType.PRODUCT,
-        active=True,
-        start_date__lte=now,
-        end_date__gte=now
-    ).order_by('-discount_value').values('discount_value')[:1]
-    
-    category_offer_subquery = Offer.objects.filter(
-        categories=OuterRef('category'),
-        offer_type=OfferType.CATEGORY,
-        active=True,
-        start_date__lte=now,
-        end_date__gte=now
-    ).order_by('-discount_value').values('discount_value')[:1]
-
-    products = Product.objects.annotate(
-       best_product_offer_discount=Subquery(product_offer_subquery),
-       best_categories_offer_discount=Subquery(category_offer_subquery)
-    )
-
-
-    return render(request, 'products/sambel.html', {'products': products})
 
 
 '''

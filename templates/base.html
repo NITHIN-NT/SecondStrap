@@ -263,11 +263,11 @@
             <div class="footer-column">
                 <h4>Company</h4>
                 <ul>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Products</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><a href="#">Terms</a></li>
-                    <li><a href="#">Privacy</a></li>
+                    <li><a href="{% url 'About_page_user'  %}">About</a></li>
+                    <li><a href="{% url 'products_page_user'  %}">Products</a></li>
+                    <li><a href="{% url "contact_page" %}">Contact</a></li>
+                    <li><a href="{% url "privacy_page" %}">Terms</a></li>
+                    <li><a href="{% url "terms_page" %}">Privacy</a></li>
                 </ul>
             </div>
 

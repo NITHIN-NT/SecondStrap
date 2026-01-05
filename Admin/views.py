@@ -38,6 +38,7 @@ from accounts.models import CustomUser, EmailOTP
 from products.models import Product, Category, ProductVariant, ProductImage
 from userFolder.order.models import OrderMain,OrderItem,ReturnOrder,ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES,ADMIN_ORDER_STATUS_CHOICES
 from userFolder.wallet.models import *
+from products.contact_models import ContactModel
 from coupon.models import *
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
@@ -45,8 +46,16 @@ from django.http import JsonResponse
 from django.db.models.functions import TruncMonth,TruncDay
 from django.urls import reverse_lazy
 
+from django.contrib.admin.views.decorators import staff_member_required
+
 import logging
 logger = logging.getLogger(__name__)
+
+def custom_404_handler(request, exception):
+    if request.user.is_authenticated and request.user.is_superuser:
+        return redirect('admin_home')
+    else:
+        return redirect('admin_login')
 
 # Create your views here.
 @never_cache
@@ -238,7 +247,7 @@ def admin_logout(request):
     return redirect("admin_login")
 
 
-@method_decorator([never_cache, superuser_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class AdminHome(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/dashboard.html"
 
@@ -268,7 +277,7 @@ class AdminHome(LoginRequiredMixin, TemplateView):
         return context
 
 
-@method_decorator([never_cache, superuser_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class AdminUserView(LoginRequiredMixin, ListView):
     model = CustomUser
     template_name = "users/home_user.html"
@@ -338,7 +347,7 @@ def toggle_user_block(request, id):
     return redirect("admin_user")
 
 
-@method_decorator([never_cache, superuser_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class AdminProductsView(LoginRequiredMixin, ListView):
     model = Product
     template_name = "products/products_admin.html"
@@ -478,7 +487,7 @@ def toggle_product_block(request, id):
     return redirect("admin_products")
 
 
-@method_decorator([never_cache, superuser_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class AdminCategoryView(ListView):
     model = Category
     template_name = "categorys/category.html"
@@ -592,25 +601,36 @@ def admin_category_management(request, id=None):
     return render(request, "categorys/admin_category_form.html", context)
 
 
-@method_decorator([never_cache, superuser_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class StockManagementView(ListView):
     model = Product
     context_object_name = "products"
     template_name = "stock/stock_management.html"
     paginate_by = 9
 
-    def get_queryset(self, **kwargs):
-        queryset = Product.objects.prefetch_related("variants", "variants__size").annotate(total_stock=Sum("variants__stock"), variant_count=Count("variants"))
-        
+    def get_queryset(self):
+        queryset = (
+            Product.objects
+            .prefetch_related("variants", "variants__size")
+            .annotate(
+                total_stock=Sum("variants__stock"),
+                variant_count=Count("variants")
+            )
+        )
+
         search = self.request.GET.get("search")
         if search:
             queryset = queryset.filter(name__icontains=search)
-            
+
+        category = self.request.GET.get("category")
+        if category:
+            queryset = queryset.filter(category_id=category)
 
         return queryset
-        
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         paginator = context.get("paginator")
         page_obj = context.get("page_obj")
 
@@ -622,14 +642,18 @@ class StockManagementView(ListView):
             )
 
         query_params = self.request.GET.copy()
-        if "page" in query_params:
-            del query_params["page"]
+        query_params.pop("page", None)
 
-        encoded = query_params.urlencode()
-        context['query_params'] = encoded  
+        context.update({
+            "query_params": query_params.urlencode(),
+            "categorys": Category.objects.all(),
+            "search": self.request.GET.get("search", ""),
+            "selected_category": self.request.GET.get("category", ""),
+        })
+
         return context
 
-@method_decorator([never_cache, superuser_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class AdminOrderView(ListView):
     model = OrderMain
     context_object_name = 'orders'
@@ -865,7 +889,7 @@ def manage_return_request(request,item_id,order_id):
         print('return execption : ',str(e))  
         return JsonResponse({"status": "error", "message": "Internal Server Error"}, status=500)
         
-@method_decorator([never_cache, superuser_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class CouponAdminView(ListView):
     model=Coupon
     context_object_name='coupons'
@@ -932,6 +956,7 @@ def manage_coupon_view(request,id=None):
     }
     return render(request, 'coupon/manage_coupon.html', context)
 
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class CouponHistoryView(ListView):
     model=CouponUsage
     template_name='coupon/coupon_history.html'
@@ -956,6 +981,7 @@ class CouponHistoryView(ListView):
         context['total_coupon_used'] = total_coupon_used['count'] or 0
         return context
     
+@method_decorator([never_cache, staff_member_required], name="dispatch")
 class CouponDeleteView(DeleteView):
     model=Coupon
     pk_url_kwarg ='pk'
@@ -966,3 +992,49 @@ class CouponDeleteView(DeleteView):
         self.object.delete()
         
         return JsonResponse({"message":"Product deleted successfully","redirect_url" : str(self.success_url)})
+    
+@method_decorator([never_cache, staff_member_required], name="dispatch")
+class CustomerMessageView(ListView):  # Fixed typo
+    model = ContactModel
+    template_name = 'contact/customer_messages.html'
+    context_object_name = 'customer_messages'
+    ordering = '-created_at'  
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["unread_count"] = ContactModel.objects.filter(is_read=False).count()
+        return context
+
+@never_cache
+@staff_member_required
+@require_POST
+def mark_message_read(request):
+    try:
+        data = json.loads(request.body)
+        message_id = data.get('message_id')
+        print('message_id')
+        
+        if not message_id:
+            return JsonResponse({"success": False, "error": "Message ID required"}, status=400)
+
+        with transaction.atomic():
+            # transation and select for updated is used to avoid the race condition.
+            message = ContactModel.objects.select_for_update().get(id=message_id)
+
+            if not message.is_read:
+                message.is_read = True
+                message.save(update_fields=["is_read"])
+
+            unread_count = ContactModel.objects.filter(is_read=False).count()
+
+        return JsonResponse({
+            "success": True,
+            "unread_count": unread_count
+        })
+
+    except ContactModel.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Message not found"}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "error": "Server error"}, status=500)

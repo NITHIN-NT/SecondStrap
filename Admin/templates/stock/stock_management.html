@@ -32,12 +32,7 @@
 <div class="page-header">
     <div>
         <h1>Stock Management</h1>
-        <p>Monitor and manage inventory levels by size</p>
-    </div>
-    <div class="main-actions">
-        <button class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Update Stock
-        </button>
+        <p>Monitor inventory levels by size</p>
     </div>
 </div>
 
@@ -48,11 +43,16 @@
             {% comment %} <input type="text" placeholder="Search products..."> {% endcomment %}
             <input type="text" name="search" class="form-control"  value="{{ request.GET.search }}">
         </div>
-        <select name="categories" id="categories">
-            <option value="all">All Categories</option>
-            <option value="sunglasses">Sunglasses</option>
-            <option value="watches">Watches</option>
+        <select name="category" id="categories">
+            <option value="">All Categories</option>
+            {% for cat in categorys %}
+                <option value="{{ cat.id }}"
+                    {% if cat.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                    {{ cat.name }}
+                </option>
+            {% endfor %}
         </select>
+
         <button class="btn btn-secondary">Filter</button>
     </form>
 </div>

@@ -1,43 +1,28 @@
 /* ===================================
-   Stock Management CSS (Light Theme)
-   ===================================
-   This file styles the stock page to work with a light content area.
-*/
+   Stock Management CSS (Updated)
+   =================================== */
 
-/* Variables for Light Theme */
 :root {
     --page-bg: #F4F7FA;
-    /* Matches your light grey page background */
     --content-bg: #FFFFFF;
-    /* White for tables, filters, etc. */
     --border-color: #E0E0E0;
-    /* Light grey borders */
-    --text-primary: #1C1C1C;
-    /* Primary dark text */
-    --text-secondary: #6c757d;
-    /* Secondary grey text */
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
     --primary-color: #000000;
-    /* Black for primary buttons */
     --primary-text: #FFFFFF;
-    /* White text on primary buttons */
 
     /* Status Tag Colors */
-    --status-low-color-text: #B26B00;
+    --status-low-text: #B26B00;
     --status-low-bg: #FFF4D9;
-    --status-out-color-text: #D92D20;
+    --status-out-text: #D92D20;
     --status-out-bg: #FFEBEB;
-    --status-in-color-text: #027A48;
+    --status-in-text: #027A48;
     --status-in-bg: #ECFDF3;
+    
+    /* Product Active/Inactive */
+    --active-text: #059669;
+    --inactive-text: #DC2626;
 }
-
-/* If your admin_base.css doesn't set this, uncomment the lines below
-   to force the correct page background color.
-*/
-/*
-.content-area {
-    background-color: var(--page-bg) !important; 
-}
-*/
 
 /* Page Header */
 .page-header {
@@ -49,200 +34,150 @@
 
 .page-header h1 {
     color: var(--text-primary);
-    /* Fixed: Dark text */
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     margin: 0;
 }
 
 .page-header p {
     color: var(--text-secondary);
-    /* Fixed: Grey text */
     font-size: 14px;
-    margin: 4px 0 0 0;
+    margin-top: 4px;
 }
 
-/* Buttons */
-.btn {
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    /* Fixed: Black button */
-    color: var(--primary-text);
-}
-
-.btn-primary:hover {
-    opacity: 0.85;
-}
-
-.btn-secondary {
-    background-color: var(--content-bg);
-    /* Fixed: White button */
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    background-color: #F8F9FA;
-    /* Slightly off-white hover */
-}
-
-.btn-details {
-    background-color: var(--content-bg);
-    /* Fixed: White button */
-    color: var(--text-secondary);
-    font-weight: 500;
-    padding: 6px 12px;
-    font-size: 13px;
-    border: 1px solid var(--border-color);
-}
-
-.btn-details:hover {
-    background-color: #F8F9FA;
-    color: var(--text-primary);
-}
-
-/* Filters */
+/* Filters & Search */
 .page-filters {
     display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.filter-form {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
 }
 
 .search-bar {
     display: flex;
     align-items: center;
     background-color: var(--content-bg);
-    /* Fixed: White background */
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 0 12px;
     flex-grow: 1;
-    max-width: 400px;
+    max-width: 350px;
+    transition: border-color 0.2s;
+}
+
+.search-bar:focus-within {
+    border-color: var(--primary-color);
 }
 
 .search-bar i {
     color: var(--text-secondary);
-    font-size: 14px;
 }
 
 .search-bar input {
-    background: none;
     border: none;
     outline: none;
-    color: var(--text-primary);
-    /* Fixed: Dark text */
     padding: 10px 8px;
     font-size: 14px;
     width: 100%;
 }
 
-.search-bar input::placeholder {
-    color: var(--text-secondary);
-}
-
 #categories {
     background-color: var(--content-bg);
-    /* Fixed: White background */
-    color: var(--text-primary);
-    /* Fixed: Dark text */
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 9px 12px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    cursor: pointer;
 }
 
-/* Table Styling */
+/* Buttons */
+.btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-secondary {
+    background-color: var(--content-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: #f3f4f6;
+}
+
+/* Table Design */
 .table-container {
     background-color: var(--content-bg);
-    /* Fixed: White background */
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     overflow: hidden;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    color: var(--text-primary);
-    /* Fixed: Dark text */
-}
-
-th,
-td {
-    padding: 16px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-    vertical-align: middle;
-}
-
-thead {
-    background-color: #F9FAFB;
-    /* Very light grey for header */
 }
 
 th {
+    background-color: #F9FAFB;
+    padding: 12px 16px;
     font-size: 12px;
+    font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
 }
 
-tbody tr:last-child td {
-    border-bottom: none;
+td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
 }
 
+/* Product Row Styles */
 .product-row {
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    background-color: #ffffff;
 }
 
 .product-row:hover {
-    background-color: #F9FAFB;
-    /* Light hover */
-}
-
-.toggle-icon {
-    color: var(--text-secondary);
-    font-size: 12px;
-    transition: transform 0.2s ease;
+    background-color: #fafafa;
 }
 
 .product-cell {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
 }
 
 .product-cell img {
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
     object-fit: cover;
-    border: 1px solid var(--border-color);
+    border: 1px solid #eee;
 }
 
-.product-cell span {
-    font-weight: 500;
-}
-
-/* Variant Rows */
+/* Variant Row Styles */
 .variant-row {
-    background-color: #FAFAFA;
-    /* Slightly off-white */
+    background-color: #F9FAFB;
 }
 
 .variant-row.hidden {
@@ -250,105 +185,88 @@ tbody tr:last-child td {
 }
 
 .variant-name {
-    padding-left: 30px !important;
-    /* Force indentation */
     color: var(--text-secondary);
-    font-size: 14px;
+    padding-left: 32px !important;
 }
 
-.variant-name .bi-arrow-return-right {
-    margin-right: 10px;
-    font-size: 16px;
-    color: #b0b0b0;
+/* Price Display */
+.price-display .offer {
+    display: block;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.price-display .base {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-decoration: line-through;
 }
 
 /* Status Tags */
 .status-tag {
-    padding: 5px 12px;
-    border-radius: 20px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
+    display: inline-block;
 }
 
-.status-low-stock {
-    color: var(--status-low-color-text);
-    background-color: var(--status-low-bg);
-}
+.status-in-stock { background-color: var(--status-in-bg); color: var(--status-in-text); }
+.status-low-stock { background-color: var(--status-low-bg); color: var(--status-low-text); }
+.status-out-of-stock { background-color: var(--status-out-bg); color: var(--status-out-text); }
 
-.status-out-of-stock {
-    color: var(--status-out-color-text);
-    background-color: var(--status-out-bg);
-}
+/* Active/Inactive Status */
+.status-active { color: var(--active-text); font-weight: 600; font-size: 0.85em; }
+.status-inactive { color: var(--inactive-text); font-weight: 600; font-size: 0.85em; }
 
-.status-in-stock {
-    /* From your screenshot */
-    color: var(--status-in-color-text);
-    background-color: var(--status-in-bg);
-}
-
-/* Action Icons */
-.action-icons {
-    display: flex;
-    gap: 8px;
-}
-
-.action-icons button {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 4px;
-    font-size: 15px;
-}
-
-.action-icons button:hover {
-    color: var(--text-primary);
-}
-
-/* =========================================
-   6. Pagination
-   ========================================= */
+/* Pagination */
 .pagination-container {
     margin-top: 24px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center; /* Centered for better UI balance */
 }
 
 .pagination {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #fff;
-    padding: 6px;
-    border-radius: 8px;
-    border: 1px solid var(--color-border);
+    gap: 4px;
 }
 
-.pagination a,
-.pagination span {
-    width: 32px;
-    height: 32px;
+.pagination a, .pagination span {
+    min-width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    transition: all 0.2s;
-}
-
-.pagination a:hover {
-    background-color: #f3f4f6;
-    color: var(--color-text-primary);
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 14px;
 }
 
 .pagination .current {
-    background-color: #000;
-    color: #fff;
-    font-weight: 600;
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.pagination a:hover:not(.disabled) {
+    background-color: #f3f4f6;
 }
 
 .pagination .disabled {
-    opacity: 0.5;
+    color: #d1d5db;
     cursor: not-allowed;
+}
+
+/* Icons */
+.toggle-icon {
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+}
+
+.toggle-icon.rotate {
+    transform: rotate(90deg);
 }

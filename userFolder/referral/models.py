@@ -10,7 +10,7 @@ def generate_referral_code():
 
 
 class Referral(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='referrals')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,null=True,blank=True,related_name='referrals')
     referral_code = models.CharField(max_length=10, default=generate_referral_code, unique=True,editable=False,db_index=True)
     used_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

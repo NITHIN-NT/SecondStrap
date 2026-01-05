@@ -1,0 +1,372 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+
+{% block title %}<title>Customer Messages | Admin</title>{% endblock title %}
+
+{% block extra_css %}
+<style>
+    /* Message Page Container */
+    .messages-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .messages-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .messages-header h2 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #000;
+        margin: 0;
+        display: flex;
+        align-items: baseline;
+    }
+
+    .dot-separator {
+        color: #cbd5e1;
+        margin-left: 8px;
+        font-size: 3rem;
+        line-height: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .status-pill {
+        background: #f0f7ff;
+        color: #2563eb;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid #dbeafe;
+    }
+
+    .action-icon {
+        color: #64748b;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+
+    /* Message Card Styling */
+    .message-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        transition: all 0.2s ease;
+    }
+
+    .message-card:hover {
+        border-color: #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .message-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        gap: 16px;
+    }
+
+    .sender-info {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex: 1;
+    }
+
+    .avatar-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+    .sender-details h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .sender-details p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .message-meta {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .unread-dot {
+        width: 10px;
+        height: 10px;
+        background: #3b82f6;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        flex-shrink: 0;
+    }
+
+    .message-body {
+        padding-left: 60px; /* Aligns text with the start of the Name */
+    }
+
+    .message-body h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+        color: #0f172a;
+    }
+
+    .message-body p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #475569;
+        /* Line clamping for clean look */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .end-label {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin: 3rem 0;
+        letter-spacing: 0.5px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #94a3b8;
+        border: 2px dashed #e2e8f0;
+        border-radius: 12px;
+    }
+
+    /* FIXED: Mark as Read Button - Now Fully Clickable */
+    .mark-read-btn {
+        background: transparent;
+        border: 1px solid #e2e8f0;
+        color: #2563eb;
+        cursor: pointer;
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        font-weight: 500;
+        /* Critical for clickability */
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
+    }
+
+    .mark-read-btn:hover {
+        background: #f0f7ff;
+        border-color: #2563eb;
+        color: #1d4ed8;
+    }
+
+    .mark-read-btn:active {
+        transform: scale(0.98);
+    }
+
+    .mark-read-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .mark-read-btn i {
+        font-size: 1rem;
+    }
+
+    /* Success Toast Notification */
+    .success-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: none;
+        align-items: center;
+        gap: 10px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .success-toast.show {
+        display: flex;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="messages-container">
+    <div class="messages-header">
+        <h2>Messages <span class="dot-separator">.</span></h2>
+        <div class="header-actions">
+            <span class="status-pill">
+                <i class="bi bi-circle-fill" style="font-size: 7px; margin-right: 6px; vertical-align: middle;"></i> 
+                {{ unread_count }} new
+            </span>
+            <i class="bi bi-filter action-icon"></i>
+            <i class="bi bi-gear action-icon"></i>
+        </div>
+    </div>
+
+    {% for message in customer_messages %}
+    <div class="message-card">
+        <div class="message-top">
+            <div class="sender-info">
+                <div class="avatar-circle">{{ message.name|first }}</div>
+                <div class="sender-details">
+                    <h4>{{ message.name }}</h4>
+                    <p>{{ message.email }}</p>
+                </div>
+            </div>
+            <div class="message-meta">
+                <span>{{ message.created_at|timesince }} ago</span>
+
+                {% if not message.is_read %}
+                    <div class="unread-dot"></div>
+                    <button 
+                        class="mark-read-btn"
+                        data-id="{{ message.id }}"
+                        type='button'
+                        title="Mark as read">
+                        <i class="bi bi-check2-circle"></i>
+                        <span>Mark as read</span>
+                    </button>
+
+                {% endif %}
+            </div>
+
+        </div>
+        <div class="message-body">
+            <h3>{{ message.subject|default:"Inquiry regarding services" }}</h3>
+            <p>{{ message.message }}</p>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="bi bi-chat-left-dots" style="font-size: 2rem;"></i>
+        <p>No messages yet.</p>
+    </div>
+    {% endfor %}
+
+    <div class="end-label">End of messages</div>
+</div>
+
+{% endblock content %}
+
+{% block extraJs %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    axios.defaults.xsrfCookieName = 'csrftoken';
+    axios.defaults.xsrfHeaderName = "X-CSRFToken";
+
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+
+            const messageId = this.dataset.id;
+            const button = this;
+            const card = button.closest('.message-card');
+
+            // 🔄 Processing UI
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-hourglass-split"></i><span> Processing...</span>';
+            button.disabled = true;
+            button.style.opacity = '0.5';
+
+            axios.post("{% url 'mark_message_read' %}", {
+                message_id: messageId
+            })
+            .then(response => {
+                if (response.data.success) {
+
+                    // ⏳ KEEP "Processing..." visible for 2 seconds
+                    setTimeout(() => {
+                        card.querySelector('.unread-dot')?.remove();
+                        button.remove();
+
+                        const statusPill = document.querySelector('.status-pill');
+                        if (statusPill) {
+                            statusPill.innerHTML = `
+                                <i class="bi bi-circle-fill" style="font-size:7px;margin-right:6px;"></i>
+                                ${response.data.unread_count} new
+                            `;
+                        }
+
+                        toastr.success('Message marked as read');
+
+                    }, 2000); 
+                }
+            })
+
+            .catch(err => {
+                console.error(err);
+                button.innerHTML = originalContent;
+                button.disabled = false;
+                button.style.opacity = '1';
+                alert('Failed to update message');
+            });
+        });
+    });
+
+});
+</script>
+
+{% endblock extraJs %}

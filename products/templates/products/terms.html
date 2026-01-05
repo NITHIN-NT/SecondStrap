@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terms of Service{% endblock %}
+
+{% block extra_styles %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+    .tos-wrapper {
+        max-width: 800px;
+        margin: 60px auto;
+        color: #333;
+        line-height: 1.6;
+        /* Using Serif for the body as seen in image */
+        font-family: 'Playfair Display', serif;
+    }
+
+    .tos-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .tos-header h1 {
+        /* Using Bold Sans-Serif for the main title */
+        font-family: 'Inter', sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #1a1a1a;
+    }
+
+    .tos-header .last-updated {
+        font-size: 0.8rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .tos-section {
+        margin-bottom: 40px;
+    }
+
+    .tos-section h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #1a1a1a;
+    }
+
+    .tos-section p {
+        font-size: 1.1rem;
+        color: #555;
+        text-align: justify;
+    }
+
+    .tos-divider {
+        border: 0;
+        border-top: 1px solid #eee;
+        margin: 40px 0;
+        width: 100px;
+    }
+
+    .tos-footer {
+        text-align: center;
+        margin-top: 80px;
+        font-size: 0.9rem;
+        color: #888;
+    }
+
+    .tos-footer a {
+        color: #888;
+        text-decoration: underline;
+    }
+</style>
+{% endblock extra_styles %}
+
+{% block content %}
+<div class="tos-wrapper">
+    <header class="tos-header">
+        <h1>Terms of Service</h1>
+        <p class="last-updated">Last Updated: October 24, 2023</p>
+    </header>
+
+    <div class="tos-section">
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
+        <hr class="tos-divider">
+    </div>
+
+    <div class="tos-section">
+        <h2>2. Intellectual Property</h2>
+        <p>All content included on this site, such as text, graphics, logos, button icons, images, audio clips, digital downloads, data compilations, and software, is the property of Lumiére or its content suppliers and protected by international copyright laws.</p>
+        <hr class="tos-divider">
+    </div>
+
+    <div class="tos-section">
+        <h2>3. User Conduct</h2>
+        <p>You agree to use the site only for lawful purposes. You are prohibited from posting on or transmitting through the site any unlawful, harmful, threatening, abusive, harassing, defamatory, vulgar, obscene, sexually explicit, profane, hateful, racially, ethnically, or otherwise objectionable material of any kind.</p>
+        <hr class="tos-divider">
+    </div>
+
+    <div class="tos-section">
+        <h2>4. Limitation of Liability</h2>
+        <p>In no event shall Lumiére, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.</p>
+        <hr class="tos-divider">
+    </div>
+
+    <div class="tos-section">
+        <h2>5. Governing Law</h2>
+        <p>These Terms shall be governed and construed in accordance with the laws of the jurisdiction, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.</p>
+    </div>
+
+    <footer class="tos-footer">
+        Questions regarding these terms? <a href="#">Contact us</a>
+    </footer>
+</div>
+{% endblock content %}
