@@ -31,5 +31,4 @@ class OfferForm(forms.ModelForm):
 
         if start_date and end_date and end_date < start_date:
             self.add_error("end_date","End date cannot be before start date.")
-
         return cleaned_data

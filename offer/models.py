@@ -22,7 +22,7 @@ class Offer(models.Model):
     categories = models.ManyToManyField('products.Category', blank=True,related_name='offers')
     
     start_date = models.DateTimeField(default=timezone.now)
-    end_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True)
 
     active = models.BooleanField(default=True)
     display_home = models.BooleanField(default=False)

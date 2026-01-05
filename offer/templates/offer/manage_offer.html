@@ -72,6 +72,7 @@
                 <div class="form-group">
                     <label>Discount Value</label>
                     <input type="number" name="discount_value" step="0.01" value="{{ form.discount_value.value|default_if_none:'' }}">
+                    {% if form.errors.discount_value %}<div class="field-error">{{ form.errors.discount_value|striptags }}</div>{% endif %}
                 </div>
             </div>
 
