@@ -5,19 +5,32 @@ from django.shortcuts import render, redirect
 from django.db.models import F,Sum
 from django.db import transaction
 from django.views.generic import TemplateView
+from django.views.decorators.http import require_http_methods
 
 from .models import *
 from userFolder.wallet.models import *
 from userFolder.userprofile.views import SecureUserMixin
 
+REFERRAL_REWARD = Decimal('49')
+
+@require_http_methods(["GET", "POST"])
 def referral_view(request):
     if not request.user.is_authenticated:
         return redirect('signup')
     
+    user = request.user
+    if ReferralUsage.objects.filter(receiver=user).exists():
+        return redirect('Home_page_user')
+    
     if request.method == "POST":
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"status":'error',"message":"Invalid request data"})
+        
         referral_code = data.get('referral_code')
-        user = request.user
+        if not referral_code:
+            return JsonResponse({'status': 'error','message': 'Referral code is required'})
         
         # valid code
         try:
@@ -40,49 +53,61 @@ def referral_view(request):
                 referral_usage = ReferralUsage.objects.create(
                     referrer=referral,
                     receiver=user,
-                    referral_reward=Decimal('49'),
+                    referral_reward=REFERRAL_REWARD,
                     status=ReferralUsage.Status.ACTIVE,
                     is_reward_credited=False
                 )
-                
-                # Wallet transaction for Referrer
+
+                # REFERRER WALLET 
                 referrer_wallet, _ = Wallet.objects.get_or_create(user=referral.user)
-                referrer_wallet.balance += Decimal('49')
-                referrer_wallet.save()
-                
+                Wallet.objects.filter(pk=referrer_wallet.pk).update(
+                    balance=F('balance') + REFERRAL_REWARD
+                )
+
                 Transaction.objects.create(
                     wallet=referrer_wallet,
                     transaction_type=TransactionType.CREDIT,
-                    amount=Decimal('49'),
-                    description=f"{user.first_name} signed up using your referral code",
+                    amount=REFERRAL_REWARD,
+                    description=f"{user.first_name} used your referral code",
                     status=TransactionStatus.COMPLETED
                 )
-                
-                # Wallet transaction for Receiver
+
+                # Current user waller WALLET 
                 receiver_wallet, _ = Wallet.objects.get_or_create(user=user)
-                receiver_wallet.balance += Decimal('49')
-                receiver_wallet.save()
-                
+                Wallet.objects.filter(pk=receiver_wallet.pk).update(
+                    balance=F('balance') + REFERRAL_REWARD
+                )
+
                 Transaction.objects.create(
                     wallet=receiver_wallet,
                     transaction_type=TransactionType.CREDIT,
-                    amount=Decimal('49'),
+                    amount=REFERRAL_REWARD,
                     description=f"Referral bonus from {referral.user.first_name}",
                     status=TransactionStatus.COMPLETED
                 )
-                
+
+                # Update referral usage
                 referral_usage.is_reward_credited = True
-                referral_usage.status=ReferralUsage.Status.REWARDED
+                referral_usage.status = ReferralUsage.Status.REWARDED
                 referral_usage.save()
-                
-                referral.used_count = F('used_count') + 1
-                referral.save()
-                
-            return JsonResponse({"status": 'success', 'message': 'Referral applied successfully'})
-            
+
+                # Increment referral count
+                Referral.objects.filter(pk=referral.pk).update(
+                    used_count=F('used_count') + 1
+                )
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Referral applied successfully',
+                'reward': str(REFERRAL_REWARD)
+            })
+
         except Exception as e:
-            return JsonResponse({"status": "error", "message": f"Something went wrong: {str(e)}"})
-    
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Something went wrong. Please try again later.'
+            })
+
     return render(request, 'referral/referral.html')
 
 class ReferralDetailView(SecureUserMixin,TemplateView):
