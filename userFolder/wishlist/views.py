@@ -20,29 +20,33 @@ def wishlistView(request):
     }
     return render(request,'wishlist/wishlist.html',context)
 
-@login_required
 @require_POST
 def add_to_wishlist(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"message": "Please log in to add items to your wishlist."},
+            status=401
+        )
     try:
         data = json.loads(request.body)
         variant_id = data.get('variant_id')
     except json.JSONDecodeError:
         variant_id = None
         return JsonResponse({"status":"error","message":"ID is missing"})
-
-    print("Received variant_id:", variant_id)
-
-    if not request.user.is_authenticated:
-        return JsonResponse({"status":"error","message":"Login to add items to wishlist"},status=401)
     
     if not variant_id:
         return JsonResponse({"status" : "error","message":"Variant ID missing"},status = 400)
     
     variant = get_object_or_404(ProductVariant,id=variant_id)
     
+    cart = Cart.objects.get(user=request.user)
+    productExists = CartItems.objects.filter(cart=cart,variant=variant).exists()
+    
+    if productExists:
+        return JsonResponse({"status":"error","message":"Item already in the cart !!"},status=208)
     
     wishlist ,new= Wishlist.objects.get_or_create(user=request.user)
-    
+
     wishlist_item,created = WishlistItem.objects.get_or_create(
         wishlist = wishlist,
         product = variant.product,
