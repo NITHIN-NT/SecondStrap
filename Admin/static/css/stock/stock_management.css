@@ -18,7 +18,7 @@
     --status-out-bg: #FFEBEB;
     --status-in-text: #027A48;
     --status-in-bg: #ECFDF3;
-    
+
     /* Product Active/Inactive */
     --active-text: #059669;
     --inactive-text: #DC2626;
@@ -111,6 +111,8 @@
 }
 
 .btn-secondary {
+    display: flex;
+    flex: end;
     background-color: var(--content-bg);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
@@ -120,12 +122,23 @@
     background-color: #f3f4f6;
 }
 
+.btn-primary {
+    background-color: var(--content-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-primary:hover {
+    background-color: #f3f4f6;
+}
+
+
 /* Table Design */
 .table-container {
     background-color: var(--content-bg);
     border-radius: 10px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
@@ -211,19 +224,40 @@ td {
     display: inline-block;
 }
 
-.status-in-stock { background-color: var(--status-in-bg); color: var(--status-in-text); }
-.status-low-stock { background-color: var(--status-low-bg); color: var(--status-low-text); }
-.status-out-of-stock { background-color: var(--status-out-bg); color: var(--status-out-text); }
+.status-in-stock {
+    background-color: var(--status-in-bg);
+    color: var(--status-in-text);
+}
+
+.status-low-stock {
+    background-color: var(--status-low-bg);
+    color: var(--status-low-text);
+}
+
+.status-out-of-stock {
+    background-color: var(--status-out-bg);
+    color: var(--status-out-text);
+}
 
 /* Active/Inactive Status */
-.status-active { color: var(--active-text); font-weight: 600; font-size: 0.85em; }
-.status-inactive { color: var(--inactive-text); font-weight: 600; font-size: 0.85em; }
+.status-active {
+    color: var(--active-text);
+    font-weight: 600;
+    font-size: 0.85em;
+}
+
+.status-inactive {
+    color: var(--inactive-text);
+    font-weight: 600;
+    font-size: 0.85em;
+}
 
 /* Pagination */
 .pagination-container {
     margin-top: 24px;
     display: flex;
-    justify-content: center; /* Centered for better UI balance */
+    justify-content: center;
+    /* Centered for better UI balance */
 }
 
 .pagination {
@@ -231,7 +265,8 @@ td {
     gap: 4px;
 }
 
-.pagination a, .pagination span {
+.pagination a,
+.pagination span {
     min-width: 36px;
     height: 36px;
     display: flex;

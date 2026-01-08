@@ -64,6 +64,11 @@ def generate_return_id():
     suffix = ''.join(random.choices(string.digits,k=8))
     return f"RET-{suffix}"
 
+def generate_cancel_id():
+    suffix = f"CAN-{timezone.now().strftime('%Y%m%d')}-{random.randint(100000,999999)}"
+    return suffix
+
+
 def get_status_color_value(status):
     if status in ['delivered', 'return_approved', 'partially_returned', 'returned']:
         return 'success' 
@@ -154,6 +159,10 @@ class OrderMain(models.Model):
     @property
     def get_status_color(self):
         return get_status_color_value(self.order_status)
+    
+    @property
+    def has_cancel_request(self):
+        return self.cancellations.exists()
 class OrderItem(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')
@@ -198,3 +207,48 @@ class ReturnOrder(models.Model):
     @property
     def related_return_count(self):
         return self.order.returns.count()
+    
+    
+class CancelOrder(models.Model):
+    CANCEL_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+    ]
+
+    order = models.ForeignKey(OrderMain,on_delete=models.CASCADE,related_name='cancellations')
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name='cancellations')
+    cancel_id = models.CharField(max_length=50,unique=True,editable=False,default=generate_cancel_id)
+
+    is_full_cancel = models.BooleanField(default=False)
+
+    refund_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0.00)
+    cancel_status = models.CharField(max_length=50,choices=CANCEL_STATUS_CHOICES,default='pending')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.cancel_id} - {self.order.order_id}"
+    
+    
+    def refund_amount_sum(self):
+        result = sum(self.refund_amount)
+        return result or 0
+
+class CancelItem(models.Model):
+    cancel_order = models.ForeignKey(CancelOrder,on_delete=models.CASCADE,related_name='items')
+
+    order_item = models.ForeignKey(OrderItem,on_delete=models.CASCADE,related_name='cancel_entries')
+
+    quantity = models.PositiveIntegerField(default=1)
+
+    reason = models.CharField(max_length=100)
+    note = models.TextField(null=True, blank=True)
+
+    refund_amount = models.DecimalField(max_digits=10,decimal_places=2,default=0.00)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.order_item.product_name} ({self.quantity})"

@@ -1,9 +1,12 @@
+import json
 from django.shortcuts import render, redirect,get_object_or_404,HttpResponse
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.decorators import login_required
 from userFolder.userprofile.models import Address
-from userFolder.cart.models import Cart, CartItems
+from userFolder.cart.models import Cart
+from userFolder.wallet.models import *
+from django.db.models import F
 from .models import *
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -11,10 +14,10 @@ from django.db import transaction
 from decimal import Decimal
 from .utils import render_to_pdf 
 from django.http import JsonResponse
-import json
 from django.db import transaction
 from django.views.decorators.cache import never_cache
 from userFolder.cart.utils import get_annotated_cart_items
+
 @never_cache
 @login_required(login_url='login')
 def order(request):
@@ -303,28 +306,102 @@ def cancel_return_order_view(request, order_id):
 
 @login_required
 @never_cache
-def cancel_order_view(request,order_id):
-    order = get_object_or_404(OrderMain,order_id=order_id,user=request.user)
-    
-    if order.order_status in ['shipped','out_for_delivery','delivered','cancelled']:
-        return JsonResponse({'status': "error", "message": 'Cannot cancel: Order is already out to you or cancelled.'})
-    
-    try :    
-        order_items = order.items.all()
-        for item in order_items:
-            item.status = 'cancelled'
-            item.save()
-            
-            # Increasing the stock 
-            variant =  item.variant
-            variant.stock += item.quantity
-            variant.save()
+@require_POST
+@transaction.atomic
+def cancel_order_view(request, order_id):
+    order = get_object_or_404(
+        OrderMain,
+        order_id=order_id,
+        user=request.user
+    )
 
-        order.order_status = 'cancelled'
-        order.save()
+    if order.order_status in ['shipped', 'out_for_delivery', 'delivered', 'cancelled']:
+        return JsonResponse({'status': 'error','message': 'Cannot cancel: Order is already processed.'}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        cancels = data.get('cancels', [])
+
+        if not cancels:
+            return JsonResponse({'status': 'error','message': 'No items selected for cancellation.'}, status=400)
+
+        cancel_order = CancelOrder.objects.create(
+            order=order,
+            user=request.user
+        )
+
+        total_refund = Decimal('0.00')
+
+        for entry in cancels:
+            item_id = entry.get('item_id')
+            reason = entry.get('reason')
+            note = entry.get('note', '').strip()
+
+            if not item_id or not reason or not note:
+                return JsonResponse({'status': 'error','message': 'Reason and note are required for all items.'}, status=400)
+
+            item = get_object_or_404(OrderItem,id=item_id,order=order)
+
+            if item.status in ['cancelled', 'returned']:
+                continue
+
+            # Refund only for prepaid orders
+            item_refund = Decimal('0.00')
+            if order.payment_method in ['razorpay', 'wallet']:
+                item_refund = item.price_at_purchase * item.quantity
+                total_refund += item_refund
+
+            CancelItem.objects.create(
+                cancel_order=cancel_order,
+                order_item=item,
+                quantity=item.quantity,
+                reason=reason,
+                note=note,
+                refund_amount=item_refund
+            )
+
+            # Update item status
+            item.status = 'cancelled'
+            item.save(update_fields=['status'])
+
+            # Restore stock
+            if item.variant:
+                item.variant.stock += item.quantity
+                item.variant.save(update_fields=['stock'])
+
+        # Update cancel order
+        cancel_order.refund_amount = total_refund
+        cancel_order.is_full_cancel = not order.items.exclude(status='cancelled').exists()
+        cancel_order.cancel_status = 'completed'
+        cancel_order.save(update_fields=[
+            'refund_amount', 'is_full_cancel', 'cancel_status'
+        ])
+
+        # Update main order status
+        order.order_status = ('cancelled'if cancel_order.is_full_cancel else 'partially_cancelled')
+        order.save(update_fields=['order_status'])
         
-        return JsonResponse({"status": "success", "message": "Order cancelled successfully"},status=200)
-    except Exception as e :
-        print(str(e))
-        return JsonResponse({"status" :"error","message" : "sorry something went wrong while canceling the order."},status=400)
-    
+        # Amount refund process
+        wallet, _ = Wallet.objects.get_or_create(user=order.user)
+        Wallet.objects.filter(pk=wallet.pk).update(
+            balance=F('balance') + total_refund
+        )
+
+        Transaction.objects.create(
+            wallet=wallet,
+            transaction_type=TransactionType.CREDIT,
+            amount=total_refund,
+            description=f"Refund for Order {order.order_id}",
+            status=TransactionStatus.COMPLETED,
+            related_order=order
+        )
+
+
+        return JsonResponse({'status': 'success','message': 'Cancellation request submitted successfully. Amount returned to the wallet'
+        }, status=200)
+
+    except Exception as e:
+        print("Cancel Error:", e)
+        transaction.set_rollback(True)
+        return JsonResponse({'status': 'error','message': 'Something went wrong while cancelling the order.'
+        }, status=500)

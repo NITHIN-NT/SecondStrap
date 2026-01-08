@@ -347,7 +347,7 @@
                             
                             <td style="text-align: right;">
                                 
-                                {% with ret=item.return_item.all|first %} 
+                                {% with ret=item.return_item.all|first can=item.cancel_entries.all|first %} 
 
                                     {% if item.status == 'return_requested' %}
                                         <div style="display: flex; flex-direction: column; align-items: flex-end;">
@@ -382,6 +382,8 @@
                                         <span class="badge badge-success">Returned</span>
                                     {% elif item.status == 'return_rejected' %}
                                         <span class="badge badge-danger">Return Rejected</span>
+                                    {% elif item.status == 'cancelled' %}
+                                        <span class='badge badge-danger'>Cancelled</span>
                                     {% else %}
                                         <span class="badge badge-secondary" style="opacity: 0.5;">None</span>
                                     {% endif %}
@@ -413,7 +415,35 @@
                                             </div>
                                         </div>
                                     {% endif %}
+                                    
 
+                                    {% if can and can.reason or can.nte %}
+                                        <div class="note-tooltip-wrapper">
+                                            
+                                            {% if can.note %}
+                                                <i class='bx bx-notepad note-trigger-icon' style="color: #3b82f6;"></i>
+                                            {% else %}
+                                                <i class='bx bx-info-circle note-trigger-icon'></i>
+                                            {% endif %}
+                                            
+                                            <div class="note-tooltip-box">
+                                                {% if can.reason %}
+                                                    <div style="margin-bottom: 6px;">
+                                                        <strong style="color: #94a3b8; font-size: 10px; text-transform: uppercase;">User Reason:</strong><br>
+                                                        {{ can.reason }}
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if can.note %}
+                                                    {% if can.note %}<hr style="border-color: #475569; margin: 4px 0;">{% endif %}
+                                                    <div>
+                                                        <strong style="color: #94a3b8; font-size: 10px; text-transform: uppercase;">Note:</strong><br>
+                                                        <span style="color: #e2e8f0; font-style: italic;">"{{ can.note }}"</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
                                 {% endwith %}
                             </td>
                         </tr>
@@ -509,8 +539,7 @@
             <div class="card">
                 <h3 class='card-title'>Payment Method</h3>
                 {% if order.payment_method == 'razorpay' %}
-                    <i class="fa-brands fa-google-pay"></i>
-                    <span class="info-val"> {{order.get_payment_method_display}}</span>
+                    <img referrerpolicy="origin" src = "https://badges.razorpay.com/badge-light.png " style = "height: 35px; width: 93px;" alt = "Razorpay | Payment Gateway | Neobank">
                 {% elif order.payment_method == 'cod' %}
                     <i class="fa-solid fa-money-bill-wave"></i>
                     <span class="info-val"> {{order.get_payment_method_display}}</span>

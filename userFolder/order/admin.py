@@ -10,3 +10,5 @@ class OrderModalAdmin(admin.ModelAdmin):
     list_display = ['order','variant','product_name','quantity','price_at_purchase','status','is_returned']
 admin.site.register(OrderItem,OrderModalAdmin)
 admin.site.register(ReturnOrder)
+admin.site.register(CancelOrder)
+admin.site.register(CancelItem)

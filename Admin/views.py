@@ -771,123 +771,114 @@ def admin_order_status_update(request,order_id):
 @login_required
 @user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
 @transaction.atomic
-def manage_return_request(request,item_id,order_id):
+def manage_return_request(request, item_id, order_id):
     if request.method != 'POST':
         return JsonResponse({"status": "error", "message": "Invalid Request"}, status=405)
 
     try:
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({"status": "error", "message": "Invalid JSON body"}, status=400)
-
+        data = json.loads(request.body)
         action = data.get('action')
-        
+
         if action not in {'approve', 'reject', 'returned'}:
             return JsonResponse({"status": "error", "message": "Invalid action"}, status=400)
-                
-    
-        order = get_object_or_404(OrderMain,order_id=order_id)
-        order_item = get_object_or_404(OrderItem,id=item_id,order__order_id=order_id)
+
+        order = get_object_or_404(OrderMain, order_id=order_id)
+        order_item = get_object_or_404(OrderItem, id=item_id, order=order)
         product_variant = order_item.variant
-        
-        return_item = ReturnOrder.objects.filter(order=order,item=order_item).first()
-        
+
+        return_item = ReturnOrder.objects.filter(order=order, item=order_item).first()
         if not return_item:
             return JsonResponse({"status": "error", "message": "No return request found"}, status=400)
-    
-        # Approve
+
         if action == 'approve':
-            
             if order_item.status != 'return_requested':
                 return JsonResponse({"status": "error", "message": "Item is not in requested state"}, status=400)
-            
+
             order_item.status = 'return_approved'
-            order_item.save()
-            
             return_item.return_status = 'return_approved'
-            return_item.save()
             
-            if order_item.status != 'returned':
+            if order.get_total_item_count > 1:
                 order.order_status = 'return_approved'
                 order.save()
-                
+
+            order_item.save()
+            return_item.save()
+
             return JsonResponse({"status": "success", "message": "Return approved"})
 
-        # Reject
         elif action == 'reject':
-            
             if order_item.status != 'return_requested':
                 return JsonResponse({"status": "error", "message": "Item is not in requested state"}, status=400)
-           
+
             order_item.status = 'delivered'
             order_item.is_returned = False
-            order_item.save()
-            
-            return_item.return_status = 'return_rejected'    
-            return_item.save()
-            
-            return JsonResponse({"status": "success", "message": "Return rejected"})
-        
-        elif action == 'returned':
-            
-            if order_item.status != 'return_approved':
-                return JsonResponse({"status": "error", "message": "Item must be approved before receiving"}, status=400)
-            
-            order_item.status = 'returned'
-            order_item.is_returned = True
-            
-            return_item.return_status = 'returned'
-            refund_amount = order_item.price_at_purchase * order_item.quantity
-            return_item.refund_amount = refund_amount
-            
-            if product_variant :
-                product_variant.stock = F('stock') + order_item.quantity
-                product_variant.save()
-                product_variant.refresh_from_db() # This line is used to refresh the DB and collect the latest value
-                
-            active_items_exist = order.items.filter(is_returned=False).exists()
-            
-            if not active_items_exist:
-                order.order_status = 'partially_returned'
-            else:
-                order.order_status = 'returned'
-                
-            
-            
-            try:
-                # Refunding the amount to the Wallet
-                wallet_user = order.user
-                wallet,created = Wallet.objects.get_or_create(
-                    user=wallet_user
-                )
-                
-                Wallet.objects.filter(pk=wallet.pk).update(
-                    balance = F('balance') + refund_amount
-                )
-                
-                Transaction.objects.create(
-                    wallet=wallet,
-                    transaction_type=TransactionType.CREDIT,
-                    amount=return_item.refund_amount,
-                    description=f"Refund for Item: {order_item.variant.product.name if order_item.variant else order_item.product.name}",
-                    status=TransactionStatus.COMPLETED,
-                    related_order = order
-                )
-            except Exception as E:
-                print(f"Error processing refund: {E}")
-                
+            return_item.return_status = 'return_rejected'
+
+            if not order.items.filter(status='return_requested').exists():
+                order.order_status = 'delivered'
+
             order_item.save()
             return_item.save()
             order.save()
-            return JsonResponse({'status': 'success', 'message': 'Item marked as Received'})
-            
-        else:
-            return JsonResponse({"status": "error", "message": "Invalid action"}, status=400)
+
+            return JsonResponse({"status": "success", "message": "Return rejected"})
+
+        elif action == 'returned':
+            if order_item.status != 'return_approved':
+                return JsonResponse(
+                    {"status": "error", "message": "Item must be approved before receiving"},
+                    status=400
+                )
+
+            order_item.status = 'returned'
+            order_item.is_returned = True
+            return_item.return_status = 'returned'
+
+            item_total = order_item.price_at_purchase * order_item.quantity
+            refund_amount = item_total
+
+            if order.coupon_discount:
+                total_items = order.get_total_item_count
+                each_item_share = order.coupon_discount / total_items
+                refund_amount = item_total - (each_item_share * order_item.quantity)
+
+            return_item.refund_amount = refund_amount
+
+            if product_variant:
+                product_variant.__class__.objects.filter(
+                    pk=product_variant.pk
+                ).update(stock=F('stock') + order_item.quantity)
+
+            active_items_exist = order.items.filter(is_returned=False).exists()
+            order.order_status = 'partially_returned' if active_items_exist else 'returned'
+
+            wallet, _ = Wallet.objects.get_or_create(user=order.user)
+            Wallet.objects.filter(pk=wallet.pk).update(
+                balance=F('balance') + refund_amount
+            )
+
+            Transaction.objects.create(
+                wallet=wallet,
+                transaction_type=TransactionType.CREDIT,
+                amount=refund_amount,
+                description=f"Refund for Item: {order_item.variant.product.name if order_item.variant else order_item.product.name}",
+                status=TransactionStatus.COMPLETED,
+                related_order=order
+            )
+
+            order_item.save()
+            return_item.save()
+            order.save()
+
+            return JsonResponse({"status": "success", "message": "Item marked as received and refunded"})
+
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON body"}, status=400)
 
     except Exception as e:
-        print('return execption : ',str(e))  
+        print("Return exception:", str(e))
         return JsonResponse({"status": "error", "message": "Internal Server Error"}, status=500)
+
         
 @method_decorator([never_cache, staff_member_required], name="dispatch")
 class CouponAdminView(ListView):
