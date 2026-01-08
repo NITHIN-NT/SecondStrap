@@ -303,34 +303,29 @@ def cancel_return_order_view(request, order_id):
         messages.error(request, 'An error occurred')
 
     return redirect('order_details', order_id=order_id)
-
 @login_required
 @never_cache
 @require_POST
 @transaction.atomic
 def cancel_order_view(request, order_id):
-    order = get_object_or_404(
-        OrderMain,
-        order_id=order_id,
-        user=request.user
-    )
+    order = get_object_or_404(OrderMain,order_id=order_id,user=request.user)
 
     if order.order_status in ['shipped', 'out_for_delivery', 'delivered', 'cancelled']:
-        return JsonResponse({'status': 'error','message': 'Cannot cancel: Order is already processed.'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Cannot cancel: Order is already processed.'},status=400)
 
     try:
         data = json.loads(request.body)
         cancels = data.get('cancels', [])
 
         if not cancels:
-            return JsonResponse({'status': 'error','message': 'No items selected for cancellation.'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'No items selected for cancellation.'},status=400)
 
-        cancel_order = CancelOrder.objects.create(
-            order=order,
-            user=request.user
-        )
+        cancel_order = CancelOrder.objects.create(order=order,user=request.user)
 
         total_refund = Decimal('0.00')
+
+        total_items = order.get_total_item_count or 1
+        coupon_per_item = (order.coupon_discount / total_items if order.coupon_discount else Decimal('0.00'))
 
         for entry in cancels:
             item_id = entry.get('item_id')
@@ -338,17 +333,23 @@ def cancel_order_view(request, order_id):
             note = entry.get('note', '').strip()
 
             if not item_id or not reason or not note:
-                return JsonResponse({'status': 'error','message': 'Reason and note are required for all items.'}, status=400)
+                return JsonResponse(
+                    {'status': 'error', 'message': 'Reason and note are required for all items.'},
+                    status=400
+                )
 
-            item = get_object_or_404(OrderItem,id=item_id,order=order)
+            item = get_object_or_404(OrderItem, id=item_id, order=order)
 
             if item.status in ['cancelled', 'returned']:
                 continue
 
-            # Refund only for prepaid orders
             item_refund = Decimal('0.00')
+
             if order.payment_method in ['razorpay', 'wallet']:
-                item_refund = item.price_at_purchase * item.quantity
+                item_total = item.price_at_purchase * item.quantity
+                item_coupon_share = coupon_per_item * item.quantity
+                item_refund = item_total - item_coupon_share
+
                 total_refund += item_refund
 
             CancelItem.objects.create(
@@ -377,31 +378,40 @@ def cancel_order_view(request, order_id):
             'refund_amount', 'is_full_cancel', 'cancel_status'
         ])
 
-        # Update main order status
-        order.order_status = ('cancelled'if cancel_order.is_full_cancel else 'partially_cancelled')
+        # Update main order
+        order.order_status = (
+            'cancelled' if cancel_order.is_full_cancel else 'partially_cancelled'
+        )
         order.save(update_fields=['order_status'])
-        
-        # Amount refund process
-        wallet, _ = Wallet.objects.get_or_create(user=order.user)
-        Wallet.objects.filter(pk=wallet.pk).update(
-            balance=F('balance') + total_refund
+
+        # Wallet refund
+        if total_refund > 0:
+            wallet, _ = Wallet.objects.get_or_create(user=order.user)
+            Wallet.objects.filter(pk=wallet.pk).update(
+                balance=F('balance') + total_refund
+            )
+
+            Transaction.objects.create(
+                wallet=wallet,
+                transaction_type=TransactionType.CREDIT,
+                amount=total_refund,
+                description=f"Refund for Order {order.order_id}",
+                status=TransactionStatus.COMPLETED,
+                related_order=order
+            )
+
+        return JsonResponse(
+            {
+                'status': 'success',
+                'message': 'Cancellation completed successfully. Refund credited to wallet.'
+            },
+            status=200
         )
-
-        Transaction.objects.create(
-            wallet=wallet,
-            transaction_type=TransactionType.CREDIT,
-            amount=total_refund,
-            description=f"Refund for Order {order.order_id}",
-            status=TransactionStatus.COMPLETED,
-            related_order=order
-        )
-
-
-        return JsonResponse({'status': 'success','message': 'Cancellation request submitted successfully. Amount returned to the wallet'
-        }, status=200)
 
     except Exception as e:
         print("Cancel Error:", e)
         transaction.set_rollback(True)
-        return JsonResponse({'status': 'error','message': 'Something went wrong while cancelling the order.'
-        }, status=500)
+        return JsonResponse(
+            {'status': 'error', 'message': 'Something went wrong while cancelling the order.'},
+            status=500
+        )
