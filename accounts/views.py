@@ -214,6 +214,7 @@ def logout_view(request):
     '''
     if not request.user.is_authenticated:
         return redirect('Home_page_user')
+    messages.success(request,"User Logout successfully !")
     logout(request)
     '''
     Ensure session is cleared after logout to remove any leftover keys
