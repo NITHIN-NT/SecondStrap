@@ -4,19 +4,49 @@
 
 /* --- Page Header --- */
 .page-header {
+    display: flex;
+    justify-content: space-between;
+    /* Pushes text group left, button right */
+    align-items: center;
+    /* Vertically centers the button with the text */
     margin-bottom: 24px;
+}
+
+/* This ensures the H1 and P stay stacked vertically */
+.header-content {
+    display: flex;
+    flex-direction: column;
 }
 
 .page-header h1 {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-text-primary);
+    margin: 0;
+    /* Removes default browser margins */
 }
 
 .page-header p {
     color: var(--color-text-secondary);
     font-size: 0.9rem;
     margin-top: 4px;
+}
+
+.page-header button {
+    background-color: black;
+    color: white;
+    border: 1px solid #d1d5db;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-header button:hover {
+    background-color: #ffffff;
+    border-color: #000000;
+    color: black;
 }
 
 /* --- Stats Cards Grid --- */
@@ -68,52 +98,58 @@
     margin-top: 8px;
 }
 
-/* --- Two-Column Layout for Charts --- */
+/* 1. Adjusted Grid - Uses a smaller ratio or auto-fit */
 .dashboard-row {
     display: grid;
-    grid-template-columns: 2.5fr 1fr;
-    gap: 24px;
-    margin-top: 32px;
+    grid-template-columns: 2fr 1.2fr;
+    /* Balanced columns */
+    gap: 16px;
+    /* Reduced gap */
+    margin-top: 20px;
 }
 
-/* --- Generic Content Card --- */
+/* 2. Slimmed Card */
 .card {
     background-color: var(--color-card-bg);
-    border-radius: 8px;
+    border-radius: 6px;
+    /* Sharper corners */
     border: 1px solid var(--color-border);
-    padding: 24px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 16px;
+    /* Reduced from 24px */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .card-header {
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 12px;
+    /* Tighter spacing */
+    padding-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    /* Puts title and filter on same line */
+    align-items: center;
 }
 
 .card-header h3 {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+    /* Smaller text */
     font-weight: 600;
-    color: var(--color-text-primary);
+    margin: 0;
 }
 
-/* --- CHART CONTAINER (IMPORTANT FOR CANVAS) --- */
-.chart-container {
+/* 3. Smaller Controls */
+.chart-controls select {
+    padding: 4px 8px;
+    /* Compact dropdown */
+    font-size: 0.75rem;
+    border-radius: 4px;
+}
+
+/* 4. Reduced Chart Height */
+.chart-wrapper {
     position: relative;
+    height: 320px;
+    /* Reduced from 350px/300px */
     width: 100%;
-    height: 350px;
-}
-
-/* Canvas must fill the container */
-.chart-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-}
-
-/* Remove previous placeholder overlay */
-.chart-container::before {
-    content: none !important;
 }
 
 /* --- Top Selling Products List --- */

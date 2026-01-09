@@ -42,12 +42,12 @@ def apply_coupon(request):
 
     cart_items, error = validate_stock_and_cart(user=user)
     if error:
-        return error  
+        return JsonResponse(error)  
 
     # Validate address
     address, error = validate_address(request=request, user=user)
     if error:
-        return error  
+        return JsonResponse(error)
 
 
     totals = calculate_cart_totals(cart_items)

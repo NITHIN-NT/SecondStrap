@@ -39,7 +39,7 @@ class Offer(models.Model):
 class OfferUsage(models.Model):
     offer = models.ForeignKey(Offer,on_delete=models.PROTECT,related_name="usages")
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
-    order = models.ForeignKey(OrderMain,on_delete=models.CASCADE)
+    order = models.ForeignKey(OrderMain,on_delete=models.CASCADE,related_name='offer_used')
 
     discount_amount = models.DecimalField(max_digits=10,decimal_places=2)
 

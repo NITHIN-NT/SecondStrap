@@ -247,24 +247,42 @@ def admin_logout(request):
     return redirect("admin_login")
 
 
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class AdminHome(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/dashboard.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
+        filter = self.request.GET.get('filter')
+        print(filter)
+        
         qs = (
             OrderMain.objects
-            .annotate(month=TruncMonth("created_at"))
-            .values("month")
+            .annotate(day=TruncDay("created_at"))
+            .values("day")
             .annotate(total=Sum("final_price"))
-            .order_by("month")
+            .order_by("day")
         )
+        
+        target_statuses = [
+            'pending', 'confirmed', 'shipped', 
+            'out_for_delivery', 'delivered', 
+            'cancelled', 'returned'
+        ]
+        
+        
+        order = OrderMain.objects.filter(order_status__in=target_statuses).values('order_status').annotate(count=Count('order_status'))
+        
+        order_labels = [item['order_status'] for item in order]
+        order_data = [item['count'] for item in order]
 
-        labels = [row["month"].strftime("%b") for row in qs]   # Jan, Feb, ...
+        labels = [row["day"].strftime("%b-%d") for row in qs]   # Jan, Feb, ...
         data = [float(row["total"] or 0) for row in qs]
 
+        context["order_labels"] = json.dumps(order_labels)
+        context["order_data"] = json.dumps(order_data)
+        
         context["sales_labels"] = json.dumps(labels)
         context["sales_data"] = json.dumps(data)
 
@@ -277,7 +295,7 @@ class AdminHome(LoginRequiredMixin, TemplateView):
         return context
 
 
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class AdminUserView(LoginRequiredMixin, ListView):
     model = CustomUser
     template_name = "users/home_user.html"
@@ -322,8 +340,7 @@ class AdminUserView(LoginRequiredMixin, ListView):
         return context
 
 
-@login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@staff_member_required(login_url='admin_login')
 @transaction.atomic
 def toggle_user_block(request, id):
     if request.method == "POST":
@@ -347,7 +364,7 @@ def toggle_user_block(request, id):
     return redirect("admin_user")
 
 
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class AdminProductsView(LoginRequiredMixin, ListView):
     model = Product
     template_name = "products/products_admin.html"
@@ -383,8 +400,7 @@ class AdminProductsView(LoginRequiredMixin, ListView):
         return context
 
 
-@login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@staff_member_required(login_url='admin_login')
 @transaction.atomic
 def manage_product(request, id=None):
     """
@@ -459,8 +475,7 @@ def manage_product(request, id=None):
     return render(request, "products/product_add_edit.html", context)
 
 
-@login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@staff_member_required(login_url='admin_login')
 @transaction.atomic
 def toggle_product_block(request, id):
     """
@@ -487,7 +502,7 @@ def toggle_product_block(request, id):
     return redirect("admin_products")
 
 
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class AdminCategoryView(ListView):
     model = Category
     template_name = "categorys/category.html"
@@ -526,9 +541,8 @@ class AdminCategoryView(ListView):
         return context
 
 
+@staff_member_required(login_url='admin_login')
 @require_POST
-@login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
 @transaction.atomic
 def toggle_category_block(request, id):
     """
@@ -564,8 +578,7 @@ def toggle_category_block(request, id):
     return redirect("admin_category")
 
 
-@login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@staff_member_required(login_url='admin_login')
 @transaction.atomic
 def admin_category_management(request, id=None):
     """
@@ -601,7 +614,7 @@ def admin_category_management(request, id=None):
     return render(request, "categorys/admin_category_form.html", context)
 
 
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class StockManagementView(ListView):
     model = Product
     context_object_name = "products"
@@ -653,7 +666,7 @@ class StockManagementView(ListView):
 
         return context
 
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class AdminOrderView(ListView):
     model = OrderMain
     context_object_name = 'orders'
@@ -713,7 +726,7 @@ class AdminOrderView(ListView):
 
     
 @login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")   
+@staff_member_required(login_url='admin_login')
 def admin_order_detailed_view(request,order_id):
     order = get_object_or_404(OrderMain, order_id=order_id)
     context = {
@@ -723,8 +736,7 @@ def admin_order_detailed_view(request,order_id):
     }
     return render(request,'order/order_detailed.html',context)
   
-@login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@staff_member_required(login_url='admin_login')
 @transaction.atomic
 def admin_order_status_update(request,order_id):
     if request.method != 'POST':
@@ -768,8 +780,7 @@ def admin_order_status_update(request,order_id):
         logger.exception("Failed to update order status for order %s", order_id)
         return JsonResponse({'status': 'error', 'message': 'Update failed'})
     
-@login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@staff_member_required(login_url='admin_login')
 @transaction.atomic
 def manage_return_request(request, item_id, order_id):
     if request.method != 'POST':
@@ -880,7 +891,7 @@ def manage_return_request(request, item_id, order_id):
         return JsonResponse({"status": "error", "message": "Internal Server Error"}, status=500)
 
         
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class CouponAdminView(ListView):
     model=Coupon
     context_object_name='coupons'
@@ -913,8 +924,7 @@ class CouponAdminView(ListView):
     
     
     
-@login_required
-@user_passes_test(lambda user: user.is_superuser, login_url="admin_login")
+@staff_member_required(login_url='admin_login')
 def manage_coupon_view(request,id=None):
     
     try:
@@ -947,7 +957,7 @@ def manage_coupon_view(request,id=None):
     }
     return render(request, 'coupon/manage_coupon.html', context)
 
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class CouponHistoryView(ListView):
     model=CouponUsage
     template_name='coupon/coupon_history.html'
@@ -972,7 +982,7 @@ class CouponHistoryView(ListView):
         context['total_coupon_used'] = total_coupon_used['count'] or 0
         return context
     
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class CouponDeleteView(DeleteView):
     model=Coupon
     pk_url_kwarg ='pk'
@@ -984,7 +994,7 @@ class CouponDeleteView(DeleteView):
         
         return JsonResponse({"message":"Product deleted successfully","redirect_url" : str(self.success_url)})
     
-@method_decorator([never_cache, staff_member_required], name="dispatch")
+@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class CustomerMessageView(ListView):  # Fixed typo
     model = ContactModel
     template_name = 'contact/customer_messages.html'
@@ -996,8 +1006,7 @@ class CustomerMessageView(ListView):  # Fixed typo
         context["unread_count"] = ContactModel.objects.filter(is_read=False).count()
         return context
 
-@never_cache
-@staff_member_required
+@staff_member_required(login_url='admin_login')
 @require_POST
 def mark_message_read(request):
     try:

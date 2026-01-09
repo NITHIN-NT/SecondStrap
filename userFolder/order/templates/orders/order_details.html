@@ -239,7 +239,7 @@
             {% if order.wallet_deduction %}
                 <div class="summary-row"><span>Wallet Deduction</span><span style="color: #10b981;">-₹{{ order.wallet_deduction }}</span></div>
             {% endif %}
-            {% if coupon_discount %}
+            {% if order.coupon_discount %}
                 <div class="summary-row"><span>Coupon Deduction</span><span style="color: #10b981;">-₹{{ order.coupon_discount }}</span></div>
             {% endif %}
             <div class="summary-row total"><span>Total</span><span>₹{{ order.final_price }}</span></div>

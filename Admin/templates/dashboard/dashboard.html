@@ -9,8 +9,10 @@
 {% block content %}
     
     <div class="page-header">
-        <h1>Dashboard</h1>
-        <p>Overview of your store's performance</p>
+        <div class="header-content">
+            <h1>Dashboard</h1>
+            <p>Overview of your store's performance</p>
+        </div>
     </div>
 
     <div class="stats-grid">
@@ -71,40 +73,27 @@
         <div class="card">
             <div class="card-header">
                 <h3>Sales Overview</h3>
+                <div class="chart-controls">
+                    <select id="timeFilter">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="last7">7Days</option>
+                        <option value="last30">30Days</option>
+                    </select>
+                </div>
             </div>
-            <div class="chart-container">
+            <div class="chart-wrapper">
                 <canvas id="salesChart"></canvas>
             </div>
         </div>
-
-        {% comment %} <div class="card">
-            <div class="card-header">
-                <h3>Top Selling Products</h3>
+        
+        <div class="card">
+            <div class="card-header"><h3>Stats</h3></div>
+            <div class="chart-wrapper">
+                <canvas id='OrderChart'></canvas>
             </div>
-            <div class="product-list">
-                <div class="product-item">
-                    <span class="product-item-name">Running Shoes</span>
-                    <span class="product-item-count">210</span>
-                </div>
-                <div class="product-item">
-                    <span class="product-item-name">Wireless Headphones</span>
-                    <span class="product-item-count">120</span>
-                </div>
-                <div class="product-item">
-                    <span class="product-item-name">Fitness Tracker</span>
-                    <span class="product-item-count">150</span>
-                </div>
-                <div class="product-item">
-                    <span class="product-item-name">Smartphone X</span>
-                    <span class="product-item-count">65</span>
-                </div>
-                <div class="product-item">
-                    <span class="product-item-name">Coffee Maker</span>
-                    <span class="product-item-count">75</span>
-                </div>
-            </div>
-        </div> {% endcomment %}
-    </div> 
+        </div>
+    </div>
 
     <div class="card orders-table">
         <div class="card-header">
@@ -147,56 +136,149 @@
 {# ---- CHART.JS (inline so we know it runs) ---- #}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    console.log('labels from Django:', {{ sales_labels|safe }});
-    console.log('data from Django:', {{ sales_data|safe }});
+const labels = {{ sales_labels|safe }};
+const data = {{ sales_data|safe }};
+const canvas = document.getElementById('salesChart');
 
-    const labels = {{ sales_labels|safe }};
-    const data = {{ sales_data|safe }};
 
-    const canvas = document.getElementById('salesChart');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
+if (canvas) {
+    const ctx = canvas.getContext('2d');
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    fill: true,
-                    tension: 0.4,
-                    borderColor: '#000000',
-                    backgroundColor: 'rgba(0,0,0,0.10)',
-                    pointRadius: 4,          // 👈 make the point visible
-                    pointHoverRadius: 6,
-                    borderWidth: 1.5
-                }]
+    // Gradient fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+    gradient.addColorStop(1, 'rgba(134, 134, 134, 0.05)');
+
+    const config = {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                borderColor: '#000000ff',
+                borderWidth: 2.5,
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.45,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#000000ff',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+
+                // 🔥 line drawing effect
+                borderDash: [2000, 2000],
+                borderDashOffset: 2000
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
+            animation: {
+                borderDashOffset: {
+                    type: 'number',
+                    duration: 3500,
+                    easing: 'easeInOutSine',
+                    from: 2000,
+                    to: 0
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#111827',
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        title: items => items[0].label,
+                        label: item => `₹ ${item.parsed.y.toLocaleString()}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#6b7280' }
                 },
-                scales: {
-                    x: {
-                        grid: {
-                            borderDash: [4, 4],
-                            color: '#e5e7eb'
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            borderDash: [4, 4],
-                            color: '#e5e7eb'
-                        }
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: {
+                        color: '#6b7280',
+                        callback: value => `₹${value}`
                     }
                 }
             }
-        });
-    }
+        }
+    };
+
+    new Chart(ctx, config);
+}
+
+const ctx = document.getElementById('OrderChart').getContext('2d');
+
+// Define a color palette mapped to your 7 statuses
+const statusColors = {
+    'pending': '#ffc107',          // Amber/Yellow
+    'confirmed': '#2196f3',        // Blue
+    'shipped': '#9c27b0',          // Purple
+    'out_for_delivery': '#00bcd4', // Cyan
+    'delivered': '#4caf50',        // Green
+    'cancelled': '#f44336',        // Red
+    'returned': '#607d8b'          // Blue Grey
+};
+
+// Map the labels coming from Django to their colors
+const chartLabels = {{ order_labels|safe }};
+const backgroundColors = chartLabels.map(label => statusColors[label] || '#cccccc');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: chartLabels,
+        datasets: [{
+            data: {{ order_data|safe }},
+            backgroundColor: backgroundColors,
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            cutout: '70%' // Makes the hole larger for the center text
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { usePointStyle: true, padding: 20 }
+            }
+        }
+    },
+    // Custom plugin to draw the total in the center
+    plugins: [{
+        id: 'centerText',
+        afterDraw: (chart) => {
+            const { ctx, chartArea: { top, bottom, left, right, width, height } } = chart;
+            ctx.save();
+            
+            // Calculate total
+            const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+            
+            ctx.font = 'bold 2rem sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#333';
+            ctx.fillText(total, width / 2, height / 2 + top + 10);
+            
+            ctx.font = '1rem sans-serif';
+            ctx.fillStyle = '#666';
+            ctx.fillText('Total Orders', width / 2, height / 2 + top - 25);
+            ctx.restore();
+        }
+    }]
+});
 </script>
-
-
 {% endblock extraJs %}
