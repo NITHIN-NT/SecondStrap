@@ -38,6 +38,7 @@ def signup_view(request):
     Sends OTP for email verification
     '''
     if request.method == 'POST':
+        
         form = CustomUserRegisterForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
@@ -47,6 +48,10 @@ def signup_view(request):
 
             try:
                 with transaction.atomic():
+                    checked = request.POST.get('terms')
+                    if not checked:
+                        messages.error(request,'Please Check the Terms and Conditions')
+                        return render(request, 'accounts/signup.html', {'form': form})
                     user = CustomUser.objects.create_user(
                         email=email,
                         first_name=first_name,
