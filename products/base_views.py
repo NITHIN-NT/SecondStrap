@@ -80,7 +80,7 @@ class HomePageView(TemplateView):
                 )
 
         
-        images = Thumbanails.objects.filter(is_showen=True).order_by('?')[:1]
+        images = Thumbanails.objects.filter(is_visible=True).order_by('?')[:1]
         
         context["products"] = products
         context["featured_products"] = featured_products

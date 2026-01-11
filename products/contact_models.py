@@ -13,4 +13,6 @@ class ContactModel(models.Model):
 
 class Thumbanails(models.Model):
     image = models.ImageField(blank=True, null=True)
-    is_showen = models.BooleanField(default=False)
+    name = models.CharField(null=True,max_length=250)
+    is_visible = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)

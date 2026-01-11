@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 logger = logging.getLogger(__name__)
 
 from django.views.decorators.cache import never_cache
@@ -23,7 +24,7 @@ from ..utils import send_html_mail
 from accounts.models import CustomUser, EmailOTP
 from userFolder.order.models import OrderMain,OrderItem
 from userFolder.wallet.models import *
-from products.contact_models import ContactModel
+from products.contact_models import ContactModel,Thumbanails
 from products.models import Product
 from coupon.models import *
 
@@ -371,3 +372,61 @@ def mark_message_read(request):
     except Exception as e:
         return JsonResponse({"success": False, "error": "Server error"}, status=500)
     
+@staff_member_required(login_url='admin_login')
+@never_cache
+def thumbanail_view(request):
+    thumbnails = Thumbanails.objects.all().order_by('-created_at')
+    context = {
+        'thumbnails' : thumbnails
+    }
+    return render(request,'thumbnails/thumbanail.html',context)
+
+@staff_member_required(login_url='admin_login')
+@never_cache
+@require_POST
+def upload_thumbnail(request):
+    if request.method == 'POST':
+        image_file = request.FILES.get('image')
+        image_name = request.POST.get('name', 'Untitled')
+        
+        if not image_file:
+            return JsonResponse({'success': False, 'error': 'No file uploaded'}, status=400)
+        
+        extension = os.path.splitext(image_file.name)[1].lower()
+        allowed_extensions = ['.png', '.jpg', '.jpeg', '.webp']
+    
+        if extension not in allowed_extensions:
+            return JsonResponse({'success': False, 
+                'error': f'Unsupported file format. Allowed: {", ".join(allowed_extensions)}'
+            }, status=400)
+        
+        try:
+            thumbnail = Thumbanails.objects.create(
+                name=image_name,
+                image=image_file
+            )
+
+            return JsonResponse({'success': True,'image_id': thumbnail.id,
+                'image_url': thumbnail.image.url,
+                'name': thumbnail.name
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        
+@staff_member_required(login_url='admin_login')
+@never_cache
+@require_POST
+def delete_thumbnail(request,image_id):
+    thumbanail = get_object_or_404(Thumbanails,id=image_id)
+    thumbanail.delete()
+    return JsonResponse({'success':True})
+
+@staff_member_required(login_url='admin_login')
+@never_cache
+@require_POST
+def toggle_visibility_view(request,image_id):
+    thumbanail = get_object_or_404(Thumbanails,id=image_id)
+    thumbanail.is_visible = not thumbanail.is_visible
+    thumbanail.save()
+    
+    return JsonResponse({'success':True})

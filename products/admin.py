@@ -33,6 +33,5 @@ class ContactModelAdmin(admin.ModelAdmin):
 admin.site.register(ContactModel,ContactModelAdmin)
 
 class ThumbanailModelAdmin(admin.ModelAdmin):
-    list_display = ['image','is_showen']
-    
+    list_display = ['image','is_visible']
 admin.site.register(Thumbanails,ThumbanailModelAdmin)

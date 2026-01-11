@@ -1,0 +1,416 @@
+{% extends "adminbase.html" %}
+{% load static %}
+
+{% block title %}<title>Thumbnail Management</title>{% endblock title %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bg-light: #f9fafb;
+        --border-color: #e5e7eb;
+        --text-muted: #6b7280;
+        --text-dark: #111827;
+        --accent-blue: #4f46e5;
+        --success-green: #10b981;
+        --danger-red: #ef4444;
+    }
+
+    .thumbnail-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+
+    .header-section h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+    }
+
+    /* Upload Area Section */
+    .upload-area {
+        background: white;
+        border: 2px dashed var(--border-color);
+        border-radius: 16px;
+        padding: 50px 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 60px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .upload-area:hover {
+        border-color: var(--accent-blue);
+        background: #fcfcff;
+    }
+
+    #preview-container { margin-bottom: 24px; }
+    #image-preview {
+        max-height: 280px;
+        max-width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+    }
+
+    .upload-icon {
+        font-size: 48px;
+        color: #9ca3af;
+        margin-bottom: 16px;
+    }
+
+    .upload-form-controls {
+        max-width: 450px;
+        margin: 24px auto 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+    }
+
+    .button-group {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    /* Buttons & Animations */
+    .btn {
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        min-width: 140px;
+    }
+
+    .btn-save { background-color: var(--accent-blue); color: white; }
+    .btn-clear { background-color: #f3f4f6; color: #4b5563; }
+    .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    .spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .is-loading .spinner { display: inline-block; }
+    .is-loading i { display: none; }
+
+    /* Grid Section */
+    .section-title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 28px;
+    }
+
+    .image-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .image-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1);
+    }
+
+    .image-wrapper { position: relative; height: 190px; }
+    .image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+    .badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .badge.visible { color: var(--success-green); }
+    .badge.hidden { color: var(--text-muted); }
+
+    .delete-btn-overlay {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+        border: none;
+    }
+
+    .image-card:hover .delete-btn-overlay { opacity: 1; }
+
+    .card-footer { padding: 16px; }
+    .footer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+
+    /* Toggle Switch */
+    .toggle-btn {
+        width: 40px;
+        height: 20px;
+        background-color: #d1d5db;
+        border-radius: 20px;
+        position: relative;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .toggle-btn.active { background-color: var(--success-green); }
+    .toggle-dot {
+        width: 16px;
+        height: 16px;
+        background-color: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: 0.3s;
+    }
+    .toggle-btn.active .toggle-dot { transform: translateX(20px); }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0; top: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        align-items: center; justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+    .modal-content { background: white; padding: 32px; border-radius: 16px; max-width: 400px; text-align: center; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: center; }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="thumbnail-container">
+    <div class="header-section">
+        <h1>Thumbnail Assets</h1>
+        <p>Upload and manage display images for your content.</p>
+    </div>
+
+    <div class="upload-area" id="drop-zone">
+        <div id="preview-container" style="display: none;">
+            <img id="image-preview" src="#" alt="Preview">
+        </div>
+
+        <div id="upload-prompt">
+            <div class="upload-icon"><i class="fa-regular fa-image"></i></div>
+            <h3>Click or drag image here</h3>
+            <p style="color: var(--text-muted); font-size: 13px;">Supports PNG, JPG, WEBP</p>
+        </div>
+        
+        <p id="file-name-display" style="margin-top: 15px; font-weight: 600;"></p>
+        
+        <div class="upload-form-controls" onclick="event.stopPropagation();">
+            <input type="text" id="image-name-input" class="form-input" placeholder="Image display name">
+            <input type="file" id="file-input" hidden accept="image/*">
+
+            <div class="button-group">
+                <button type="button" id="clear-btn" class="btn btn-clear">
+                    <i class="fa-solid fa-trash-can"></i> Clear
+                </button>
+                <button type="button" id="save-btn" class="btn btn-save">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <div class="spinner"></div>
+                    <span id="btn-text">Save Thumbnail</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title-bar">
+        <h2 style="font-size: 18px;">Recent Uploads</h2>
+        <span class="item-count">{{ thumbnails|length }} items</span>
+    </div>
+
+    <div class="image-grid" id="thumbnail-grid">
+        {% for image in thumbnails %}
+            <div class="image-card" id="card-{{ image.id }}">
+                <div class="image-wrapper">
+                    <img src="{{ image.image.url }}" alt="{{ image.name }}">
+                    <span class="badge {% if image.is_visible %}visible{% else %}hidden{% endif %}">
+                        {% if image.is_visible %}Visible{% else %}Hidden{% endif %}
+                    </span>
+                    <button class="delete-btn-overlay" onclick="openDeleteModal('{{ image.id }}')">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+                <div class="card-footer">
+                    <h4 style="margin:0; font-size: 14px;">{{ image.name }}</h4>
+                    <div class="footer-actions">
+                        <span style="font-size: 12px; color: var(--text-muted);">{{ image.created_at|date:"M d, Y" }}</span>
+                        <button class="toggle-btn {% if image.is_visible %}active{% endif %}" 
+                                onclick="toggleVisibility('{{ image.id }}', this)">
+                            <div class="toggle-dot"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-bottom: 8px;">Delete Image?</h2>
+        <p style="color: var(--text-muted);">This will permanently remove the thumbnail.</p>
+        <div class="modal-actions">
+            <button class="btn btn-clear" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn btn-save" style="background: var(--danger-red);" id="confirmDeleteBtn">Delete</button>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extraJs %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const imagePreview = document.getElementById('image-preview');
+    const previewContainer = document.getElementById('preview-container');
+    const uploadPrompt = document.getElementById('upload-prompt');
+    const saveBtn = document.getElementById('save-btn');
+    const btnText = document.getElementById('btn-text');
+    const deleteModal = document.getElementById('deleteModal');
+    
+    let currentDeleteId = null;
+    let currentUpdateId = null;
+
+    // --- Preview & Selection ---
+    dropZone.onclick = () => fileInput.click();
+    fileInput.onchange = function() {
+        if(this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+                uploadPrompt.style.display = 'none';
+                document.getElementById('file-name-display').innerText = this.files[0].name;
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    };
+
+    // --- Save with Animation ---
+    saveBtn.onclick = async () => {
+        if(!fileInput.files[0]) return toastr.warning("Select an image first");
+
+        saveBtn.classList.add('is-loading');
+        btnText.innerText = "Saving...";
+        saveBtn.disabled = true;
+
+        const fd = new FormData();
+        fd.append('image', fileInput.files[0]);
+        fd.append('name', document.getElementById('image-name-input').value || 'Untitled');
+
+        try {
+            await axios.post('{% url "upload_thumbnail" %}', fd, {
+                headers: {'X-CSRFToken': '{{ csrf_token }}'}
+            });
+            toastr.success("Thumbnail saved!");
+            setTimeout(() => location.reload(), 800);
+        } catch (err) {
+            toastr.error(err.response?.data?.error || "Error uploading");
+            saveBtn.classList.remove('is-loading');
+            btnText.innerText = "Save Thumbnail";
+            saveBtn.disabled = false;
+        }
+    };
+
+    // --- Toggle Visibility ---
+    async function toggleVisibility(id, btn) {
+        let url = "{% url 'toggle_thumbnail' 0 %}".replace('0', id); 
+        
+        try {
+            await axios.post(url, {}, { 
+                headers: {'X-CSRFToken': '{{ csrf_token }}'} 
+            });
+            
+            btn.classList.toggle('active');
+            const card = document.getElementById(`card-${id}`);
+            const badge = card.querySelector('.badge');
+            const isVis = btn.classList.contains('active');
+            
+            badge.innerText = isVis ? 'Visible' : 'Hidden';
+            badge.className = `badge ${isVis ? 'visible' : 'hidden'}`;
+            toastr.success("Status updated");
+        } catch (err) { 
+            toastr.error("Update failed"); 
+        }
+    }
+
+    // --- Delete ---
+    function openDeleteModal(id) { currentDeleteId = id; deleteModal.style.display = 'flex'; }
+    function closeDeleteModal() { deleteModal.style.display = 'none'; }
+    
+    document.getElementById('confirmDeleteBtn').onclick = async () => {
+        let url = "{% url 'delete_thumbnail' 0 %}".replace('0', currentDeleteId);
+        try {
+            await axios.post(url, {}, { headers: {
+                'X-CSRFToken': '{{ csrf_token }}'} 
+            });
+            document.getElementById(`card-${currentDeleteId}`).remove();
+            toastr.success("Thumbnail deleted successfuly !!");
+            closeDeleteModal();
+        } catch (err) { toastr.error("Delete failed"); }
+    };
+</script>
+{% endblock extraJs %}

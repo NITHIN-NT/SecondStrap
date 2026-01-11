@@ -65,6 +65,11 @@ urlpatterns = [
 
     path('customer-messages/',CustomerMessageView.as_view(),name='admin_customer_message_view'),
     path('customer-messages/mark-read/', mark_message_read, name='mark_message_read'),
+    
+    path('thumbanail/',thumbanail_view,name='thumbail_view'),
+    path('thumbanail/add',upload_thumbnail,name='upload_thumbnail'),
+    path('thumbnail/delete/<int:image_id>/', delete_thumbnail, name='delete_thumbnail'),
+    path('thumbnail/toggle/<int:image_id>/',toggle_visibility_view, name='toggle_thumbnail'),
 
 ]
 
