@@ -14,7 +14,7 @@ class ProductVariantInline(admin.TabularInline):
     extra = 1
 
 class ProductAdminView(admin.ModelAdmin):
-    list_display=['name','slug','description','image','category','created_at','is_featured','is_most_demanded','is_selective']
+    list_display=['name','slug','description','image','category','created_at','is_featured']
     inlines=[ProductImageInline,ProductVariantInline]
 admin.site.register(Product,ProductAdminView)
 

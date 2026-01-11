@@ -223,11 +223,15 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': env('API_SECRET')
 }
 
+# 1. New Django 4.2+ way
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": "cloudinary_storage.storage.StaticCloudinaryStorage",
     },
 }
+
+# 2. Add this specific line to satisfy the library and fix the 404s
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticCloudinaryStorage'

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Not Found</title>
+</head>
+<style>
+    /* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #000000; /* Deep black background */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+}
+
+.error-container {
+    text-align: center;
+    color: #E2D1CB; /* The off-white/beige tone from the image */
+}
+
+.error-code {
+    font-size: 25vw; /* Scales with screen width */
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin-bottom: 20px;
+}
+
+.back-home {
+    display: inline-block;
+    color: #E2D1CB;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid #E2D1CB;
+    transition: opacity 0.3s ease;
+}
+
+.back-home:hover {
+    opacity: 0.7;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .error-code {
+        font-size: 40vw;
+    }
+}
+</style>
+<body>
+
+    <main class="error-container">
+        <h1 class="error-code">404</h1>
+        <a href="{% url "Home_page_user" %}" class="back-home">BACK HOME</a>
+    </main>
+
+</body>
+</html>

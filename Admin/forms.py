@@ -54,8 +54,7 @@ class AdminProductAddForm(forms.ModelForm):
         model = Product
         fields = [
             'name', 'category', 'image',
-            'description', 'is_featured', 'is_selective',
-            'is_most_demanded', 'is_active',
+            'description', 'is_featured', 'is_active',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'id': 'product_name', 'required': True}),
@@ -63,8 +62,6 @@ class AdminProductAddForm(forms.ModelForm):
             'image': forms.FileInput(attrs={'id': 'main_product_image', 'accept': 'image/*'}),
             'description': forms.Textarea(attrs={'id': 'description', 'rows': 6}),
             'is_featured': forms.CheckboxInput(attrs={'id': 'is_featured'}),
-            'is_selective': forms.CheckboxInput(attrs={'id': 'is_selective'}),
-            'is_most_demanded': forms.CheckboxInput(attrs={'id': 'is_most_demanded'}),
             'is_active': forms.CheckboxInput(attrs={'id': 'is_active'}),
         }
 

@@ -33,8 +33,6 @@ class Product(models.Model):
         Category, on_delete=models.CASCADE, related_name="products"
     )
     is_featured = models.BooleanField(default=False)
-    is_selective = models.BooleanField(default=False)
-    is_most_demanded = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

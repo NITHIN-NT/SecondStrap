@@ -13,7 +13,6 @@
 
     /* This creates the animated gradient background */
     background: linear-gradient(-45deg, #333, #001f3f, #222, #001f3f);
-    background: url("images/d2cad9f9-4d7f-48f9-90ae-fec006b2c505.jpg");
     background-size: 400% 400%;
     animation: animatedGradient 15s ease infinite;
 

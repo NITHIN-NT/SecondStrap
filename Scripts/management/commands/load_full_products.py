@@ -83,8 +83,6 @@ class Command(BaseCommand):
                     'alt_text': item['title'], # <-- SETTING ALT TEXT
                     'category': category,
                     'is_featured': random.choice([True, False]),
-                    'is_selective': random.choice([True, False]),
-                    'is_most_demanded': random.choice([True, False]),
                     'is_active': True, # <-- CHANGED from is_blocked
                 }
             )

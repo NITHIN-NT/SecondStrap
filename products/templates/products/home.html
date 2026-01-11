@@ -9,7 +9,7 @@
 
 {% block content %}
 
-<section class="hero-section">
+<section class="hero-section" style="background-image: url('{% static 'images/fashion.jpg' %}');">
     <div class="hero-content">
         <h1>Effortless Style, Arrived.</h1>
         <p>Discover our new Spring collection.</p>
@@ -59,7 +59,7 @@
 </section>
 {% endif %}
 
-{% if most_demanded %}
+ {% if most_demanded %}
 <section class="home-section">
     <h2 class="section-title">Most Demanded Accessories</h2>
     <div class="product-grid">
@@ -87,5 +87,4 @@
     </div>
 </section>
 {% endif %} 
-
 {% endblock content %}

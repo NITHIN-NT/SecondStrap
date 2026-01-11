@@ -30,7 +30,7 @@ class HomePageView(TemplateView):
             .order_by("?")[:4]
         )
         most_demanded = (
-            Product.objects.filter(is_most_demanded=True, is_active=True)
+            Product.objects.filter(is_active=True)
             .prefetch_related("variants")
             .filter(is_active=True, variants__stock__gte=1)
             .annotate(offer_price=Min("variants__offer_price"))
