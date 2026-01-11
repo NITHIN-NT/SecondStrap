@@ -10,3 +10,7 @@ class ContactModel(models.Model):
     
     def __str__(self):
         return f'{self.name} messages : {self.message}'
+
+class Thumbanails(models.Model):
+    image = models.ImageField(blank=True, null=True)
+    is_showen = models.BooleanField(default=False)

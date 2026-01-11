@@ -8,7 +8,7 @@ from django.db.models import Sum,F
 
 from products.models import Product,Category
 from offer.models import Offer
-from .contact_models import ContactModel
+from .contact_models import ContactModel,Thumbanails
 from userFolder.order.models import OrderItem
 
 class HomePageView(TemplateView):
@@ -79,11 +79,15 @@ class HomePageView(TemplateView):
                     }
                 )
 
+        
+        images = Thumbanails.objects.filter(is_showen=True).order_by('?')[:1]
+        
         context["products"] = products
         context["featured_products"] = featured_products
         context["most_demanded"] = most_demanded
         context["new_arrivals"] = new_arrivals
         context["categories_for_template"] = categories_for_template
+        context["images"] = images
 
         return context
 

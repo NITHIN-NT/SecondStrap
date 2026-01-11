@@ -7,10 +7,13 @@ from django.db.models import Count
 from xhtml2pdf import pisa
 from django.http import JsonResponse,HttpResponse
 from django.template.loader import render_to_string,get_template
-from .utils import apply_sale_report_filters
+from ..utils import apply_sale_report_filters
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.cache import never_cache
 
-
+@staff_member_required(login_url='admin_login')
+@never_cache
 def sale_report_view(request):
     products = Product.objects.all()
     categories = Category.objects.all()
@@ -85,6 +88,8 @@ def sale_report_view(request):
 
     return render(request, 'sale_report/sales_report.html', context)    
 
+@staff_member_required(login_url='admin_login')
+@never_cache
 def sales_report_pdf(request):
     orders = (
         OrderMain.objects
@@ -115,6 +120,8 @@ def sales_report_pdf(request):
     pisa.CreatePDF(html, dest=response)
     return response
 
+@staff_member_required(login_url='admin_login')
+@never_cache
 def sales_report_excel(request):
     orders = (
         OrderMain.objects

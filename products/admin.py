@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Category,Product,ProductImage,Size,ProductVariant
-from .contact_models import ContactModel
+from .contact_models import ContactModel,Thumbanails
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name','description','is_active']
 admin.site.register(Category,CategoryAdmin)
@@ -31,3 +31,8 @@ admin.site.register(Size)
 class ContactModelAdmin(admin.ModelAdmin):
     list_display = ['name','email','subject','message','is_read','created_at']
 admin.site.register(ContactModel,ContactModelAdmin)
+
+class ThumbanailModelAdmin(admin.ModelAdmin):
+    list_display = ['image','is_showen']
+    
+admin.site.register(Thumbanails,ThumbanailModelAdmin)

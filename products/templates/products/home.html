@@ -10,12 +10,18 @@
 
 {% block content %}
 
-<section class="hero-section" style="background-image: url('{% static 'images/fashion.jpg' %}');">
-    <div class="hero-content">
-        <h1>Effortless Style, Arrived.</h1>
-        <p>Discover our new Spring collection.</p>
-    </div>
-</section>
+{% if images %}
+    {% for image in images %}
+        <section class="hero-section" style="background-image: url('{{ image.image.url }}');">
+    {% endfor %}
+{% else %}
+    <section class="hero-section" style="background-image: url('{% static 'images/fashion.jpg' %}');">
+{% endif %}
+        <div class="hero-content">
+            <h1>Effortless Style, Arrived.</h1>
+            <p>Discover our new Spring collection.</p>
+        </div>
+    </section>
 
 <section class="home-section">
     <h2 class="section-title">Shop By Category</h2>
