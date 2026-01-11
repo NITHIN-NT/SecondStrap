@@ -17,7 +17,7 @@ urlpatterns = [
     path('reset/',views.admin_reset,name='admin_reset'),
     path('logout/',views.admin_logout,name='admin_logout'),
 
-    path('strap/',AdminHome.as_view(),name='admin_home'),
+    path('strap/',admin_home,name='admin_home'),
 
     path('users/',AdminUserView.as_view(),name='admin_user'),
     path('user/block/<int:id>',views.toggle_user_block,name='admin_user_block'),

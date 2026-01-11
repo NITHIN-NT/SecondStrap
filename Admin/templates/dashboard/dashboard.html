@@ -63,7 +63,7 @@
                     <i class="fa-solid fa-dollar-sign"></i>
                 </div>
             </div>
-            <h2 class="stat-card-value">₹{{ total_revenue.total_revenue }}</h2>
+            <h2 class="stat-card-value">₹{{ total_revenue.total_revenue|default_if_none:"0" }}</h2>
             <p class="stat-card-footer">+18% from last month</p>
         </div>
     </div>
@@ -75,10 +75,10 @@
                 <h3>Sales Overview</h3>
                 <div class="chart-controls">
                     <select id="timeFilter">
+                        <option value="today" selected>Today</option>
+                        <option value="last7">7 Days</option>
+                        <option value="last30">30 Days</option>
                         <option value="all">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="last7">7Days</option>
-                        <option value="last30">30Days</option>
                     </select>
                 </div>
             </div>
@@ -91,6 +91,53 @@
             <div class="card-header"><h3>Stats</h3></div>
             <div class="chart-wrapper">
                 <canvas id='OrderChart'></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-row">
+        <div class="card">
+            <div class="card-header">
+                <h3>Top Selling Products</h3>
+                <span class="badge-info">All Time</span>
+            </div>
+            <div class="best-selling-list">
+                {% for product in top_products %}
+                    <div class="list-item">
+                        <div class="item-info">
+                            <span class="item-name">{{ product.variant__product__name }}</span>
+                            <span class="item-category">{{ product.variant__product__category__name }}</span>
+                        </div>
+                        <div class="item-stats">
+                            <span class="item-count">{{ product.total_sold }} Sold</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted">No data available</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Top Categories</h3>
+            </div>
+            <div class="best-selling-list">
+                {% for category in top_categories %}
+                <div class="list-item">
+                    <div class="item-info">
+                        <span class="item-name">{{ category.variant__product__category__name }}</span>
+                    </div>
+                    <div class="item-progress-wrapper">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: {{ category.percentage }}%;"></div>
+                        </div>
+                        <span class="item-count">₹{{ category.total_revenue|floatformat:0 }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No data available</p>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -135,19 +182,62 @@
 {% block extraJs %}
 {# ---- CHART.JS (inline so we know it runs) ---- #}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+
+    // Add event listener to the select element
+document.getElementById('timeFilter').addEventListener('change', async function(e) {
+    const filterValue = e.target.value;
+    
+    try {
+        // Show loading state (optional)
+        const canvas = document.getElementById('salesChart');
+        canvas.style.opacity = '0.5';
+        
+        // Make API request with the selected filter
+        const response = await axios.get('{% url "admin_home" %}', {
+            params: {
+                filter: filterValue
+            }
+        });
+        
+        // Extract the new data from response
+        const { labels, data } = response.data;
+        
+        // Get the existing chart instance
+        const chart = Chart.getChart('salesChart');
+        
+        if (chart) {
+            // Update chart data
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = data;
+            
+            // Reset animation
+            chart.data.datasets[0].borderDashOffset = 2000;
+            
+            // Update the chart with animation
+            chart.update();
+        }
+        
+        // Remove loading state
+        canvas.style.opacity = '1';
+        
+    } catch (error) {
+        console.error('Error fetching sales data:', error);
+        alert('Failed to load sales data. Please try again.');
+    }
+});
 const labels = {{ sales_labels|safe }};
 const data = {{ sales_data|safe }};
 const canvas = document.getElementById('salesChart');
 
-
 if (canvas) {
     const ctx = canvas.getContext('2d');
 
-    // Gradient fill
+    // Professional gradient - Indigo to Purple
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-    gradient.addColorStop(1, 'rgba(134, 134, 134, 0.05)');
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.75)');   // Indigo-500
+    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.05)');   // Violet-500 fade
 
     const config = {
         type: 'line',
@@ -155,18 +245,19 @@ if (canvas) {
             labels: labels,
             datasets: [{
                 data: data,
-                borderColor: '#000000ff',
-                borderWidth: 2.5,
+                borderColor: '#6366f1',           // Indigo-500
+                borderWidth: 3,
                 backgroundColor: gradient,
                 fill: true,
-                tension: 0.45,
+                tension: 0.4,
                 pointRadius: 0,
-                pointHoverRadius: 6,
-                pointBackgroundColor: '#000000ff',
+                pointHoverRadius: 7,
+                pointBackgroundColor: '#6366f1',
                 pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
+                pointBorderWidth: 3,
+                pointHoverBorderWidth: 3,
 
-                // 🔥 line drawing effect
+                // Line drawing effect
                 borderDash: [2000, 2000],
                 borderDashOffset: 2000
             }]
@@ -190,26 +281,60 @@ if (canvas) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#111827',
-                    padding: 12,
+                    backgroundColor: '#1e293b',     // Slate-800
+                    titleColor: '#f1f5f9',          // Slate-100
+                    bodyColor: '#e2e8f0',           // Slate-200
+                    borderColor: '#475569',          // Slate-600
+                    borderWidth: 1,
+                    padding: 16,
                     displayColors: false,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 13,
+                        weight: '600'
+                    },
+                    bodyFont: {
+                        size: 14,
+                        weight: '700'
+                    },
                     callbacks: {
                         title: items => items[0].label,
-                        label: item => `₹ ${item.parsed.y.toLocaleString()}`
+                        label: item => `₹ ${item.parsed.y.toLocaleString('en-IN')}`
                     }
                 }
             },
             scales: {
                 x: {
-                    grid: { display: false },
-                    ticks: { color: '#6b7280' }
+                    grid: { 
+                        display: false 
+                    },
+                    ticks: { 
+                        color: '#64748b',            // Slate-500
+                        font: {
+                            size: 12,
+                            weight: '500'
+                        }
+                    },
+                    border: {
+                        color: '#e2e8f0'             // Slate-200
+                    }
                 },
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    grid: { 
+                        color: '#f1f5f9',            // Slate-100
+                        drawBorder: false
+                    },
                     ticks: {
-                        color: '#6b7280',
-                        callback: value => `₹${value}`
+                        color: '#64748b',            // Slate-500
+                        font: {
+                            size: 12,
+                            weight: '500'
+                        },
+                        callback: value => `₹${value.toLocaleString('en-IN')}`
+                    },
+                    border: {
+                        display: false
                     }
                 }
             }
@@ -219,33 +344,38 @@ if (canvas) {
     new Chart(ctx, config);
 }
 
-const ctx = document.getElementById('OrderChart').getContext('2d');
+// Professional Doughnut Chart
+const ctx2 = document.getElementById('OrderChart').getContext('2d');
 
-// Define a color palette mapped to your 7 statuses
+// Modern, professional color palette
 const statusColors = {
-    'pending': '#ffc107',          // Amber/Yellow
-    'confirmed': '#2196f3',        // Blue
-    'shipped': '#9c27b0',          // Purple
-    'out_for_delivery': '#00bcd4', // Cyan
-    'delivered': '#4caf50',        // Green
-    'cancelled': '#f44336',        // Red
-    'returned': '#607d8b'          // Blue Grey
+    'pending': '#f59e0b',          // Amber-500
+    'confirmed': '#3b82f6',        // Blue-500
+    'shipped': '#8b5cf6',          // Violet-500
+    'out_for_delivery': '#06b6d4', // Cyan-500
+    'delivered': '#10b981',        // Emerald-500
+    'cancelled': '#ef4444',        // Red-500
+    'returned': '#6366f1'          // Indigo-500
 };
 
-// Map the labels coming from Django to their colors
 const chartLabels = {{ order_labels|safe }};
-const backgroundColors = chartLabels.map(label => statusColors[label] || '#cccccc');
+const backgroundColors = chartLabels.map(label => statusColors[label] || '#94a3b8');
 
-new Chart(ctx, {
+new Chart(ctx2, {
     type: 'doughnut',
     data: {
-        labels: chartLabels,
+        labels: chartLabels.map(label => 
+            label.replace(/_/g, ' ')
+                 .replace(/\b\w/g, l => l.toUpperCase())
+        ),
         datasets: [{
             data: {{ order_data|safe }},
             backgroundColor: backgroundColors,
             borderColor: '#ffffff',
-            borderWidth: 2,
-            cutout: '70%' // Makes the hole larger for the center text
+            borderWidth: 3,
+            cutout: '75%',
+            hoverOffset: 8,
+            hoverBorderWidth: 3
         }]
     },
     options: {
@@ -254,28 +384,52 @@ new Chart(ctx, {
         plugins: {
             legend: {
                 position: 'bottom',
-                labels: { usePointStyle: true, padding: 20 }
+                labels: { 
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    padding: 20,
+                    font: {
+                        size: 13,
+                        weight: '600',
+                        family: "'Inter', 'Segoe UI', sans-serif"
+                    },
+                    color: '#334155'             // Slate-700
+                }
+            },
+            tooltip: {
+                backgroundColor: '#1e293b',      // Slate-800
+                titleColor: '#f1f5f9',
+                bodyColor: '#e2e8f0',
+                borderColor: '#475569',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: true,
+                boxWidth: 12,
+                boxHeight: 12,
+                usePointStyle: true
             }
         }
     },
-    // Custom plugin to draw the total in the center
     plugins: [{
         id: 'centerText',
         afterDraw: (chart) => {
             const { ctx, chartArea: { top, bottom, left, right, width, height } } = chart;
             ctx.save();
             
-            // Calculate total
             const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
             
-            ctx.font = 'bold 2rem sans-serif';
+            // Total number
+            ctx.font = 'bold 2.5rem "Inter", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillStyle = '#333';
-            ctx.fillText(total, width / 2, height / 2 + top + 10);
+            ctx.fillStyle = '#0f172a';           // Slate-900
+            ctx.fillText(total, width / 2, height / 2 + top + 5);
             
-            ctx.font = '1rem sans-serif';
-            ctx.fillStyle = '#666';
-            ctx.fillText('Total Orders', width / 2, height / 2 + top - 25);
+            // Label
+            ctx.font = '600 0.95rem "Inter", sans-serif';
+            ctx.fillStyle = '#64748b';           // Slate-500
+            ctx.fillText('Total Orders', width / 2, height / 2 + top - 30);
+            
             ctx.restore();
         }
     }]

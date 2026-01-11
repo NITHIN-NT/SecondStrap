@@ -1,16 +1,14 @@
 import json
-from django.utils.text import slugify
 from django.views.decorators.cache import never_cache
-from django.views.generic import TemplateView, ListView, DetailView,DeleteView
+from django.views.generic import TemplateView, ListView,DeleteView
 
-from django.template.loader import render_to_string
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 
-from django.db.models import Count, Sum,When,Case,CharField
+from django.db.models import Count, Sum
 from django.db import transaction
 from django.db.models import Q , F
 
@@ -18,7 +16,7 @@ from django.forms import inlineformset_factory
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .decorators import superuser_required, redirect_if_authenticated
+from .decorators import  redirect_if_authenticated
 from .forms import (
     AdminLoginForm,
     AdminForgotPasswordEmailForm,
@@ -27,8 +25,6 @@ from .forms import (
     VariantForm,
     ImageForm,
     AdminProductAddForm,
-    VariantFormSet,
-    ImageFormSet,
     CategoryForm,
     CouponForm
 )
@@ -43,7 +39,8 @@ from coupon.models import *
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 
-from django.db.models.functions import TruncMonth,TruncDay
+from django.db.models.functions import TruncDay,TruncYear,TruncHour
+from datetime import timedelta
 from django.urls import reverse_lazy
 
 from django.contrib.admin.views.decorators import staff_member_required
@@ -246,55 +243,107 @@ def admin_logout(request):
     logout(request)
     return redirect("admin_login")
 
-
-@method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
-class AdminHome(LoginRequiredMixin, TemplateView):
-    template_name = "dashboard/dashboard.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+@never_cache
+@login_required(login_url='admin_login')
+@staff_member_required(login_url='admin_login')
+def admin_home(request):
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.GET.get('filter'):
+        filter_type = request.GET.get('filter', 'all')
         
-        filter = self.request.GET.get('filter')
-        print(filter)
+        base_data = OrderMain.objects.filter(order_status='delivered')
+        end_date = timezone.now()
         
-        qs = (
-            OrderMain.objects
-            .annotate(day=TruncDay("created_at"))
+        if filter_type == 'today':
+            start_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            base_data = base_data.filter(created_at__gte=start_date, created_at__lte=end_date)
+            trunc_function = TruncHour
+            date_format = "%I:%M %p"
+            
+        elif filter_type == 'last7':
+            start_date = end_date - timedelta(days=7)
+            base_data = base_data.filter(created_at__gte=start_date, created_at__lte=end_date)
+            trunc_function = TruncDay
+            date_format = "%b %d"
+            
+        elif filter_type == 'last30':
+            start_date = end_date - timedelta(days=30)
+            base_data = base_data.filter(created_at__gte=start_date, created_at__lte=end_date)
+            trunc_function = TruncDay
+            date_format = "%b %d"
+            
+        else: 
+            trunc_function = TruncYear
+            date_format = "%Y"
+        
+        base_data = (
+            base_data
+            .annotate(day=trunc_function("created_at"))
             .values("day")
             .annotate(total=Sum("final_price"))
             .order_by("day")
         )
         
-        target_statuses = [
-            'pending', 'confirmed', 'shipped', 
-            'out_for_delivery', 'delivered', 
-            'cancelled', 'returned'
-        ]
+        labels = [row["day"].strftime(date_format) for row in base_data]
+        data = [float(row["total"] or 0) for row in base_data]
         
-        
-        order = OrderMain.objects.filter(order_status__in=target_statuses).values('order_status').annotate(count=Count('order_status'))
-        
-        order_labels = [item['order_status'] for item in order]
-        order_data = [item['count'] for item in order]
-
-        labels = [row["day"].strftime("%b-%d") for row in qs]   # Jan, Feb, ...
-        data = [float(row["total"] or 0) for row in qs]
-
-        context["order_labels"] = json.dumps(order_labels)
-        context["order_data"] = json.dumps(order_data)
-        
-        context["sales_labels"] = json.dumps(labels)
-        context["sales_data"] = json.dumps(data)
-
-        context["total_users"] = CustomUser.objects.count()
-        context["total_products"] = Product.objects.count()
-        context["total_orders"] = OrderMain.objects.count()
-        context["total_revenue"] = OrderMain.objects.aggregate(total_revenue=Sum("final_price"))
-        context["recent_orders"] = OrderMain.objects.all()[:2]
-
-        return context
-
-
+        return JsonResponse({
+            'labels': labels,
+            'data': data
+        })
+    
+    today_start = timezone.now().replace(hour=0, minute=0, second=0)
+    today_end = timezone.now()
+    
+    base_data = (OrderMain.objects.filter(order_status='delivered',created_at__gte=today_start,created_at__lte=today_end)
+        .annotate(day=TruncHour("created_at"))
+        .values("day")
+        .annotate(total=Sum("final_price"))
+        .order_by("day")
+    )
+    
+    labels = [row["day"].strftime("%I:%M %p") for row in base_data]
+    data = [float(row["total"] or 0) for row in base_data]
+    
+    target_statuses = [
+        'pending', 'confirmed', 'shipped', 
+        'out_for_delivery', 'delivered', 
+        'cancelled', 'returned'
+    ]
+    
+    order = OrderMain.objects.filter(order_status__in=target_statuses).values('order_status').annotate(count=Count('order_status'))
+    
+    order_labels = [item['order_status'] for item in order]
+    order_data = [item['count'] for item in order]
+    top_products = (OrderItem.objects
+                    .filter(order__order_status = 'delivered')
+                    .values('variant__product__name','variant__product__category__name')
+                    .annotate(total_sold=Sum('quantity')) 
+                    .order_by('-total_sold')[:5])
+    
+    top_categories = (OrderItem.objects.filter(order__order_status='delivered') 
+                    .values('variant__product__category__name') 
+                    .annotate(total_revenue=Sum('price_at_purchase')) 
+                    .order_by('-total_revenue')[:5])
+    
+    if top_categories:
+        max_revenue = top_categories[0]['total_revenue']
+        for cat in top_categories:
+            cat['percentage'] = (cat['total_revenue'] / max_revenue * 100) if max_revenue > 0 else 0
+    context = {
+        "order_labels": json.dumps(order_labels),
+        "order_data": json.dumps(order_data),
+        "sales_labels": json.dumps(labels),
+        "sales_data": json.dumps(data),
+        "total_users": CustomUser.objects.count(),
+        "total_products": Product.objects.count(),
+        "total_orders": OrderMain.objects.count(),
+        "total_revenue": OrderMain.objects.filter(order_status='delivered', payment_status='paid').aggregate(total_revenue=Sum("final_price")),
+        "recent_orders": OrderMain.objects.all()[:2],
+        "top_products" : top_products,
+        "top_categories":top_categories,
+    }
+    
+    return render(request, 'dashboard/dashboard.html', context)
 @method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
 class AdminUserView(LoginRequiredMixin, ListView):
     model = CustomUser
