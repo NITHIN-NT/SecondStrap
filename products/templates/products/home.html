@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load cloudinary %}
 
 {% block title %}Home{% endblock %}
 
@@ -66,9 +67,9 @@
         {% for most_demand in most_demanded %}
         <div class="product-card">
             <div class="product-image-container">
-                <a href="{% url 'Product_card_view' most_demand.slug %}">
+                <a href="{% url 'Product_card_view' most_demand.variant__product__slug %}">
                     {% if most_demand.image %}
-                    <img src="{{ most_demand.image.url }}" alt="{{ most_demand.name }}">
+                    <img src="{% cloudinary_url most_demand.image %}" alt="{{ most_demand.name }}">
                     {% else %}
                     <div class="image-placeholder"></div>
                     {% endif %}
@@ -79,7 +80,7 @@
                 </div>
             </div>
             <div class="product-info">
-                <h3 class="product-name"><a href="#">{{ most_demand.name }}</a></h3>
+                <h3 class="product-name"><a href="{% url 'Product_card_view' most_demand.variant__product__slug %}">{{ most_demand.name }}</a></h3>
                 <p class="product-price">{{ most_demand.offer_price }}</p>
             </div>
         </div>

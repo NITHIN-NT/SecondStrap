@@ -4,10 +4,12 @@ from django.db.models import Min
 from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib import messages
+from django.db.models import Sum,F
 
 from products.models import Product,Category
 from offer.models import Offer
 from .contact_models import ContactModel
+from userFolder.order.models import OrderItem
 
 class HomePageView(TemplateView):
     template_name = "products/home.html"
@@ -29,12 +31,26 @@ class HomePageView(TemplateView):
             .annotate(offer_price=Min("variants__offer_price"))
             .order_by("?")[:4]
         )
+        # most_demanded = (
+        #     Product.objects.filter(is_active=True)
+        #     .prefetch_related("variants")
+        #     .filter(is_active=True, variants__stock__gte=1)
+        #     .annotate(offer_price=Min("variants__offer_price"))
+        #     .order_by("?")[:4]
+        # )
         most_demanded = (
-            Product.objects.filter(is_active=True)
-            .prefetch_related("variants")
-            .filter(is_active=True, variants__stock__gte=1)
-            .annotate(offer_price=Min("variants__offer_price"))
-            .order_by("?")[:4]
+            OrderItem.objects.filter(order__order_status='delivered')
+            .values(
+                'variant__product__slug' # Keep this for the URL
+            )
+            .annotate(
+                name=F('variant__product__name'),
+                category=F('variant__product__category__name'),
+                offer_price=F('variant__offer_price'),
+                image=F('variant__product__image'),
+                total_sold=Sum('quantity')
+            )
+            .order_by('-total_sold')[:4]
         )
         today = timezone.now().date()
         new_arrivals = (
