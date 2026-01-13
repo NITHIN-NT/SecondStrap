@@ -284,19 +284,18 @@
                 </div>
             {% endif %}
 
+            <div class="summary-row">
+                <span>Shipping</span>
+                <span>+₹{{ shipping_fee|default:"30" }}</span>
+            </div>
+
             {% if coupon_discount %}
                 <div class="summary-row discount">
                     <span>Coupon Deduction</span>
                     <span>-₹{{ coupon_discount }}</span>
                 </div>
             {% endif %}
-
             
-            <div class="summary-row">
-                <span>Shipping</span>
-                <span>+₹{{ shipping_fee|default:"30" }}</span>
-            </div>
-
             <div class="summary-divider"></div>
             <div class="summary-row total">
                 <span>Grand Total</span>
@@ -444,18 +443,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ========== 1. APPLY WALLET BUTTON ==========
     if (applyWalletBtn) {
-        applyWalletBtn.addEventListener('click', async function() {
-            if (placeOrderBtn.classList.contains('loading')) return; 
+        applyWalletBtn.addEventListener('click', async function () {
+            if (placeOrderBtn.classList.contains('loading')) return;
 
-            const selectedAddress = document.querySelector('input[name="selected_address"]:checked');
+            const selectedAddress = document.querySelector(
+                'input[name="selected_address"]:checked'
+            );
             if (!selectedAddress) {
                 toastr.error('Please select a delivery address before applying wallet.');
                 return;
             }
-            
+
             placeOrderBtn.classList.add('loading');
             const formData = new FormData(form);
-            
+
             try {
                 const response = await axios.post(deductWalletUrl, formData, {
                     headers: { 'X-CSRFToken': csrfToken }
@@ -463,18 +464,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (response.data.success) {
                     toastr.success('Wallet amount applied successfully!');
-                    setTimeout(() => { window.location.reload(); }, 500);
-                } else {
-                    placeOrderBtn.classList.remove('loading');
-                    toastr.error(response.data.error || 'Failed to apply wallet amount.');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
                 }
+
             } catch (err) {
-                console.error('Wallet deduction error:', err);
                 placeOrderBtn.classList.remove('loading');
-                toastr.error('Error applying wallet.');
+
+                if (err.response && err.response.data) {
+                    const data = err.response.data;
+
+                    if (data.wallet_applied) {
+                        toastr.info('Wallet has already been applied to this order.');
+                        
+                        applyWalletBtn.disabled = true;
+                    } else {
+                        toastr.error(data.error || 'Failed to apply wallet amount.');
+                    }
+                } else {
+                    toastr.error('Error applying wallet.');
+                }
+
+                console.error('Wallet deduction error:', err);
             }
         });
     }
+
 
     // ========== 2. COUPON SELECTION ==========
     document.querySelectorAll('.offer-item-card').forEach(card => {

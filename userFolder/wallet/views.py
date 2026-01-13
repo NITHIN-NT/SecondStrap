@@ -6,6 +6,7 @@ from django.shortcuts import render,get_object_or_404,redirect
 from django.views.generic import TemplateView
 from .models import Wallet,Transaction,TransactionStatus,TransactionType
 from userFolder.userprofile.views import SecureUserMixin
+from coupon.models import Coupon,CouponUsage
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
@@ -22,6 +23,7 @@ from userFolder.order.models import OrderItem,OrderMain
 from userFolder.cart.utils import get_annotated_cart_items
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from userFolder.payment.utils import *
 
 # Create your views here.
 class ProfileWalletView(SecureUserMixin, TemplateView):
@@ -146,165 +148,179 @@ def wallet_razorpay_callback(request):
         print(f"Razorpay Wallet Update Error: {e}")
         return JsonResponse({"status":"error", "message":"Payment verified, but failed to update wallet balance due to a server error. Please contact support."})
 
-
 @require_POST
 @never_cache
 @login_required
-@transaction.atomic
 def pay_using_wallet(request):
-
-    # CART VALIDATION
-    try:
-        cart = Cart.objects.select_for_update().get(user=request.user)
-        if not cart.items.exists():
-            messages.error(request, "Your cart is empty.")
-            return redirect('cart')
-    except Cart.DoesNotExist:
-        messages.error(request, "Cart not found.")
-        return redirect('Home_page_user')
-
-    cart_items = get_annotated_cart_items(user=request.user)
-    variant_ids = [item.variant.id for item in cart_items]
-
-    # Lock product variants
-    locked_variants = ProductVariant.objects.select_for_update().filter(id__in=variant_ids)
-    variant_map = {variant.id: variant for variant in locked_variants}
-
-    # STOCK & PRICE VALIDATION 
-    calculated_total_amount = Decimal('0.00')
-
-    for item in cart_items:
-        variant = variant_map.get(item.variant.id)
-
-        if not variant:
-            messages.error(request,f"{item.variant.product.name} is no longer available.")
-            return redirect('cart')
-
-        if item.quantity > variant.stock:
-            messages.error(request,f"Out of stock: {variant.product.name}")
-            return redirect('cart')
-
-        calculated_total_amount += item.product_total
-
-    # ADDRESS VALIDATION 
-    address_id = request.POST.get('selected_address')
-    if not address_id:
-        messages.error(request, "Please select a delivery address.")
-        return redirect('checkout')
+    user = request.user
+    draft_order_id = request.session.get('draft_order_id')
 
     try:
-        address = Address.objects.get(id=address_id, user=request.user)
-    except Address.DoesNotExist:
-        messages.error(request, "Invalid address selected.")
-        return redirect('checkout')
+        with transaction.atomic():
+            if draft_order_id:
+                order = OrderMain.objects.select_for_update().get(
+                    order_id=draft_order_id,
+                    user=user,
+                    order_status='draft'
+                )
 
-    # PAYMENT METHOD 
-    payment_method = request.POST.get('payment_method')
-    if payment_method != 'wallet':
-        messages.error(request, "Only wallet payment is supported.")
-        return redirect('checkout')
+                cart_items, error = validate_stock_and_cart(user)
+                if error:
+                    return JsonResponse(error)
 
-    # WALLET VALIDATION
-    try:
-        wallet = Wallet.objects.select_for_update().get(user=request.user)
+                if order.coupon_code:
+                    coupon = Coupon.objects.select_for_update().get(code=order.coupon_code)
+
+                    if coupon.one_time_per_user and CouponUsage.objects.filter(user=user, coupon=coupon).exists():
+                        raise ValueError("Coupon already used")
+
+                    coupon.times_used += 1
+                    coupon.save()
+
+                    CouponUsage.objects.create(
+                        coupon=coupon,
+                        user=user,
+                        order=order,
+                        discount_amount=order.coupon_discount,
+                        cart_total_before_discount=order.final_price + order.coupon_discount
+                    )
+
+                wallet = Wallet.objects.select_for_update().get(user=user)
+
+                if wallet.balance < order.final_price:
+                    raise ValueError("Insufficient wallet balance")
+
+                wallet.balance -= order.final_price
+                wallet.save()
+
+                Transaction.objects.create(
+                    wallet=wallet,
+                    transaction_type=TransactionType.DEBIT,
+                    amount=order.final_price,
+                    description=f'Payment for order {order.order_id}',
+                    status=TransactionStatus.COMPLETED,
+                    related_order=order
+                )
+                
+                order.order_status = 'pending'
+                order.payment_method = 'wallet'
+                order.payment_status = 'paid'
+                order.is_paid = True
+                order.expires_at = None
+                order.save()
+
+                cart_items.delete()
+                Cart.objects.filter(user=user).delete()
+
+                return render(request, 'orders/order_success.html', {'order': order})
+
+            cart_items, error = validate_stock_and_cart(user)
+            if error:
+                return JsonResponse(error)
+
+            totals = calculate_cart_totals(cart_items)
+
+            if totals['grand_total'] > 1000:
+                raise ValueError("Orders above ₹1000 are allowed only via UPI.")
+
+            address, error = validate_address(request=request, user=user)
+            if error:
+                return JsonResponse(error)
+
+            order = OrderMain.objects.create(
+                user=user,
+                shipping_address_name=address.full_name,
+                shipping_address_line_1=address.address_line_1,
+                shipping_city=address.city,
+                shipping_state=address.state,
+                shipping_pincode=address.postal_code,
+                shipping_phone=address.phone_number,
+                payment_method='wallet',
+                order_status='pending',
+                payment_status='pending',
+                is_paid=False,
+                total_price=totals['subtotal'],
+                discount_amount=totals['cart_discount'],
+                shipping_amount=totals['shipping'],
+                final_price=totals['grand_total']
+            )
+
+            wallet = Wallet.objects.select_for_update().get(user=user)
+
+            if wallet.balance < order.final_price:
+                raise ValueError("Insufficient wallet balance")
+
+            wallet.balance -= order.final_price
+            wallet.save()
+
+            Transaction.objects.create(
+                wallet=wallet,
+                transaction_type=TransactionType.DEBIT,
+                amount=order.final_price,
+                description=f'Payment for order {order.order_id}',
+                status=TransactionStatus.COMPLETED,
+                related_order=order
+            )
+
+            variant_ids = [item.variant.id for item in cart_items]
+            variants = ProductVariant.objects.select_for_update().filter(id__in=variant_ids)
+            variant_map = {v.id: v for v in variants}
+
+            order_items_to_create = []
+            variants_to_update = []
+            
+            for item in cart_items:
+                current_variant = variant_map.get(item.variant.id)
+
+                order_items_to_create.append(
+                    OrderItem(
+                        order=order,
+                        variant=current_variant,
+                        product_name=current_variant.product.name,
+                        quantity=item.quantity,
+                        price_at_purchase=item.final_price,
+                        status='pending'
+                    )
+                )
+
+                current_variant.stock -= item.quantity
+                variants_to_update.append(current_variant)
+
+            OrderItem.objects.bulk_create(order_items_to_create)
+            ProductVariant.objects.bulk_update(variants_to_update, ["stock"])  
+
+            order.is_paid = True
+            order.payment_status = 'paid'
+            order.save()
+
+            cart_items.delete()
+            Cart.objects.filter(user=user).delete()
+
+        try:
+            html_message = render_to_string(
+                'email/order_success_mail.html',
+                {'order': order, 'items': order.items.all()}
+            )
+            msg = EmailMultiAlternatives(
+                subject='Order Successful',
+                body='Order placed successfully!',
+                to=[order.user.email],
+            )
+            msg.attach_alternative(html_message, 'text/html')
+            msg.send()
+        except Exception as e:
+            print("Email error:", e)
+
+        return render(request, 'orders/order_success.html', {'order': order})
+
+    except OrderMain.DoesNotExist:
+        messages.error(request, "Draft order not found.")
     except Wallet.DoesNotExist:
         messages.error(request, "Wallet not found.")
-        return redirect('checkout')
-
-    if wallet.balance < calculated_total_amount:
-        messages.error(request, "Insufficient wallet balance.")
-        return redirect('checkout')
-    
-    subtotal = sum(item.subtotal for item in cart_items)
-    cart_total_price = sum(item.product_total for item in cart_items)
-    cart_discount = sum(item.actual_discount for item in cart_items)
-    shipping = Decimal(30)
-    grand_total = cart_total_price + shipping
-
-    # CREATE ORDER 
-    order = OrderMain.objects.create(
-        user=request.user,
-        shipping_address_name=address.full_name,
-        shipping_address_line_1=address.address_line_1,
-        shipping_city=address.city,
-        shipping_state=address.state,
-        shipping_pincode=address.postal_code,
-        shipping_phone=address.phone_number,
-        payment_method=payment_method,
-        payment_status='pending',
-        total_price=subtotal,
-        discount_amount=cart_discount,
-        shipping_amount=shipping,
-        wallet_deduction=Decimal('0'),
-        final_price=grand_total,
-    )
-
-    # WALLET DEDUCTION 
-    try:
-        wallet.balance -= calculated_total_amount
-        wallet.save(update_fields=['balance'])
-
-        Transaction.objects.create(
-            wallet=wallet,
-            transaction_type=TransactionType.DEBIT,
-            amount=calculated_total_amount,
-            description=f"Order {order.order_id} placed.",
-            status=TransactionStatus.COMPLETED,
-            related_order=order
-        )
-
-    except Exception:
-        messages.error(request, "Payment failed. Please try again.")
-        raise  # rollback transaction
-
-    # ORDER ITEMS CREATE & STOCK UPDATE 
-    order_items = []
-
-    for item in cart_items:
-        variant = variant_map[item.variant.id]
-
-        order_items.append(
-            OrderItem(
-                order=order,
-                variant=variant,
-                product_name=variant.product.name,
-                quantity=item.quantity,
-                price_at_purchase=item.final_price
-            )
-        )
-
-        ProductVariant.objects.filter(
-            id=variant.id
-        ).update(stock=F('stock') - item.quantity)
-
-    OrderItem.objects.bulk_create(order_items)
-
-    #  MARK ORDER AS PAID 
-    order.payment_status = 'paid'
-    order.save(update_fields=['payment_status'])
-
-    # CLEAR CART 
-    cart_items.delete()
-
-    request.session['order_id'] = order.order_id
-
-    # EMAIL
-    try:
-        html_message = render_to_string(
-            'email/order_success_mail.html',
-            {'order': order, 'items': order.items.all()}
-        )
-
-        msg = EmailMultiAlternatives(
-            subject='Order Successful',
-            body='Your order has been placed successfully.',
-            to=[order.user.email],
-        )
-        msg.attach_alternative(html_message, 'text/html')
-        msg.send()
-
+    except ValueError as e:
+        messages.error(request, str(e))
     except Exception as e:
-        print(f"Order email failed: {e}")
+        print("Checkout error:", e)
+        messages.error(request, "Something went wrong. Please try again.")
 
-    return render(request, 'orders/order_success.html', {'order': order})
-
+    return redirect('checkout')

@@ -16,151 +16,180 @@ from .utils import render_to_pdf
 from django.http import JsonResponse
 from django.db import transaction
 from django.views.decorators.cache import never_cache
-from userFolder.cart.utils import get_annotated_cart_items
+from userFolder.payment.utils import validate_stock_and_cart,validate_address,calculate_cart_totals
+from coupon.models import *
 
-@never_cache
+@require_POST
 @login_required(login_url='login')
+@transaction.atomic
 def order(request):
-    if request.method != 'POST':
-        return redirect('checkout')
-    
-    if request.session.get('draft_order_id'):
-        messages.error(request,'Only UPI applicable')
-        return redirect('checkout')
-    
-    try:
-        
-        with transaction.atomic():
-            user = request.user
-            
-            try:
-                cart = Cart.objects.get(user=user)
-                if not cart.items.exists():
-                    messages.error(request, "Cart is Empty!")
-                    return redirect('cart')
-            except Cart.DoesNotExist:
-                messages.info(request, 'No cart Found')
-                return redirect('Home_page_user')
-            
-            cart_items = get_annotated_cart_items(user=user)
-            variant_ids = [item.variant.id for item in cart_items]
-            
-            locked_variants = ProductVariant.objects.filter(id__in=variant_ids).select_for_update()
-            variant_map = {variant.id: variant for variant in locked_variants}
-            
-            # calculated_total_price = 0
-            for item in cart_items:
-                current_variant = variant_map.get(item.variant.id)
-                
-                if not current_variant:
-                    messages.error(request, f"Product {item.variant.product.name} is no longer available.")
-                    return redirect('cart')
+    user = request.user
+    draft_order_id = request.session.get('draft_order_id')
 
-                if item.quantity > current_variant.stock:
-                    messages.error(request, f'Out of stock: {current_variant.product.name}')
-                    return redirect('cart')
-
-                # calculated_total_price += item.product_total
-            
-            add_id = request.POST.get('selected_address')
-            if not add_id:
-                messages.error(request, 'Please select a delivery address.')
-                return redirect('checkout')
-
-            try:
-                address = Address.objects.get(id=add_id, user=user)
-            except Address.DoesNotExist:
-                messages.error(request, 'Invalid address selected.')
-                return redirect('checkout') 
-
-            payment_method = request.POST.get('payment_method')
-            if not payment_method:            
-                messages.info(request, 'Select a payment method')
-                return redirect('checkout')
-            
-            if payment_method != 'cod':
-                messages.warning(request, 'Only COD is available right now!')
-                return redirect('checkout')
-            
-            subtotal = sum(item.subtotal for item in cart_items)
-            cart_total_price = sum(item.product_total for item in cart_items)
-            cart_discount = sum(item.actual_discount for item in cart_items)
-            shipping = Decimal(30)
-            grand_total = cart_total_price + shipping
-            
-            if grand_total > Decimal('1000'):
-                messages.info(request,'Order above 1000 , only UPI')
-                return redirect('checkout')
-            
-            order = OrderMain.objects.create(
-                user=user,
-                shipping_address_name=address.full_name,
-                shipping_address_line_1=address.address_line_1,
-                shipping_city=address.city,
-                shipping_state=address.state,
-                shipping_pincode=address.postal_code,
-                shipping_phone=address.phone_number,
-                payment_method=payment_method,
-                order_status = 'pending',
-                total_price=subtotal,
-                discount_amount = cart_discount,
-                shipping_amount = shipping,
-                final_price = grand_total
-                
-            )
-            
-            order_items_to_create = []
-            variants_to_update = []
-            
-            for item in cart_items:
-                current_variant = variant_map.get(item.variant.id)
-                print(current_variant)
-                order_items_to_create.append(
-                    OrderItem(
-                        order=order,
-                        variant=current_variant,
-                        product_name=current_variant.product.name,
-                        quantity=item.quantity,
-                        price_at_purchase=item.final_price
-                    )
-                )
-                
-                current_variant.stock -= item.quantity
-                variants_to_update.append(current_variant)
-                                
-            OrderItem.objects.bulk_create(order_items_to_create)
-            
-            ProductVariant.objects.bulk_update(variants_to_update,['stock'])
-                
-            cart_items.delete()
-            
-            request.session['order_id'] = order.order_id
-            
+    if draft_order_id:
         try:
-            user_email = order.user.email
-            
-            plain_message = f'Order Successful Places!.'
-            html_message = render_to_string('email/order_success_mail.html',{'order':order,'items': order.items.all(),})
-            msg = EmailMultiAlternatives(
-                body = plain_message,
-                subject='Order Successful',
-                to=[user_email],
+            draft_order = OrderMain.objects.select_for_update().get(
+                order_id=draft_order_id,
+                user=user,
+                order_status='draft'
             )
-            msg.attach_alternative(html_message,'text/html')
+        except OrderMain.DoesNotExist:
+            messages.error(request, "Draft order not found or expired.")
+            return render(request, 'orders/order_error.html')
+        
+        if draft_order.final_price > 1000:
+            messages.error(request,'Orders above 1000 , Only Razorpay !!')
+            return redirect('checkout')
+
+        for item in draft_order.items.select_related('variant'):
+            try:
+                variant = ProductVariant.objects.select_for_update().get(id=item.variant.id)
+            except ProductVariant.DoesNotExist:
+                messages.error(request, f"{item.product_name} is no longer available.")
+                return render(request, 'orders/order_error.html')
+
+            if item.quantity > variant.stock:
+                messages.error(request, f"Out of stock: {item.product_name}")
+                return render(request, 'orders/order_error.html')
+
+            variant.stock -= item.quantity
+            variant.save()
+
+        if draft_order.wallet_deduction > 0:
+            try:
+                wallet = Wallet.objects.select_for_update().get(user=user)
+
+                if wallet.balance < draft_order.wallet_deduction:
+                    messages.error(request, "Insufficient wallet balance.")
+                    return render(request, 'orders/order_error.html')
+
+                wallet.balance -= draft_order.wallet_deduction
+                wallet.save()
+
+                Transaction.objects.create(
+                    wallet=wallet,
+                    transaction_type='debit',
+                    amount=draft_order.wallet_deduction,
+                    description=f'Payment for order {draft_order.order_id}'
+                )
+            except Wallet.DoesNotExist:
+                messages.error(request, "Wallet not found.")
+                return render(request, 'orders/order_error.html')
+
+        draft_order.order_status = 'pending'
+        draft_order.payment_method = 'cod'
+        draft_order.payment_status = 'pending'
+        draft_order.is_paid = False
+        draft_order.expires_at = None
+        draft_order.save()
+
+        order = draft_order
+
+        if order.coupon_code:
+            try:
+                coupon = Coupon.objects.select_for_update().get(code=order.coupon_code)
+                coupon.times_used += 1
+                coupon.save()
+
+                CouponUsage.objects.create(
+                    coupon=coupon,
+                    user=user,
+                    order=order,
+                    discount_amount=order.coupon_discount,
+                    cart_total_before_discount=order.final_price - order.discount_amount
+                )
+            except Coupon.DoesNotExist:
+                pass
+
+        Cart.objects.filter(user=user).delete()
+
+        return render(request, 'orders/order_success.html', {'order': order})
+    try:
+        cart_items, error = validate_stock_and_cart(user)
+        if error:
+            return error
+
+        totals = calculate_cart_totals(cart_items)
+
+        if totals['grand_total'] > 1000:
+            messages.error(request, 'Orders above ₹1000 are allowed only via UPI.')
+            return redirect('checkout')
+
+        address, error = validate_address(request=request, user=user)
+        if error:
+            return error
+
+        payment_method = request.POST.get('payment_method')
+        if not payment_method:
+            messages.info(request, 'Select a payment method')
+            return redirect('checkout')
+
+        order = OrderMain.objects.create(
+            user=user,
+            shipping_address_name=address.full_name,
+            shipping_address_line_1=address.address_line_1,
+            shipping_city=address.city,
+            shipping_state=address.state,
+            shipping_pincode=address.postal_code,
+            shipping_phone=address.phone_number,
+            payment_method=payment_method,
+            order_status='pending',
+            is_paid=False,
+            total_price=totals['subtotal'],
+            discount_amount=totals['cart_discount'],
+            shipping_amount=totals['shipping'],
+            final_price=totals['grand_total']
+        )
+
+        variant_ids = [item.variant.id for item in cart_items]
+        variants = ProductVariant.objects.select_for_update().filter(id__in=variant_ids)
+        variant_map = {v.id: v for v in variants}
+
+        order_items = []
+        variants_to_update = []
+
+        for item in cart_items:
+            variant = variant_map[item.variant.id]
+
+            order_items.append(
+                OrderItem(
+                    order=order,
+                    variant=variant,
+                    product_name=variant.product.name,
+                    quantity=item.quantity,
+                    price_at_purchase=item.final_price
+                )
+            )
+
+            variant.stock -= item.quantity
+            variants_to_update.append(variant)
+
+        OrderItem.objects.bulk_create(order_items)
+        ProductVariant.objects.bulk_update(variants_to_update, ['stock'])
+
+        cart_items.delete()
+        request.session['order_id'] = order.order_id
+
+        try:
+            html_message = render_to_string(
+                'email/order_success_mail.html',
+                {'order': order, 'items': order.items.all()}
+            )
+            msg = EmailMultiAlternatives(
+                subject='Order Successful',
+                body='Order placed successfully!',
+                to=[order.user.email],
+            )
+            msg.attach_alternative(html_message, 'text/html')
             msg.send()
         except Exception as e:
-            print(f"Email sending failed: {e}")
-            
+            print(f"Email failed: {e}")
+
         return render(request, 'orders/order_success.html', {'order': order})
-            
-    except ValueError as e:
-        messages.error(request, f"Value Error: {str(e)}")
-        return redirect('cart')
-        
+
     except Exception as e:
-        # Log this error in production!
-        print(f"Order Placement Error: {e}")
-        messages.error(request, "An error occurred while placing your order. Please try again.")
+        print(f"Order error: {e}")
+        messages.error(request, "Something went wrong. Please try again.")
         return redirect('checkout')
 
 @never_cache
