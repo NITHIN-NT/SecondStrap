@@ -42,7 +42,7 @@
                         <i class='bx bx-x' style="color: #dc2626;"></i>
                     </div>
                     <div class="status-text">
-                        <h3>Order Cancelled</h3>
+                        <h3>Order {{order.get_order_status_display}}</h3>
                         <p>Updated on {{ order.updated_at|date:"M d, Y" }}</p>
                     </div>
                 </div>

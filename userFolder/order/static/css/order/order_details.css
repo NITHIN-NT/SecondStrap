@@ -145,6 +145,9 @@
 
 .status-texts {
     margin-bottom: 20px;
+    background-color: whitesmoke;
+    padding: 10px;
+    border-radius: 6px;
 }
 
 .status-texts h3 {
