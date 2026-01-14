@@ -319,6 +319,7 @@ def admin_home(request):
         "total_products": Product.objects.count(),
         "total_orders": OrderMain.objects.count(),
         "total_revenue": OrderMain.objects.filter(order_status='delivered', payment_status='paid').aggregate(total_revenue=Sum("final_price")),
+        "revenue": OrderMain.objects.aggregate(total_revenue=Sum("final_price")),
         "recent_orders": OrderMain.objects.all()[:2],
         "top_products" : top_products,
         "top_categories":top_categories,

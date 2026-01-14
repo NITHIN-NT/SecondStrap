@@ -143,6 +143,22 @@
     font-size: 14px;
 }
 
+.status-texts {
+    margin-bottom: 20px;
+}
+
+.status-texts h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: .65;
+}
+
+.status-texts p {
+    color: #666;
+    font-size: 10px;
+}
+
 /* --- HORIZONTAL PROGRESS BAR --- */
 .progress-track {
     display: flex;
@@ -495,7 +511,8 @@
 /* NEW: Small Modal modifier */
 .modal-sm {
     max-width: 400px !important;
-    margin-top: 15vh; /* Center it more vertically */
+    margin-top: 15vh;
+    /* Center it more vertically */
 }
 
 @keyframes slideDown {

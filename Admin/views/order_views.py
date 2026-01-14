@@ -10,6 +10,7 @@ from django.views.generic import ListView
 from django.db.models import Count,Sum,F
 from django.db import transaction
 from django.http import JsonResponse
+from decimal import Decimal,ROUND_HALF_UP
 
 from products.models import Product,Category
 from userFolder.order.models import OrderItem,OrderMain,ORDER_STATUS_CHOICES,ADMIN_ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES,ReturnOrder
@@ -72,7 +73,7 @@ class AdminOrderView(ListView):
     model = OrderMain
     context_object_name = 'orders'
     template_name ='order/order.html'
-    ordering = ['-created_at']
+    ordering = ['-updated_at']
     paginate_by = 9
     
     def get_queryset(self):
@@ -248,13 +249,14 @@ def manage_return_request(request, item_id, order_id):
             order_item.is_returned = True
             return_item.return_status = 'returned'
 
-            item_total = order_item.price_at_purchase * order_item.quantity
+            item_total = Decimal(str(order_item.price_at_purchase)) * order_item.quantity
             refund_amount = item_total
 
-            if order.coupon_discount:
-                total_items = order.get_total_item_count
-                each_item_share = order.coupon_discount / total_items
-                refund_amount = item_total - (each_item_share * order_item.quantity)
+            if order.coupon_discount > 0:
+                order_subtotal = sum(item.price_at_purchase * item.quantity for item in order.items.all())
+                item_proportion = item_total / Decimal(str(order_subtotal))
+                discount_to_subtract = item_proportion * Decimal(str(order.coupon_discount))
+                refund_amount = (item_total - discount_to_subtract).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
 
             return_item.refund_amount = refund_amount
 
@@ -263,6 +265,8 @@ def manage_return_request(request, item_id, order_id):
                     pk=product_variant.pk
                 ).update(stock=F('stock') + order_item.quantity)
 
+            order_item.save()
+            
             active_items_exist = order.items.filter(is_returned=False).exists()
             order.order_status = 'partially_returned' if active_items_exist else 'returned'
 
@@ -280,7 +284,6 @@ def manage_return_request(request, item_id, order_id):
                 related_order=order
             )
 
-            order_item.save()
             return_item.save()
             order.save()
 

@@ -22,7 +22,7 @@
                     <div class="od-meta">
                         <span>Order #: {{ order.order_id }}</span>
                         <span>•</span>
-                        <span>Placed on: {{ order.created_at|date:"M d, Y" }}</span>
+                        <span>Placed on: {{ order.created_at }}</span>
                     </div>
                 </div>
                 <div>
@@ -50,21 +50,26 @@
                     <div class="progress-bar-fill" style="width: 100%; background: #dc2626;"></div>
                 </div>
 
-            {% elif order.order_status == 'returned' %}
+            {% elif order.order_status == 'returned' or order.order_status == 'partially_returned' %}
                 <div class="status-header">
                     <div class="status-icon-box" style="background: #ffedd5;">
                         <i class='bx bx-revision' style="color: #ea580c;"></i>
                     </div>
                     <div class="status-text">
-                        <h3>Returned</h3>
+                        <h3>{{order.get_order_status_display}}</h3>
                         <p>Updated on {{ order.updated_at|date:"M d, Y" }}</p>
                     </div>
+                </div>
+                <div class='status-texts'>
+                    <h3>Amount refunded to your Wallet</h3>
+                    <p>Check you wallet</p>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar-fill" style="width: 100%; background: #ea580c;"></div>
                 </div>
 
             {% else %}
+            
                 <div class="status-header">
                     <div class="status-icon-box">
                         {% if order.get_progress_status == 4 %}

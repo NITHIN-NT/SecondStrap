@@ -64,7 +64,8 @@
                 </div>
             </div>
             <h2 class="stat-card-value">₹{{ total_revenue.total_revenue|default_if_none:"0" }}</h2>
-            <p class="stat-card-footer">+18% from last month</p>
+            {% comment %} <p class="stat-card-footer">+18% from last month</p> {% endcomment %}
+            <p class="stat-card-footer">{{revenue.total_revenue}}</p>
         </div>
     </div>
 

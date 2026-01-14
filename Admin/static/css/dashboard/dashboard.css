@@ -1,18 +1,13 @@
-/*
- * STYLES FOR: dashboard.css
- */
-
 /* --- Page Header --- */
 .page-header {
     display: flex;
+    flex-wrap: wrap; /* Allows wrapping on very small screens */
     justify-content: space-between;
-    /* Pushes text group left, button right */
     align-items: center;
-    /* Vertically centers the button with the text */
     margin-bottom: 24px;
+    gap: 16px;
 }
 
-/* This ensures the H1 and P stay stacked vertically */
 .header-content {
     display: flex;
     flex-direction: column;
@@ -23,7 +18,6 @@
     font-weight: 600;
     color: var(--color-text-primary);
     margin: 0;
-    /* Removes default browser margins */
 }
 
 .page-header p {
@@ -32,28 +26,13 @@
     margin-top: 4px;
 }
 
-.page-header button {
-    background-color: black;
-    color: white;
-    border: 1px solid #d1d5db;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.page-header button:hover {
-    background-color: #ffffff;
-    border-color: #000000;
-    color: black;
-}
-
 /* --- Stats Cards Grid --- */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px;
+    /* Responsive grid: 1 col on mobile, 2 on tablet, 4 on desktop */
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
 }
 
 .stat-card {
@@ -85,194 +64,60 @@
 }
 
 .stat-card-value {
-    font-size: 2.125rem;
+    font-size: 1.8rem; /* Slightly smaller for better mobile fit */
     font-weight: 600;
     color: var(--color-text-primary);
-    margin-top: 16px;
+    margin-top: 12px;
 }
 
 .stat-card-footer {
     font-size: 0.85rem;
-    color: var(--color-green-text);
+    color: #10b981; /* Default success green */
     font-weight: 500;
     margin-top: 8px;
 }
 
-/* 1. Adjusted Grid - Uses a smaller ratio or auto-fit */
+/* --- Dashboard Rows (Charts) --- */
 .dashboard-row {
     display: grid;
-    grid-template-columns: 2fr 1.2fr;
-    /* Balanced columns */
-    gap: 16px;
-    /* Reduced gap */
+    grid-template-columns: 1.5fr 1fr; /* Default desktop ratio */
+    gap: 20px;
     margin-top: 20px;
 }
 
-/* 2. Slimmed Card */
 .card {
     background-color: var(--color-card-bg);
-    border-radius: 6px;
-    /* Sharper corners */
+    border-radius: 8px;
     border: 1px solid var(--color-border);
-    padding: 16px;
-    /* Reduced from 24px */
+    padding: 20px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    min-width: 0; /* Prevents flex/grid items from overflowing */
 }
 
 .card-header {
-    margin-bottom: 12px;
-    /* Tighter spacing */
-    padding-bottom: 8px;
+    margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
-    /* Puts title and filter on same line */
     align-items: center;
+    gap: 10px;
 }
 
 .card-header h3 {
-    font-size: 0.95rem;
-    /* Smaller text */
+    font-size: 1rem;
     font-weight: 600;
     margin: 0;
 }
 
-/* 3. Smaller Controls */
-.chart-controls select {
-    padding: 4px 8px;
-    /* Compact dropdown */
-    font-size: 0.75rem;
-    border-radius: 4px;
-}
-
-/* 4. Reduced Chart Height */
 .chart-wrapper {
     position: relative;
-    height: 320px;
-    /* Reduced from 350px/300px */
+    height: 300px;
     width: 100%;
 }
 
-/* --- Top Selling Products List --- */
-.product-list {
+/* --- Best Selling Lists --- */
+.best-selling-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-}
-
-.product-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-}
-
-.product-item-name {
-    color: #374151;
-    font-weight: 500;
-}
-
-.product-item-count {
-    color: #111827;
-    font-weight: 600;
-}
-
-/* --- Recent Orders Table --- */
-.orders-table {
-    margin-top: 32px;
-}
-
-.orders-table .card-header {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 1px solid var(--color-border);
-    font-size: 0.875rem;
-    vertical-align: middle;
-}
-
-.data-table th {
-    background-color: var(--color-main-bg);
-    color: var(--color-text-secondary);
-    font-weight: 600;
-}
-
-.data-table td {
-    color: var(--color-text-secondary);
-}
-
-.data-table td:first-child,
-.data-table td:nth-child(2) {
-    color: var(--color-text-primary);
-    font-weight: 500;
-}
-
-.data-table tr:last-child td {
-    border-bottom: none;
-}
-
-/* --- Status Badges --- */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: capitalize;
-}
-
-/* Green */
-.status-delivered,
-.status-paid {
-    background-color: #d1fae5;
-    color: #065f46;
-}
-
-/* Blue */
-.status-shipped,
-.status-out_for_delivery,
-.status-confirmed,
-.status-razorpay,
-.status-wallet {
-    background-color: #dbeafe;
-    color: #1e40af;
-}
-
-/* Yellow */
-.status-pending,
-.status-return_requested {
-    background-color: #fef9c3;
-    color: #854d0e;
-}
-
-/* Red */
-.status-cancelled,
-.status-failed,
-.status-returned,
-.status-partially_cancelled {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-
-/* Gray */
-.status-cod {
-    background-color: #f3f4f6;
-    color: #374151;
-}
-
-.best-selling-list {
-    padding: 10px 0;
 }
 
 .list-item {
@@ -283,36 +128,25 @@
     border-bottom: 1px solid #f1f5f9;
 }
 
-.list-item:last-child {
-    border-bottom: none;
-}
-
 .item-info {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .item-name {
     font-weight: 600;
     color: #1e293b;
-    font-size: 0.95rem;
-}
-
-.item-category {
-    font-size: 0.8rem;
-    color: #64748b;
-}
-
-.item-count {
-    font-weight: 700;
-    color: #6366f1;
     font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Progress bar for categories */
 .item-progress-wrapper {
     text-align: right;
-    width: 40%;
+    width: 45%;
+    flex-shrink: 0;
 }
 
 .progress-bar-container {
@@ -320,7 +154,6 @@
     background: #f1f5f9;
     border-radius: 10px;
     margin-bottom: 4px;
-    overflow: hidden;
 }
 
 .progress-bar {
@@ -329,24 +162,84 @@
     border-radius: 10px;
 }
 
-.badge-info {
-    font-size: 0.75rem;
-    background: #e0e7ff;
-    color: #4338ca;
-    padding: 2px 8px;
-    border-radius: 12px;
+/* --- Responsive Table Container --- */
+.orders-table {
+    margin-top: 24px;
+    overflow: hidden; /* Contains the scroll */
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto; /* Enables horizontal scroll for table on mobile */
+    -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Ensures table doesn't look squashed */
+}
+
+.data-table th, .data-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.875rem;
+}
+
+.data-table th {
+    background-color: #f8fafc;
+    color: #64748b;
     font-weight: 600;
 }
 
-/* --- Responsive --- */
-@media (max-width: 992px) {
+/* --- Status Badges --- */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-delivered { background-color: #d1fae5; color: #065f46; }
+.status-pending { background-color: #fef9c3; color: #854d0e; }
+.status-cancelled { background-color: #fee2e2; color: #991b1b; }
+.status-shipped { background-color: #dbeafe; color: #1e40af; }
+
+/* --- MEDIA QUERIES --- */
+
+/* For Tablets (below 1024px) */
+@media (max-width: 1024px) {
     .dashboard-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Stack charts vertically */
+    }
+    
+    .chart-wrapper {
+        height: 280px;
     }
 }
 
+/* For Mobile (below 768px) */
 @media (max-width: 768px) {
-    .content-area {
-        padding: 16px;
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr; /* Single column stats */
+        gap: 16px;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .stat-card-value {
+        font-size: 1.6rem;
+    }
+
+    .item-progress-wrapper {
+        width: 60%; /* Give more space to progress bars on small screens */
     }
 }
