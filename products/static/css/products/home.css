@@ -44,6 +44,10 @@
     position: relative;
     z-index: 2;
     max-width: 600px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .hero-content h1 {
@@ -87,6 +91,10 @@
 /* ==================== GENERAL SECTION STYLING ==================== */
 .home-section {
     margin-bottom: 60px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .section-title {
