@@ -26,7 +26,7 @@ class LoggedInRedirectMixin:
     A mixin to redirect authenticated users away from a page.
     """
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and request.user.is_verified:
             return redirect('Home_page_user')
         return super().dispatch(request, *args, **kwargs)
 
@@ -39,6 +39,10 @@ def signup_view(request):
     '''
     if request.method == 'POST':
         form = CustomUserRegisterForm(request.POST)
+        check = request.POST.get('terms')
+        if not check ==  'on':
+            messages.error(request,'check the aggrement to continue..')
+            return render(request,'accounts/signup.html',{'form':form})
         if form.is_valid():
             email = form.cleaned_data['email']
             first_name = form.cleaned_data['first_name']
@@ -54,6 +58,7 @@ def signup_view(request):
                         password=password
                     )
                     user.is_active = False
+                    user.is_verified = False
                     user.save()
 
                     EmailOTP.objects.filter(user=user).delete()

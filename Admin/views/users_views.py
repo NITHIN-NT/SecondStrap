@@ -62,6 +62,7 @@ def toggle_user_block(request, id):
     if request.method == "POST":
         user = get_object_or_404(CustomUser, id=id)
         user.is_active = not user.is_active
+        user.is_verified = not user.is_verified
 
         user.save()
 

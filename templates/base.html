@@ -190,6 +190,7 @@
                     <a href="{% url "profile_view_user" %}" aria-label="User Account"><i class='bx bx-user'></i></a>
                 {% else %}
                     <a href="{% url "login" %}">Login</a>
+                    <a href="{% url "signup" %}">Signup</a>
                 {% endif %}
                 <a href="{% url "wishlist" %}" aria-label="Wishlist"><i class='bx bx-heart'></i></a>
                 <a href="{% url 'cart' %}" aria-label="Cart" class="cart-icon-wrapper">
