@@ -43,21 +43,17 @@
             <div class="product-card">
                 <div class="product-image-container">
                     {% if featured_product.slug %}
-                    <a href="{% url 'Product_card_view' featured_product.slug %}">
+                    <a href="{% url 'products_page_user' %}?category={{ featured_product.category.id}}">
                         {% if featured_product.image %}
                         <img src="{{ featured_product.image.url }}" alt="{{ featured_product.name }}">
                         {% else %}
                         <div class="image-placeholder"></div>
                         {% endif %}
                     </a>
-                    <div class="product-card-icons">
-                        <button aria-label="Add to wishlist"><i class='bx bx-heart'></i></button>
-                        <button aria-label="Quick view"><i class='bx bx-search'></i></button>
-                    </div>
                     {% endif %}
                 </div>
                 <div class="product-info">
-                    <h3 class="product-name"><a href="#">{{ featured_product.name }}</a></h3>
+                    <h3 class="product-name"><a href="{% url 'Product_card_view' featured_product.slug %}">{{ featured_product.name }}</a></h3>
                     <p class="product-price">{{ featured_product.offer_price }}</p>
                 </div>
             </div>
@@ -81,8 +77,16 @@
                     {% endif %}
                 </a>
                 <div class="product-card-icons">
-                    <button aria-label="Add to wishlist"><i class='bx bx-heart'></i></button>
-                    <button aria-label="Quick view"><i class='bx bx-search'></i></button>
+                    <button 
+                        type="button" 
+                        class="wishlist-btn" 
+                        data-variant-id="{{ most_demand.variant_id }}" 
+                        aria-label="Add to wishlist">
+                        <i class='bx bx-heart'></i>
+                    </button>
+                    <a href="{% url 'products_page_user' %}?category={{ most_demand.category_id}}">
+                        <button aria-label="Quick view"><i class='bx bx-search'></i></button>
+                    </a>
                 </div>
             </div>
             <div class="product-info">
@@ -95,3 +99,85 @@
 </section>
 {% endif %} 
 {% endblock content %}
+{% block extra_script %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. CSRF Helper (Ensures security for POST requests)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // 2. Event Delegation (Works for all current and future wishlist buttons)
+    document.addEventListener('click', function(e) {
+        const button = e.target.closest('.wishlist-btn');
+        if (!button) return;
+
+        e.preventDefault();
+        
+        const variantId = button.dataset.variantId;
+        const icon = button.querySelector('i');
+
+        if (!variantId || variantId === "None") {
+            toastr.warning("Please select a valid product variant.");
+            return;
+        }
+
+        // UI State: Disable to prevent spamming
+        button.disabled = true;
+
+        axios.post("{% url 'add_to_wishlist' %}", {
+            variant_id: variantId
+        }, {
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            // Handles 200 (Created)
+            toastr.success(response.data.message);
+            icon.classList.replace('bx-heart', 'bxs-heart');
+            button.style.color = "#ff4757"; 
+        })
+        .catch(error => {
+            // This captures 400, 401, 208, and 500 status codes
+            if (error.response) {
+                const status = error.response.status;
+                const message = error.response.data.message;
+
+                if (status === 401) {
+                    toastr.info("Please login to continue.");
+                    // Optional: Redirect to login
+                    // window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
+                } else if (status === 208) {
+                    // Item already in cart logic from your view
+                    toastr.info(message || "Item is already in your cart.");
+                } else if (status === 400) {
+                    // Item already in wishlist logic from your view
+                    toastr.warning(message || "Item is already in your wishlist.");
+                } else {
+                    toastr.error(message || "Something went wrong.");
+                }
+            } else {
+                toastr.error("Network error. Please check your connection.");
+            }
+        })
+        .finally(() => {
+            button.disabled = false;
+        });
+    });
+});
+</script>
+{% endblock extra_script %}

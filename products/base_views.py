@@ -48,7 +48,9 @@ class HomePageView(TemplateView):
                 category=F('variant__product__category__name'),
                 offer_price=F('variant__offer_price'),
                 image=F('variant__product__image'),
-                total_sold=Sum('quantity')
+                total_sold=Sum('quantity'),
+                category_id = F('variant__product__category__id'),
+                variant_id = F('variant__id')
             )
             .order_by('-total_sold')[:4]
         )

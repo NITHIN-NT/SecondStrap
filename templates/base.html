@@ -192,7 +192,12 @@
                     <a href="{% url "login" %}">Login</a>
                     <a href="{% url "signup" %}">Signup</a>
                 {% endif %}
-                <a href="{% url "wishlist" %}" aria-label="Wishlist"><i class='bx bx-heart'></i></a>
+                <a href="{% url "wishlist" %}" aria-label="Wishlist" class="wishlist-icon-wrapper">
+                    <i class='bx bx-heart'></i>
+                    <span id="wishlist-count-badge" class="wishlist-count {% if wishlist_count == 0 %}hidden{% endif %}">
+                        {{ wishlist_count }}
+                    </span>
+                </a>
                 <a href="{% url 'cart' %}" aria-label="Cart" class="cart-icon-wrapper">
                     <i class='bx bx-shopping-bag'></i>
                     <span id="cart-count-badge" class="cart-count {% if cart_count == 0 %}hidden{% endif %}">

@@ -140,6 +140,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'dynamic_breadcrumbs.context_processors.breadcrumbs',
                 'userFolder.cart.context_processors.cart_count',
+                'userFolder.wishlist.context_processors.wishlist_count',
             ],
         },
     },
