@@ -220,9 +220,6 @@ def pay_using_wallet(request):
 
             totals = calculate_cart_totals(cart_items)
 
-            if totals['grand_total'] > 1000:
-                raise ValueError("Orders above ₹1000 are allowed only via UPI.")
-
             address, error = validate_address(request=request, user=user)
             if error:
                 return JsonResponse(error)

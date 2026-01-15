@@ -39,7 +39,7 @@ def add_to_wishlist(request):
     
     variant = get_object_or_404(ProductVariant,id=variant_id)
     
-    cart = Cart.objects.get(user=request.user)
+    cart,_ = Cart.objects.get_or_create(user=request.user)
     productExists = CartItems.objects.filter(cart=cart,variant=variant).exists()
     
     if productExists:

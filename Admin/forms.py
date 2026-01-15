@@ -99,28 +99,34 @@ class ImageForm(forms.ModelForm):
         required=False
     )
 
+    # ADD THIS SECTION
     class Meta:
         model = ProductImage
         fields = ['image', 'alt_text']
-
+        
     def clean(self):
         cleaned_data = super().clean()
         image = cleaned_data.get('image')
         alt_text = cleaned_data.get('alt_text')
+        
         if cleaned_data.get('DELETE'):
             return cleaned_data
         
+        if alt_text and not image:
+            if not self.instance.pk or 'image' in self.changed_data:
+                self.add_error('image', 'An image file is required if you provide alt text.')
+
         if image and not alt_text:
-            if 'image' in self.changed_data:
+            if 'image' in self.changed_data or not self.instance.pk:
                 self.add_error('alt_text', 'Please provide alt text for the new image.')
 
         return cleaned_data
-
 
 # Formsets
 VariantFormSet = inlineformset_factory(
     Product, ProductVariant,
     form=VariantForm,
+    fields=['size', 'base_price', 'offer_price', 'stock'],
     extra=1,
     min_num=1,
     can_delete=True,
@@ -130,6 +136,7 @@ VariantFormSet = inlineformset_factory(
 ImageFormSet = inlineformset_factory(
     Product, ProductImage,
     form=ImageForm,
+    fields=['image', 'alt_text'],
     extra=1,
     min_num=3,
     validate_min=True,
