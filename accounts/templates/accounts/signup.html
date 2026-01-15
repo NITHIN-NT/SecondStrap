@@ -54,21 +54,23 @@
 
         <div class="form-group">
             <label for="{{ form.password.id_for_label }}">Password</label>
-            {{ form.password }}
+            <div class="password-wrapper">
+                {{ form.password }}
+                <i class='bx bx-hide toggle-password' data-target="{{ form.password.id_for_label }}"></i>
+            </div>
             {% if form.password.errors %}
-                <div class="error-list">
-                    {{ form.password.errors }}
-                </div>
+                <div class="error-list">{{ form.password.errors }}</div>
             {% endif %}
         </div>
 
         <div class="form-group">
             <label for="{{ form.password_confirm.id_for_label }}">Confirm password</label>
-            {{ form.password_confirm }}
+            <div class="password-wrapper">
+                {{ form.password_confirm }}
+                <i class='bx bx-hide toggle-password' data-target="{{ form.password_confirm.id_for_label }}"></i>
+            </div>
             {% if form.password_confirm.errors %}
-                <div class="error-list">
-                    {{ form.password_confirm.errors }}
-                </div>
+                <div class="error-list">{{ form.password_confirm.errors }}</div>
             {% endif %}
         </div>
 
@@ -85,3 +87,24 @@
     </p>
 </div>
 {% endblock content %}
+{% block extra_script %}
+<script>
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            // Find the input associated with this specific eye icon
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            
+            // Toggle the type
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.classList.replace('bx-hide', 'bx-show');
+            } else {
+                input.type = 'password';
+                this.classList.replace('bx-hide', 'bx-show');
+                this.classList.replace('bx-show', 'bx-hide');
+            }
+        });
+    });
+</script>
+{% endblock extra_script %}

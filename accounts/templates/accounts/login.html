@@ -28,10 +28,11 @@
             <div class="label-row">
                 <label for="password">Password</label>
                 <a href="{% url "forgot-password" %}" class="form-link">Forgot password?</a>
-                {# Tip: Use {% url 'password_reset' %} if you have it #}
             </div>
-            {# This is the 'password' field your view already uses #}
-            <input type="password" id="password" name="password" required>
+            <div class="password-wrapper" style="position: relative;">
+                <input type="password" id="password" name="password" required style="width: 100%; padding-right: 40px;">
+                <i class='bx bx-hide toggle-password' id="togglePassword" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; color: #666;"></i>
+            </div>
         </div>
 
         <button type="submit" class="btn-primary">Sign in</button>
@@ -53,3 +54,19 @@
     </p>
 </div>
 {% endblock content %}
+{% block extra_script %}
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+
+    togglePassword.addEventListener('click', function (e) {
+        // Toggle the type attribute
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        // Toggle the icon
+        this.classList.toggle('bx-show');
+        this.classList.toggle('bx-hide');
+    });
+</script>
+{% endblock extra_script %}

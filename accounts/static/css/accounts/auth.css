@@ -119,6 +119,28 @@
     text-decoration: underline;
 }
 
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* This ensures the icon stays inside the input */
+.password-wrapper .toggle-password {
+    position: absolute;
+    right: 12px;
+    cursor: pointer;
+    color: #666;
+    font-size: 1.25rem;
+    z-index: 10;
+}
+
+/* Prevent text from going under the icon */
+.password-wrapper input {
+    padding-right: 40px !important;
+    width: 100%;
+}
+
 /* ================================================
 ADD THIS TO THE BOTTOM OF YOUR existing auth.css
 ================================================
