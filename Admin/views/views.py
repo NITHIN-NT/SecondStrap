@@ -14,7 +14,7 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from django.db.models.functions import TruncDay,TruncMonth,TruncHour
+from django.db.models.functions import TruncDay,TruncMonth,TruncHour,TruncTime
 from datetime import timedelta
 from django.contrib.admin.views.decorators import staff_member_required
 

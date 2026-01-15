@@ -6,286 +6,315 @@
 
 <style>
     .admin-od-wrapper {
-    padding: 30px;
-    background-color: #f8fafc;
-    min-height: 100vh;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #334155;
-}
-
-.admin-od-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-}
-
-.admin-od-header h1 {
-    margin: 8px 0 4px 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #0f172a;
-}
-
-.admin-od-grid {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    /* Flexible left, Fixed right */
-    gap: 24px;
-    align-items: start;
-}
-
-@media (max-width: 1024px) {
-    .admin-od-grid {
-        grid-template-columns: 1fr;
+        padding: 30px;
+        background-color: #f8fafc;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: #334155;
     }
-}
 
-/* --- 2. CARD STYLING --- */
-.card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-    padding: 24px;
-    margin-bottom: 24px;
-    border: 1px solid #e2e8f0;
-}
+    .admin-od-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
 
-.card-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+    .admin-od-header h1 {
+        margin: 8px 0 4px 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #0f172a;
+    }
 
-/* --- 3. TABLE STYLING --- */
-.admin-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
+    .admin-od-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        /* Flexible left, Fixed right */
+        gap: 24px;
+        align-items: start;
+    }
 
-.admin-table th {
-    text-align: left;
-    color: #64748b;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #e2e8f0;
-}
+    @media (max-width: 1024px) {
+        .admin-od-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 
-.admin-table td {
-    padding: 16px 0;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-    font-size: 14px;
-}
+    /* --- 2. CARD STYLING --- */
+    .card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid #e2e8f0;
+    }
 
-.admin-table tr:last-child td {
-    border-bottom: none;
-}
+    .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-.item-flex {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
+    /* --- 3. TABLE STYLING --- */
+    .admin-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
 
-.product-thumb {
-    width: 56px;
-    height: 56px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
-    background-color: #f1f5f9;
-}
+    .admin-table th {
+        text-align: left;
+        color: #64748b;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e2e8f0;
+    }
 
-/* --- 4. ACTION BUTTONS --- */
-.action-btn-wrapper {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    align-items: center;
-    margin-top: 4px;
-}
+    .admin-table td {
+        padding: 16px 0;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+        font-size: 14px;
+    }
 
-.btn-action-sm {
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid transparent;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
-    text-decoration: none;
-}
+    .admin-table tr:last-child td {
+        border-bottom: none;
+    }
 
-/* Approve (Green) */
-.btn-approve-item {
-    background-color: #dcfce7;
-    color: #166534;
-    border-color: #bbf7d0;
-}
+    .item-flex {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
 
-.btn-approve-item:hover {
-    background-color: #166534;
-    color: white;
-}
+    .product-thumb {
+        width: 56px;
+        height: 56px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background-color: #f1f5f9;
+    }
 
-/* Reject (Red) */
-.btn-reject-item {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border-color: #fecaca;
-}
+    /* --- 4. ACTION BUTTONS --- */
+    .action-btn-wrapper {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: 4px;
+    }
 
-.btn-reject-item:hover {
-    background-color: #991b1b;
-    color: white;
-}
+    .btn-action-sm {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
 
-/* NEW: Received/Returned (Blue) */
-.btn-received-item {
-    background-color: #e0f2fe;
-    color: #075985;
-    border-color: #bae6fd;
-}
+    /* Approve (Green) */
+    .btn-approve-item {
+        background-color: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
 
-.btn-received-item:hover {
-    background-color: #0284c7;
-    color: white;
-}
+    .btn-approve-item:hover {
+        background-color: #166534;
+        color: white;
+    }
 
-.return-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-    background: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #ffedd5;
-    border-radius: 4px;
-    margin-bottom: 4px;
-    display: inline-block;
-}
+    /* Reject (Red) */
+    .btn-reject-item {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
 
-/* --- 5. GENERAL UTILS --- */
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
+    .btn-reject-item:hover {
+        background-color: #991b1b;
+        color: white;
+    }
 
-.info-label {
-    color: #64748b;
-}
+    /* NEW: Received/Returned (Blue) */
+    .btn-received-item {
+        background-color: #e0f2fe;
+        color: #075985;
+        border-color: #bae6fd;
+    }
 
-.info-val {
-    font-weight: 500;
-    color: #0f172a;
-}
+    .btn-received-item:hover {
+        background-color: #0284c7;
+        color: white;
+    }
 
-.total-row {
-    border-top: 2px solid #e2e8f0;
-    padding-top: 16px;
-    margin-top: 16px;
-    font-size: 18px;
-    font-weight: 700;
-}
+    .return-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+        background: #fff7ed;
+        color: #c2410c;
+        border: 1px solid #ffedd5;
+        border-radius: 4px;
+        margin-bottom: 4px;
+        display: inline-block;
+    }
 
-.action-group {
-    margin-bottom: 16px;
-}
+    /* --- 5. GENERAL UTILS --- */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
 
-.action-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: #475569;
-    margin-bottom: 6px;
-}
+    .info-label {
+        color: #64748b;
+    }
 
-.form-select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    background-color: #f8fafc;
-    font-size: 14px;
-    color: #334155;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 16px;
-}
+    .info-val {
+        font-weight: 500;
+        color: #0f172a;
+    }
 
-.btn-update {
-    width: 100%;
-    background-color: #0f172a;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-}
+    .total-row {
+        border-top: 2px solid #e2e8f0;
+        padding-top: 16px;
+        margin-top: 16px;
+        font-size: 18px;
+        font-weight: 700;
+    }
 
-.btn-update:hover {
-    background-color: #334155;
-}
+    .action-group {
+        margin-bottom: 16px;
+    }
 
-.badge {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
+    .action-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #475569;
+        margin-bottom: 6px;
+    }
 
-.badge-success {
-    background: #dcfce7;
-    color: #15803d;
-}
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #f8fafc;
+        font-size: 14px;
+        color: #334155;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 16px;
+    }
+    /* This replaces your original .form-input class */
+    .form-input-container {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #f8fafc;
+        box-sizing: border-box; /* Ensures padding doesn't affect width */
+    }
 
-.badge-danger {
-    background: #fee2e2;
-    color: #b91c1c;
-}
+    /* Icon specific styling */
+    .icon-status {
+        color: #10b981; /* A nice success green */
+        margin-right: 10px;
+        font-size: 14px;
+    }
 
-.badge-info {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
+    /* Stripping the default input styles so it blends in */
+    .form-input-field {
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        color: #334155;
+        outline: none;
+        width: 100%;
+        padding: 0;
+    }
 
-.badge-warning {
-    background: #fef3c7;
-    color: #b45309;
-}
+    .btn-update {
+        width: 100%;
+        background-color: #0f172a;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+    }
 
-.badge-secondary {
-    background: #f1f5f9;
-    color: #475569;
-}
+    .btn-update:hover {
+        background-color: #334155;
+    }
 
-/* Tooltip */
-.note-tooltip-wrapper { position: relative; display: inline-block; margin-left: 8px; }
-.note-trigger-icon { font-size: 20px; color: #64748b; cursor: pointer; vertical-align: middle; }
-.note-trigger-icon:hover { color: #0f172a; }
-.note-tooltip-box { visibility: hidden; opacity: 0; position: absolute; bottom: 130%; right: -10px; width: 220px; background-color: #334155; color: #fff; text-align: left; padding: 10px 12px; border-radius: 6px; font-size: 12px; line-height: 1.4; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: opacity 0.2s, visibility 0.2s; }
-.note-tooltip-box::after { content: ""; position: absolute; top: 100%; right: 14px; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #334155 transparent transparent transparent; }
-.note-tooltip-wrapper:hover .note-tooltip-box { visibility: visible; opacity: 1; }
+    .badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .badge-success {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .badge-warning {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .badge-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    /* Tooltip */
+    .note-tooltip-wrapper { position: relative; display: inline-block; margin-left: 8px; }
+    .note-trigger-icon { font-size: 20px; color: #64748b; cursor: pointer; vertical-align: middle; }
+    .note-trigger-icon:hover { color: #0f172a; }
+    .note-tooltip-box { visibility: hidden; opacity: 0; position: absolute; bottom: 130%; right: -10px; width: 220px; background-color: #334155; color: #fff; text-align: left; padding: 10px 12px; border-radius: 6px; font-size: 12px; line-height: 1.4; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: opacity 0.2s, visibility 0.2s; }
+    .note-tooltip-box::after { content: ""; position: absolute; top: 100%; right: 14px; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #334155 transparent transparent transparent; }
+    .note-tooltip-wrapper:hover .note-tooltip-box { visibility: visible; opacity: 1; }
 
 </style>
 {% endblock extra_css %}
@@ -503,11 +532,18 @@
 
                     <div class="action-group">
                         <label class="action-label">Payment Status</label>
-                        <select name="payment_status" class="form-select">
-                            {% for key, label in payment_status_choices %}
-                                <option value="{{ key }}" {% if order.payment_status == key %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
+                        {% if order.payment_status == 'paid' %}
+                            <div class="form-input-container">
+                                <i class="fa fa-check icon-status" aria-hidden="true"></i>
+                                <input type="text" value="{{order.get_payment_status_display}}" class="form-input-field" readonly>
+                            </div>
+                        {% else %}    
+                            <select name="payment_status" class="form-select">
+                                    {% for key, label in payment_status_choices %}
+                                        <option value="{{ key }}" {% if order.payment_status == key %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                            </select>
+                        {% endif %}
                     </div>
 
                     <button type="submit" class="btn-update">Update Status</button>

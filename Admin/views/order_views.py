@@ -137,6 +137,16 @@ def admin_order_detailed_view(request,order_id):
         'payment_status_choices': PAYMENT_STATUS_CHOICES,
     }
     return render(request,'order/order_detailed.html',context)
+
+ORDER_STATUS_FLOW = {
+    'pending': ['confirmed', 'cancelled'],
+    'confirmed': ['shipped', 'cancelled'],
+    'shipped': ['out_for_delivery', 'cancelled'],
+    'out_for_delivery': ['delivered', 'cancelled'],
+    'delivered': ['returned'], 
+    'cancelled': [], 
+    'returned': [], 
+}
   
 @staff_member_required(login_url='admin_login')
 @transaction.atomic
@@ -147,15 +157,27 @@ def admin_order_status_update(request,order_id):
     
     try :
         order_status = request.POST.get('order_status')
-        payment_status = request.POST.get('payment_status')
+        print(order_status)
+        payment_status = request.POST.get('payment_status') or 'paid'
         
-        if not order_status or not payment_status:
+        if not order_status :
             return JsonResponse(
                 {"status": "error", "message": "Missing status values"},
                 status=400
             )
-        
+    
         order = get_object_or_404(OrderMain,order_id=order_id)
+        
+        current_status = order.order_status
+        
+        if current_status != order_status:
+            allowed_next_status = ORDER_STATUS_FLOW.get(current_status,[])
+            
+            if order_status not in allowed_next_status:
+                return JsonResponse({
+                    "status":"error",
+                    "message" : f"Cannot change status from {current_status} to {order_status}."
+                }, status=400)
         
         if order.order_status != 'cancelled' and order_status == 'cancelled':
             for item in order.items.all():
