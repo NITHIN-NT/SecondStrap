@@ -1,25 +1,34 @@
-import json, random, os, io, traceback
+import json, random, os, io, requests
 from decimal import Decimal, InvalidOperation
 from urllib.parse import urlparse
-from PIL import Image, UnidentifiedImageError, ImageFile
-import requests
-from requests.adapters import HTTPAdapter, Retry
+from PIL import Image, ImageFile
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.core.files.base import ContentFile
 from django.utils.html import strip_tags
+from requests.adapters import HTTPAdapter, Retry
 
-# Ensure this matches your app name
+# Ensure these match your app name
 from products.models import Category, Product, ProductImage, Size, ProductVariant
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True 
 
 class Command(BaseCommand):
-    help = 'Loads products from JSON, converts images to WebP, and saves to the database'
+    help = 'Imports products from JSON, converts images to WebP, and applies size-based pricing.'
+
+    # Pricing Logic Configuration
+    PRICE_INCREMENTS = {
+        'XS': Decimal('0.00'),
+        'S':  Decimal('20.00'),
+        'M':  Decimal('50.00'),
+        'L':  Decimal('100.00'),
+        'XL': Decimal('150.00'),
+        'XXL': Decimal('200.00'),
+    }
 
     def add_arguments(self, parser):
-        parser.add_argument('json_file', type=str, help='The path to the JSON file to load.')
+        parser.add_argument('json_file', type=str, help='Path to the JSON file.')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,10 +43,7 @@ class Command(BaseCommand):
             if img.mode in ("CMYK", "P"):
                 img = img.convert("RGB")
             
-            if "A" in img.getbands():
-                img = img.convert("RGBA")
-            else:
-                img = img.convert("RGB")
+            img = img.convert("RGBA") if "A" in img.getbands() else img.convert("RGB")
 
             buffer = io.BytesIO()
             img.save(buffer, format="WEBP", quality=85, method=6)
@@ -57,9 +63,7 @@ class Command(BaseCommand):
             return None
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('Starting product import...'))
         json_file_path = options['json_file']
-
         try:
             with open(json_file_path, 'r', encoding='utf-8') as f:
                 products_data = json.load(f)
@@ -67,94 +71,91 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f'File error: {e}'))
             return
 
-        total_products = len(products_data)
-        skipped_count = 0
+        self.stdout.write(self.style.SUCCESS(f'Starting import of {len(products_data)} products...'))
         processed_count = 0
+        skipped_count = 0
 
         for i, item in enumerate(products_data):
             title = item.get("title", "N/A")
-            self.stdout.write(f'Processing {i+1}/{total_products}: {title}')
-
-            # --- 1. Price Parsing (Now for Variants) ---
-            price_str = item.get('price', None)
+            handle = item.get('handle')
+            
+            # 1. Base Price Parsing
             try:
-                base_price = Decimal(str(price_str)).quantize(Decimal("0.01"))
+                raw_price = Decimal(str(item.get('price'))).quantize(Decimal("0.01"))
+                if raw_price <= 0: raise InvalidOperation
             except (InvalidOperation, TypeError):
+                self.stdout.write(self.style.WARNING(f" Skipping {title}: Invalid Price"))
                 skipped_count += 1
                 continue
 
-            if base_price <= Decimal("0.00"):
-                skipped_count += 1
-                continue
-
-            offer_price = (base_price * Decimal('0.90')).quantize(Decimal("0.01"))
-
-            # --- 2. Category Handling ---
+            # 2. Category Handling
             category_name = item.get('category')
             if not category_name:
                 skipped_count += 1
                 continue
+            category, _ = Category.objects.get_or_create(name=category_name)
 
-            category, _ = Category.objects.get_or_create(
-                name=category_name,
-                defaults={'description': f'Collection of {category_name}'}
-            )
-
-            # --- 3. Product Transaction ---
             try:
                 with transaction.atomic():
-                    # Product model NO LONGER has base_price/offer_price
+                    # 3. Product Creation
                     product, created = Product.objects.update_or_create(
-                        slug=item.get('handle'),
+                        slug=handle,
                         defaults={
                             'name': title,
                             'description': strip_tags(item.get('description', '')),
-                            'alt_text': title,
                             'category': category,
                             'is_featured': random.choice([True, False]),
                             'is_active': True,
                         }
                     )
 
-                    # --- 4. Image Handling (WebP) ---
+                    # 4. Image Handling
                     images_list = item.get('images', [])
                     if images_list:
-                        # Main Image
+                        # Set main image if not present
                         if not product.image:
                             data = self.download_image(images_list[0])
                             if data:
-                                webp_file = self.convert_to_webp(data)
-                                if webp_file:
-                                    filename = f"{os.path.splitext(os.path.basename(urlparse(images_list[0]).path))[0]}.webp"
-                                    product.image.save(filename, webp_file, save=True)
+                                webp = self.convert_to_webp(data)
+                                if webp:
+                                    fname = f"{os.path.basename(urlparse(images_list[0]).path).split('.')[0]}.webp"
+                                    product.image.save(fname, webp, save=True)
 
-                        # Gallery
+                        # Update Gallery
                         ProductImage.objects.filter(product=product).delete()
                         for img_url in images_list:
-                            data = self.download_image(img_url)
-                            if data:
-                                webp_file = self.convert_to_webp(data)
-                                if webp_file:
-                                    filename = f"{os.path.splitext(os.path.basename(urlparse(img_url).path))[0]}.webp"
-                                    p_img = ProductImage(product=product, alt_text=product.name)
-                                    p_img.image.save(filename, webp_file, save=True)
+                            img_data = self.download_image(img_url)
+                            if img_data:
+                                webp_gal = self.convert_to_webp(img_data)
+                                if webp_gal:
+                                    fname = f"{os.path.basename(urlparse(img_url).path).split('.')[0]}.webp"
+                                    ProductImage.objects.create(product=product, image=ContentFile(webp_gal.read(), name=fname))
 
-                    # --- 5. Variant & Price Handling ---
-                    size_variants_list = item.get('size_variants') or ["One Size"]
+                    # 5. Size Variants & Dynamic Pricing
+                    size_variants_list = item.get('size_variants') or ["S"] # Default to S if empty
                     ProductVariant.objects.filter(product=product).delete()
+                    
                     for size_name in size_variants_list:
                         size_obj, _ = Size.objects.get_or_create(size=size_name)
+                        
+                        # Apply Increment Logic
+                        increment = self.PRICE_INCREMENTS.get(size_name, Decimal('0.00'))
+                        final_base_price = raw_price + increment
+                        final_offer_price = (final_base_price * Decimal('0.90')).quantize(Decimal("0.01"))
+
                         ProductVariant.objects.create(
                             product=product,
                             size=size_obj,
-                            base_price=base_price,
-                            offer_price=offer_price,
+                            base_price=final_base_price,
+                            offer_price=final_offer_price,
                             stock=random.randint(10, 50)
                         )
 
                 processed_count += 1
+                self.stdout.write(f" Successfully processed {i+1}: {title}")
+
             except Exception as e:
-                self.stdout.write(self.style.WARNING(f"  Error on '{title}': {e}"))
+                self.stdout.write(self.style.ERROR(f" Error processing {title}: {e}"))
                 skipped_count += 1
 
-        self.stdout.write(self.style.SUCCESS(f'Done! Processed: {processed_count}, Skipped: {skipped_count}'))
+        self.stdout.write(self.style.SUCCESS(f'Import Complete. Processed: {processed_count}, Skipped: {skipped_count}'))

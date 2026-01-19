@@ -1,0 +1,48 @@
+name: CD - Deploy to EC2
+
+on:
+  workflow_run:
+    workflows: ["CI - Build & Push Backend Image"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Pull the latest image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/secondstrap-backend:latest
+            
+            # Stop and remove existing container if it exists
+            docker stop secondstrap-backend || true
+            docker rm secondstrap-backend || true
+            
+            # Run container with environment variables
+            docker run -d \
+              --name secondstrap-backend \
+              -p 8000:8000 \
+              --restart unless-stopped \
+              -e SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+              -e DEBUG="${{ secrets.DEBUG }}" \
+              -e ALLOWED_HOSTS="${{ secrets.ALLOWED_HOSTS }}" \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e RAZORPAY_KEY_ID="${{ secrets.RAZORPAY_KEY_ID }}" \
+              -e RAZORPAY_KEY_SECRET="${{ secrets.RAZORPAY_KEY_SECRET }}" \
+              -e RAZORPAY_CALLBACK_URL="${{ secrets.RAZORPAY_CALLBACK_URL }}" \
+              -e CLOUD_NAME="${{ secrets.CLOUDINARY_CLOUD_NAME }}" \
+              -e API_KEY="${{ secrets.CLOUDINARY_API_KEY }}" \
+              -e API_SECRET="${{ secrets.CLOUDINARY_API_SECRET }}" \
+              -e EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER }}" \
+              -e EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD }}" \
+              -e client_id="${{ secrets.GOOGLE_CLIENT_ID }}" \
+              -e secret="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+              ${{ secrets.DOCKER_USERNAME }}/secondstrap-backend:latest

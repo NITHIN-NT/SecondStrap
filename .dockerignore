@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# Environment variables
+.env
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+strapvenv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# OS
+.DS_Store
+
+# Editor
+.vscode
+.idea
