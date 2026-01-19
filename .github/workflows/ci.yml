@@ -2,7 +2,7 @@ name: CI - Build & Push Backend Image
 
 on:
   push:
-    branches: [ main ]
+    branches: [ release-v1 ]
 
 jobs:
   build-and-push:
