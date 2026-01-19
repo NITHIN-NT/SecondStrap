@@ -29,7 +29,9 @@ RAZORPAY_CURRENCY = "INR"
 '''
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost', '13.204.64.86'])
+print(f"DEBUG: Reading .env from {os.path.join(BASE_DIR, '.env')}")
+print(f"DEBUG: ALLOWED_HOSTS={ALLOWED_HOSTS}")
 CSRF_TRUSTED_ORIGINS = ['https://stephanie-unmanipulative-louella.ngrok-free.dev']
 
 '''

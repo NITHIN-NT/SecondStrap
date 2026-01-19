@@ -3,7 +3,7 @@
 .gitignore
 
 # Environment variables
-.env
+
 
 # Python
 __pycache__
