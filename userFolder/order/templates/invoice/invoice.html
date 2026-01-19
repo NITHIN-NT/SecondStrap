@@ -182,7 +182,17 @@
             </span>
         </div>
         <tr>
-            <td class="final-total">Amount Due</td>
+            <td style="font-weight: bold;">Order Total</td>
+            <td style="font-weight: bold;">Rs. {{ order.total_paid }}</td>
+        </tr>
+        {% if order.wallet_deduction > 0 %}
+        <tr>
+            <td style="color: #059669;">Wallet Deduction</td>
+            <td style="color: #059669;">- Rs. {{ order.wallet_deduction }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="final-total">Amount Due (Payable)</td>
             <td class="final-total">Rs. {{ order.final_price }}</td>
         </tr>
     </table>

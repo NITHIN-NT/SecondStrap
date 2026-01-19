@@ -14,7 +14,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
+from django.urls import reverse
+from django.utils import timezone
 
 from userFolder.cart.models import Cart
 from products.models import ProductVariant
@@ -65,6 +67,15 @@ def create_wallet_razorpay_order(request):
         }
 
         razorpay_order = client.order.create(data=data)
+        
+        Transaction.objects.create(
+            wallet=wallet,
+            transaction_type='CR',
+            amount=amount,
+            description=f"Wallet Top-up via RazorPay (Pending)",
+            status="PD",
+            payment_id=razorpay_order['id'] 
+        )
     except Exception as e:
         print(f"Razorpay Order Creation Error: {e}")
         return JsonResponse({"success": False, "error": "Failed to communicate with payment gateway."})
@@ -85,23 +96,19 @@ def create_wallet_razorpay_order(request):
         "user_name":  user.first_name,
         "user_email": user.email,
         "user_phone": getattr(user, 'phone', '9999999999'), 
+        "callback_url": request.build_absolute_uri(reverse('wallet_razorpay_callback')),
     })
 
 @csrf_exempt
 @never_cache
-@login_required(login_url='login')
-@require_POST
 def wallet_razorpay_callback(request):
-    user = request.user
-    session_data = request.session.get('pending_payment',None)
-    
-    if not session_data :
-        return JsonResponse({"status":"error","message":"session expired !"})
-    
-    razorpay_order_id_session = session_data['razorpay_order_id']
-    amount_session = Decimal(session_data['amount'])
-    wallet_id = session_data['wallet_id']
-    
+    """
+    This function handles the callback from Razorpay after a user 
+    attempts to add money to their wallet.
+    """
+    if request.method == "GET":
+        return redirect('profile_wallet')
+
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -111,11 +118,41 @@ def wallet_razorpay_callback(request):
     razorpay_order_id = data.get("razorpay_order_id")
     razorpay_signature = data.get("razorpay_signature")
     
-    if razorpay_order_id != razorpay_order_id_session:
-        return JsonResponse({"status":"error","message":"Payment verification failed (Order ID mismatch)."})
+    if not razorpay_order_id:
+        return JsonResponse({
+            "status": "error", 
+            "message": "We couldn't find your Razorpay Order ID.",
+            "redirect_url": reverse('wallet_top_up_failure')
+        })
+
+    # --- STEP 2: Find the Transaction in our Database ---
+    transaction_obj = Transaction.objects.filter(
+        Q(payment_id=razorpay_order_id) | Q(payment_id=razorpay_payment_id)
+    ).first()
+
+    if transaction_obj and transaction_obj.status == TransactionStatus.COMPLETED:
+        return JsonResponse({
+            "status": "success", 
+            "message": f"Successfully added ₹{transaction_obj.amount} to your wallet!"
+        })
+
+    # Figure out the amount and wallet to update
+    if transaction_obj:
+        wallet_id = transaction_obj.wallet.id
+        amount_to_add = transaction_obj.amount
+    else:
+        session_data = request.session.get('pending_payment')
+        if session_data and razorpay_order_id == session_data.get('razorpay_order_id'):
+            amount_to_add = Decimal(session_data['amount'])
+            wallet_id = session_data['wallet_id']
+        else:
+            return JsonResponse({
+                "status": "error", 
+                "message": "Transaction session expired. Please try again.",
+                "redirect_url": reverse('wallet_top_up_failure')
+            })
     
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-
     try:
         client.utility.verify_payment_signature({
             'razorpay_order_id': razorpay_order_id,
@@ -123,30 +160,58 @@ def wallet_razorpay_callback(request):
             'razorpay_signature': razorpay_signature,
         })
     except razorpay.errors.SignatureVerificationError:
-        return JsonResponse({"status":"error", "message":"Payment verification failed. Invalid signature."})
+        return JsonResponse({
+            "status": "error", 
+            "message": "Security check failed. Invalid signature.",
+            "redirect_url": reverse('wallet_top_up_failure')
+        })
+    except Exception:
+        return JsonResponse({
+            "status": "error", 
+            "message": "Something went wrong while verifying the payment.",
+            "redirect_url": reverse('wallet_top_up_failure')
+        })
     
+    # --- STEP 4: Update the Wallet Balance ---
     try:
         with transaction.atomic():
-            Wallet.objects.filter(id=wallet_id).update(balance=F('balance')+ amount_session)
+            user_wallet = Wallet.objects.select_for_update().get(id=wallet_id)
             
-            wallet = get_object_or_404(Wallet, id=wallet_id)
-            
-            Transaction.objects.create(
-                wallet=wallet,
-                transaction_type='CR',
-                amount = amount_session,
-                description=f"Wallet Top-up via RazorPay.",
-                status = "COMP", 
-                payment_id=razorpay_payment_id
-            )
-            
-            return JsonResponse({"status":"success","message":"Amount successfully added to the wallet and verified."})            
-            request.session.pop('pending_payment', None)
+            if transaction_obj:
+                user_wallet.balance += amount_to_add
+                user_wallet.save()
 
+                transaction_obj.status = TransactionStatus.COMPLETED
+                transaction_obj.payment_id = razorpay_payment_id
+                transaction_obj.save()
+            else:
+                user_wallet.balance += amount_to_add
+                user_wallet.save()
+
+                Transaction.objects.create(
+                    wallet=user_wallet,
+                    transaction_type=TransactionType.CREDIT,
+                    amount=amount_to_add,
+                    description="Wallet Top-up via RazorPay",
+                    status=TransactionStatus.COMPLETED, 
+                    payment_id=razorpay_payment_id
+                )
+            
+            if 'pending_payment' in request.session:
+                request.session.pop('pending_payment', None)
+            
+            return JsonResponse({
+                "status": "success", 
+                "message": f"Successfully added ₹{amount_to_add} to your wallet!"
+            })            
             
     except Exception as e:
-        print(f"Razorpay Wallet Update Error: {e}")
-        return JsonResponse({"status":"error", "message":"Payment verified, but failed to update wallet balance due to a server error. Please contact support."})
+        print(f"Error updating wallet: {e}")
+        return JsonResponse({
+            "status": "error", 
+            "message": "Payment was successful, but your balance failed to update.",
+            "redirect_url": reverse('wallet_top_up_failure')
+        })
 
 @require_POST
 @never_cache
@@ -166,7 +231,17 @@ def pay_using_wallet(request):
 
                 cart_items, error = validate_stock_and_cart(user)
                 if error:
-                    return JsonResponse(error)
+                    messages.error(request, error.get('error', 'Validation error'))
+                    return redirect('checkout')
+
+                # STOCK DEDUCTION FOR DRAFT ORDER (MISSING BEFORE)
+                for item in order.items.all():
+                    variant = ProductVariant.objects.select_for_update().get(id=item.variant.id)
+                    if item.quantity > variant.stock:
+                        messages.error(request, f"Out of stock: {item.product_name}")
+                        return redirect('checkout')
+                    variant.stock -= item.quantity
+                    variant.save()
 
                 if order.coupon_code:
                     coupon = Coupon.objects.select_for_update().get(code=order.coupon_code)
@@ -186,6 +261,77 @@ def pay_using_wallet(request):
                     )
 
                 wallet = Wallet.objects.select_for_update().get(user=user)
+                total_wallet_deduction = order.final_price + order.wallet_deduction
+
+                if wallet.balance < total_wallet_deduction:
+                    raise ValueError("Insufficient wallet balance for full payment")
+
+                wallet.balance -= total_wallet_deduction
+                wallet.save()
+
+                Transaction.objects.create(
+                    wallet=wallet,
+                    transaction_type=TransactionType.DEBIT,
+                    amount=total_wallet_deduction,
+                    description=f'Full wallet payment for order {order.order_id}',
+                    status=TransactionStatus.COMPLETED,
+                    related_order=order
+                )
+                
+                order.payment_method = 'wallet'
+                order.payment_status = 'paid'
+                order.is_paid = True
+                order.wallet_deduction = total_wallet_deduction
+                order.final_price = Decimal('0.00')
+                order.order_status = 'pending'
+                order.expires_at = None
+                order.save()
+
+                # Update item statuses
+                order.items.all().update(status='pending')
+
+                cart_items.delete()
+                Cart.objects.filter(user=user).delete()
+
+                # Clear draft order from session
+                if 'draft_order_id' in request.session:
+                    del request.session['draft_order_id']
+                # Set order_id in session for authorization
+                request.session['order_id'] = order.order_id
+
+            else:
+                # Path 2: No direct draft order (though create_draft_order usually handles this)
+                cart_items, error = validate_stock_and_cart(user)
+                if error:
+                    messages.error(request, error.get('error', 'Validation error'))
+                    return redirect('checkout')
+
+                totals = calculate_cart_totals(cart_items)
+
+                address, error = validate_address(request=request, user=user)
+                if error:
+                    messages.error(request, error.get('error', 'Validation error'))
+                    return redirect('checkout')
+
+                order = OrderMain.objects.create(
+                    user=user,
+                    shipping_address_name=address.full_name,
+                    shipping_address_line_1=address.address_line_1,
+                    shipping_city=address.city,
+                    shipping_state=address.state,
+                    shipping_pincode=address.postal_code,
+                    shipping_phone=address.phone_number,
+                    payment_method='wallet',
+                    order_status='pending',
+                    payment_status='pending',
+                    is_paid=False,
+                    total_price=totals['subtotal'],
+                    discount_amount=totals['cart_discount'],
+                    shipping_amount=totals['shipping'],
+                    final_price=totals['grand_total']
+                )
+
+                wallet = Wallet.objects.select_for_update().get(user=user)
 
                 if wallet.balance < order.final_price:
                     raise ValueError("Insufficient wallet balance")
@@ -197,102 +343,57 @@ def pay_using_wallet(request):
                     wallet=wallet,
                     transaction_type=TransactionType.DEBIT,
                     amount=order.final_price,
-                    description=f'Payment for order {order.order_id}',
+                    description=f'Full wallet payment for order {order.order_id}',
                     status=TransactionStatus.COMPLETED,
                     related_order=order
                 )
+
+                variant_ids = [item.variant.id for item in cart_items]
+                variants = ProductVariant.objects.select_for_update().filter(id__in=variant_ids)
+                variant_map = {v.id: v for v in variants}
+
+                order_items_to_create = []
+                variants_to_update = []
                 
-                order.order_status = 'pending'
-                order.payment_method = 'wallet'
-                order.payment_status = 'paid'
+                for item in cart_items:
+                    current_variant = variant_map.get(item.variant.id)
+
+                    order_items_to_create.append(
+                        OrderItem(
+                            order=order,
+                            variant=current_variant,
+                            product_name=current_variant.product.name,
+                            quantity=item.quantity,
+                            price_at_purchase=item.final_price,
+                            status='pending'
+                        )
+                    )
+
+                    current_variant.stock -= item.quantity
+                    variants_to_update.append(current_variant)
+
+                OrderItem.objects.bulk_create(order_items_to_create)
+                ProductVariant.objects.bulk_update(variants_to_update, ["stock"])  
+
+                # For full wallet payment, we can move the entire final_price to wallet_deduction
+                total_paid = order.final_price
+                order.wallet_deduction = total_paid
+                order.final_price = Decimal('0.00')
                 order.is_paid = True
-                order.expires_at = None
+                order.payment_status = 'paid'
                 order.save()
 
+                # Delete cart items
                 cart_items.delete()
                 Cart.objects.filter(user=user).delete()
 
-                return render(request, 'orders/order_success.html', {'order': order})
+                # Clear draft order from session
+                if 'draft_order_id' in request.session:
+                    del request.session['draft_order_id']
+                # Set order_id in session for authorization on the animation page
+                request.session['order_id'] = order.order_id
 
-            cart_items, error = validate_stock_and_cart(user)
-            if error:
-                return JsonResponse(error)
-
-            totals = calculate_cart_totals(cart_items)
-
-            address, error = validate_address(request=request, user=user)
-            if error:
-                return JsonResponse(error)
-
-            order = OrderMain.objects.create(
-                user=user,
-                shipping_address_name=address.full_name,
-                shipping_address_line_1=address.address_line_1,
-                shipping_city=address.city,
-                shipping_state=address.state,
-                shipping_pincode=address.postal_code,
-                shipping_phone=address.phone_number,
-                payment_method='wallet',
-                order_status='pending',
-                payment_status='pending',
-                is_paid=False,
-                total_price=totals['subtotal'],
-                discount_amount=totals['cart_discount'],
-                shipping_amount=totals['shipping'],
-                final_price=totals['grand_total']
-            )
-
-            wallet = Wallet.objects.select_for_update().get(user=user)
-
-            if wallet.balance < order.final_price:
-                raise ValueError("Insufficient wallet balance")
-
-            wallet.balance -= order.final_price
-            wallet.save()
-
-            Transaction.objects.create(
-                wallet=wallet,
-                transaction_type=TransactionType.DEBIT,
-                amount=order.final_price,
-                description=f'Payment for order {order.order_id}',
-                status=TransactionStatus.COMPLETED,
-                related_order=order
-            )
-
-            variant_ids = [item.variant.id for item in cart_items]
-            variants = ProductVariant.objects.select_for_update().filter(id__in=variant_ids)
-            variant_map = {v.id: v for v in variants}
-
-            order_items_to_create = []
-            variants_to_update = []
-            
-            for item in cart_items:
-                current_variant = variant_map.get(item.variant.id)
-
-                order_items_to_create.append(
-                    OrderItem(
-                        order=order,
-                        variant=current_variant,
-                        product_name=current_variant.product.name,
-                        quantity=item.quantity,
-                        price_at_purchase=item.final_price,
-                        status='pending'
-                    )
-                )
-
-                current_variant.stock -= item.quantity
-                variants_to_update.append(current_variant)
-
-            OrderItem.objects.bulk_create(order_items_to_create)
-            ProductVariant.objects.bulk_update(variants_to_update, ["stock"])  
-
-            order.is_paid = True
-            order.payment_status = 'paid'
-            order.save()
-
-            cart_items.delete()
-            Cart.objects.filter(user=user).delete()
-
+        # Send Email (Common Path)
         try:
             html_message = render_to_string(
                 'email/order_success_mail.html',
@@ -308,7 +409,7 @@ def pay_using_wallet(request):
         except Exception as e:
             print("Email error:", e)
 
-        return render(request, 'orders/order_success.html', {'order': order})
+        return redirect('order_processing_animation', order_id=order.order_id)
 
     except OrderMain.DoesNotExist:
         messages.error(request, "Draft order not found.")

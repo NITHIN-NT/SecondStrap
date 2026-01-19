@@ -163,6 +163,16 @@ class OrderMain(models.Model):
     @property
     def has_cancel_request(self):
         return self.cancellations.exists()
+
+    @property
+    def total_paid(self):
+        """Total amount paid by the user (Online/COD + Wallet)"""
+        return self.final_price + self.wallet_deduction
+
+    @property
+    def total_savings(self):
+        """Total savings (Item discounts + Coupon discounts)"""
+        return self.discount_amount + self.coupon_discount
 class OrderItem(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')

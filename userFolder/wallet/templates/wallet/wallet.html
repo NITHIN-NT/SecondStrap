@@ -164,7 +164,7 @@
     const MIN_AMOUNT = 100;
 
     const CREATE_WALLET_ORDER_URL = "{% url 'create_wallet_razorpay_order' %}";
-    const WALLET_CALLBACK_URL = "{% url 'wallet_razorpay_callback' %}";
+    const WALLET_CALLBACK_URL = "{{ request.scheme }}://{{ request.get_host }}{% url 'wallet_razorpay_callback' %}";
     
 
     function getCookie(name) {
@@ -243,7 +243,7 @@
 
     // --- Core Razorpay Integration Logic ---
 
-    // 1. When 'Proceed' is clicked, create the Razorpay Order
+    // --- STEP 1: Handle the "Proceed" button click ---
     proceedBtn.addEventListener('click', async function() {
         if (this.hasAttribute('disabled')) return;
         
@@ -269,10 +269,12 @@
 
             if (!data.success) {
                 toastr.error(data.error || 'Unable to create payment order.');
+                proceedBtn.removeAttribute('disabled');
+                proceedBtn.textContent = 'Proceed';
                 return;
             }
 
-            // Step 2: Build Razorpay options from backend data
+            // --- STEP 2: Configure and Open the Razorpay Popup ---
             const options = {
                 key: data.razorpay_key_id, 
                 amount: data.amount_paise, 
@@ -280,87 +282,66 @@
                 name: "SecondStrap",
                 description: `Wallet Top-up: ₹${amount}`,
                 order_id: data.razorpay_order_id,
-                handler: function (response) {
-                    // Step 3: Success Handler - Submit to Django Callback View
-                    handleWalletPaymentSuccess(response);
+                // This 'handler' runs after the user pays in the popup
+                handler: function (razorpayResponse) {
+                    verifyPayment(razorpayResponse, amount);
                 },
                 prefill: {
-                    name: data.user_name || "User Name", 
-                    email: data.user_email || "user@example.com",
-                    contact: data.user_phone || "9999999999"
+                    name: data.user_name || "", 
+                    email: data.user_email || "",
                 },
-                theme: {
-                    color: "#3399cc"
+                theme: { color: "#992305" },
+                modal: {
+                    ondismiss: function() {
+                        proceedBtn.removeAttribute('disabled');
+                        proceedBtn.textContent = 'Proceed'; 
+                    }
                 }
             };
 
             const rzp = new Razorpay(options);
-            
-            rzp.on('payment.failed', function (resp) {
-                // Payment failed inside the popup
-                let errorReason = 'Payment cancelled or failed.';
-                if (resp.error && resp.error.description) {
-                    errorReason = resp.error.description;
-                }
-                toastr.error(`Wallet top-up failed: ${errorReason}`);
-                console.error("Payment Failed:", resp.error);
-            });
-
-            // Open the Razorpay popup
             rzp.open();
 
         } catch (error) {
-            let errorMsg = 'A network or server error occurred.';
-            if (error.response && error.response.data && error.response.data.error) {
-                errorMsg = error.response.data.error;
-            }
-            console.error('Wallet Payment Initiation Error:', error);
-            toastr.error(errorMsg);
-        } finally {
-            // 🛑 Reset Loading State
+            console.error('Payment Error:', error);
+            toastr.error('Could not start payment. Please try again.');
+            proceedBtn.removeAttribute('disabled');
             proceedBtn.textContent = 'Proceed';
-            checkInputValidity(); 
         }
     });
 
-
     /**
-     * Handles a successful Razorpay response by submitting payment data to a Django view
-     * for verification and final wallet update (ORM step).
+     * Sends the payment IDs to our server to verify the payment
      */
-    function handleWalletPaymentSuccess(response) {
-        // Submit via Axios POST request to keep it AJAX
-        
+    function verifyPayment(razorpayResponse, amount) {
+        toastr.info('Verifying payment... Please wait.');
+
         axios.post(WALLET_CALLBACK_URL, {
-            "razorpay_payment_id": response.razorpay_payment_id,
-            "razorpay_order_id": response.razorpay_order_id,
-            "razorpay_signature": response.razorpay_signature,
-            "wallet_amount": parseFloat(amountInput.value) // Pass the original amount
-        }, {
-            headers: { 'Content-Type': 'application/json' }
+            "razorpay_payment_id": razorpayResponse.razorpay_payment_id,
+            "razorpay_order_id": razorpayResponse.razorpay_order_id,
+            "razorpay_signature": razorpayResponse.razorpay_signature,
+            "wallet_amount": amount
         })
         .then(res => {
             const data = res.data;
             if (data.status === 'success') {
-                toastr.success(data.message || 'Payment successfully verified. Wallet updated!');
-                // Reload the page to show the new balance and transaction history
+                toastr.success(data.message || 'Payment Successful!');
+                // Reload the page to show the new balance
                 setTimeout(() => {
-                    window.location.reload(); 
-                }, 1000); 
+                    window.location.reload();
+                }, 1500); 
             } else {
-                toastr.error(data.message || 'Payment verified, but failed to update wallet.');
+                toastr.error(data.message || 'Verification failed.');
+                if (data.redirect_url) {
+                    setTimeout(() => { window.location.href = data.redirect_url; }, 2000);
+                }
             }
         })
         .catch(error => {
-            console.error('Wallet Callback Error:', error);
-            toastr.error('Verification failed due to a network error.');
-        })
-        .finally(() => {
-            // Close the modal after the process starts
-            modal.style.display = 'none';
-        });
-
-        toastr.info('Verifying payment... Please wait.');
+            console.error('Server Error:', error);
+            toastr.error('A network error occurred.');
+            window.location.href = "{% url 'wallet_top_up_failure' %}";
+        });x
     }
 });
 </script>

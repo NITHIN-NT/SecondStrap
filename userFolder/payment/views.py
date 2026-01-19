@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages 
+from django.contrib.auth import login as auth_login
 from django.core.mail import EmailMultiAlternatives
 from django.views.decorators.http import require_POST,require_http_methods
 from django.views.decorators.cache import never_cache
@@ -19,6 +20,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
 
+from django.urls import reverse
 from userFolder.order.models import *
 from userFolder.cart.models import *
 from userFolder.userprofile.models import *
@@ -28,6 +30,7 @@ from userFolder.cart.utils import get_annotated_cart_items
 from .models import PaymentFailure
 
 from .utils import validate_stock_and_cart,validate_address,calculate_cart_totals,create_draft_order
+from userFolder.order.utils import send_order_success_email
 
 
 @require_POST
@@ -309,6 +312,35 @@ def create_razorpay_order(request):
                 
                 payable_amount = totals['grand_total']
 
+                # Create draft order immediately
+                draft_order = OrderMain.objects.create(
+                    user=user,
+                    shipping_address_name=address.full_name,
+                    shipping_address_line_1=address.address_line_1,
+                    shipping_city=address.city,
+                    shipping_state=address.state,
+                    shipping_pincode=address.postal_code,
+                    shipping_phone=address.phone_number,
+                    payment_method='razorpay',
+                    total_price=totals['subtotal'],
+                    discount_amount=totals['cart_discount'],
+                    shipping_amount=totals['shipping'],
+                    final_price=totals['grand_total'],
+                    order_status='draft',
+                    expires_at=timezone.now() + timedelta(minutes=30)
+                )
+
+                # Create draft order items
+                for item in cart_items:
+                    OrderItem.objects.create(
+                        order=draft_order,
+                        variant=item.variant,
+                        product_name=item.variant.product.name,
+                        quantity=item.quantity,
+                        price_at_purchase=item.final_price,
+                        status='draft'
+                    )
+
             if payable_amount <= Decimal('0.00'):
                 return JsonResponse({"success": False, "error": "Invalid payable amount"},status=400)
     except Exception as e:
@@ -326,6 +358,10 @@ def create_razorpay_order(request):
             "currency": settings.RAZORPAY_CURRENCY,
             "payment_capture": 1,
         })
+        
+        if draft_order:
+            draft_order.razorpay_order_id = razorpay_order["id"]
+            draft_order.save(update_fields=['razorpay_order_id'])
     except Exception as e:
         print("Razorpay error:", e)
         return JsonResponse(
@@ -349,12 +385,12 @@ def create_razorpay_order(request):
         "user_name": user.first_name or user.username,
         "user_email": user.email,
         "user_phone": address.phone_number if address else "",
+        "callback_url": request.build_absolute_uri(reverse('razorpay_callback')),
     })
 
 
 @csrf_exempt
 @never_cache
-@login_required(login_url='login')
 def razorpay_callback(request):
     """
     Converts draft order to final order or creates new order
@@ -370,20 +406,30 @@ def razorpay_callback(request):
     if request.method == 'POST':
     
         user = request.user
-    
-        if not session_data:
-            messages.error(request, "Session expired or invalid payment session.")
-            return render(request, 'orders/order_error.html')
         
-        # Get Razorpay response data
+        # Get Razorpay response data from POST body
         razorpay_payment_id = request.POST.get("razorpay_payment_id")
         razorpay_order_id = request.POST.get("razorpay_order_id")
         razorpay_signature = request.POST.get("razorpay_signature")
         
-        # Verify order ID matches
-        if razorpay_order_id != session_data['razorpay_order_id']:
-            messages.error(request, "Payment verification failed (order mismatch).")
-            return render(request, 'orders/order_error.html')
+        # 1. First try to find order by razorpay_order_id from database (Session Independent)
+        try:
+            order = OrderMain.objects.get(razorpay_order_id=razorpay_order_id)
+            user = order.user
+        except OrderMain.DoesNotExist:
+            # Fallback: If not in DB, we need the session to find the Draft Order
+            if session_data and razorpay_order_id == session_data.get('razorpay_order_id'):
+                draft_order_id = session_data.get('draft_order_id')
+                try:
+                    order = OrderMain.objects.get(order_id=draft_order_id)
+                    user = order.user
+                except OrderMain.DoesNotExist:
+                    messages.error(request, "Order not found.")
+                    return render(request, 'orders/order_error.html')
+            else:
+                # No DB entry and no valid session data
+                messages.error(request, "Payment verification failed (session expired or order not found).")
+                return render(request, 'orders/order_error.html')
         
         # Verify Razorpay signature
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -412,239 +458,125 @@ def razorpay_callback(request):
             messages.error(request, "Could not verify payment amount.")
             return render(request, 'orders/order_error.html')
         
-        # Initialize order variable
-        order = None
-        
         # Process order
         try:
             with transaction.atomic():
-                draft_order_id = session_data.get('draft_order_id')
+                # We already found the 'order' (OrderMain) at the beginning of this function
+                # using the razorpay_order_id provided by Razorpay.
+                if not order:
+                    messages.error(request, "Order not found.")
+                    return render(request, 'orders/order_error.html')
+
+                if order.order_status != 'draft':
+                    # If it's already processed (e.g., duplicate callback), just show success
+                    return redirect('order_processing_animation', order_id=order.order_id)
                 
-                if draft_order_id:
-                    '''
-                        DRAFT ORDER FLOW 
-                    '''
+                draft_order = order # For compatibility with existing variable names below
+
+                expected_amount = draft_order.final_price 
+                if abs(paid_amount - expected_amount) > Decimal('0.01'):
+                    messages.error(request, f"Payment amount mismatch. Expected ₹{expected_amount}, got ₹{paid_amount}")
+                    return render(request, 'orders/order_error.html')
+                
+                # Validate stock using draft order items
+                for item in draft_order.items.all():
                     try:
-                        draft_order = OrderMain.objects.select_for_update().get(
-                            order_id=draft_order_id,
-                            user=user,
-                            order_status='draft'
+                        variant = ProductVariant.objects.select_for_update().get(id=item.variant.id)
+                    except ProductVariant.DoesNotExist:
+                        messages.error(request, f"Product {item.product_name} is no longer available.")
+                        return render(request, 'orders/order_error.html')
+                    
+                    if item.quantity > variant.stock:
+                        messages.error(request, f'Out of stock: {item.product_name}')
+                        return render(request, 'orders/order_error.html')
+                    
+                    # Update stock
+                    variant.stock -= item.quantity
+                    variant.save()
+                
+                # Deduct wallet balance
+                if draft_order.wallet_deduction > 0:
+                    try:
+                        wallet = Wallet.objects.select_for_update().get(user=user)
+                        
+                        if wallet.balance < draft_order.wallet_deduction:
+                            messages.error(request, "Insufficient wallet balance.")
+                            return render(request, 'orders/order_error.html')
+                        
+                        wallet.balance -= draft_order.wallet_deduction
+                        wallet.save()
+                        
+                        # Create wallet transaction record
+                        Transaction.objects.create(
+                            wallet=wallet,
+                            transaction_type='DB',
+                            amount=draft_order.wallet_deduction,
+                            description=f'Payment for order {draft_order.order_id}'
                         )
-                    except OrderMain.DoesNotExist:
-                        messages.error(request, "Draft order not found or expired.")
-                        return render(request, 'orders/order_error.html')
-                    
-                    expected_amount = draft_order.final_price 
-                    if abs(paid_amount - expected_amount) > Decimal('0.01'):
-                        messages.error(request, f"Payment amount mismatch. Expected ₹{expected_amount}, got ₹{paid_amount}")
-                        return render(request, 'orders/order_error.html')
-                    
-                    # Validate stock using draft order items
-                    for item in draft_order.items.all():
-                        try:
-                            variant = ProductVariant.objects.select_for_update().get(id=item.variant.id)
-                        except ProductVariant.DoesNotExist:
-                            messages.error(request, f"Product {item.product_name} is no longer available.")
-                            return render(request, 'orders/order_error.html')
-                        
-                        if item.quantity > variant.stock:
-                            messages.error(request, f'Out of stock: {item.product_name}')
-                            return render(request, 'orders/order_error.html')
-                        
-                        # Update stock
-                        variant.stock -= item.quantity
-                        variant.save()
-                    
-                    # Deduct wallet balance
-                    if draft_order.wallet_deduction > 0:
-                        try:
-                            wallet = Wallet.objects.select_for_update().get(user=user)
-                            
-                            if wallet.balance < draft_order.wallet_deduction:
-                                messages.error(request, "Insufficient wallet balance.")
-                                return render(request, 'orders/order_error.html')
-                            
-                            wallet.balance -= draft_order.wallet_deduction
-                            wallet.save()
-                            
-                            # Create wallet transaction record
-                            Transaction.objects.create(
-                                wallet=wallet,
-                                transaction_type='debit',
-                                amount=draft_order.wallet_deduction,
-                                description=f'Payment for order {draft_order.order_id}'
-                            )
-                        except Wallet.DoesNotExist:
-                            messages.error(request, "Wallet not found.")
-                            return render(request, 'orders/order_error.html')  
-                    
-                    # Convert draft to final order
-                    draft_order.order_status = 'pending'  
-                    draft_order.payment_method = 'razorpay'
-                    draft_order.payment_status = 'paid'
-                    draft_order.is_paid = True
-                    draft_order.razorpay_order_id = razorpay_order_id
-                    draft_order.razorpay_payment_id = razorpay_payment_id
-                    draft_order.razorpay_signature = razorpay_signature
-                    draft_order.expires_at = None  
-                    draft_order.save()
-                    
-                    order = draft_order
-                    if order.coupon_code:
-                        try:
-                            coupon = Coupon.objects.select_for_update().get(code=draft_order.coupon_code)
-                            
-                            if coupon:
-                                coupon.times_used += 1
-                                coupon.save()
-                                
-                                CouponUsage.objects.create(
-                                    coupon=coupon,
-                                    user=user,
-                                    order=order,
-                                    discount_amount=order.coupon_discount,
-                                    cart_total_before_discount=order.final_price-order.discount_amount
-                                )
-                        except Exception as e:
-                            return JsonResponse({'success':'False','error':'Something went wrong'})
-                        
-                    # Clear user's cart
+                    except Wallet.DoesNotExist:
+                        messages.error(request, "Wallet not found.")
+                        return render(request, 'orders/order_error.html')  
+                
+                # Convert draft to final order
+                draft_order.order_status = 'pending'  
+                draft_order.payment_method = 'razorpay'
+                draft_order.payment_status = 'paid'
+                draft_order.is_paid = True
+                draft_order.razorpay_order_id = razorpay_order_id
+                draft_order.razorpay_payment_id = razorpay_payment_id
+                draft_order.razorpay_signature = razorpay_signature
+                draft_order.expires_at = None  
+                draft_order.save()
+                
+                order = draft_order
+                if order.coupon_code:
                     try:
-                        cart = Cart.objects.get(user=user)
-                        cart.items.all().delete()
-                    except Cart.DoesNotExist:
-                        pass
-                    
-                else:
-                    '''
-                        NORMAL FLOW 
-                    '''
-                    try:
-                        cart = Cart.objects.get(user=user)
-                        if not cart.items.exists():
-                            messages.error(request, "Cart is empty!")
-                            return render(request, 'orders/order_error.html')
-                    except Cart.DoesNotExist:
-                        messages.error(request, "Cart not found!")
-                        return render(request, 'orders/order_error.html')
-
-                    cart_items = get_annotated_cart_items(user=user)
-                    
-                    # Lock and validate stock
-                    variant_ids = [item.variant.id for item in cart_items]
-                    locked_variants = ProductVariant.objects.filter(id__in=variant_ids).select_for_update()
-                    variant_map = {variant.id: variant for variant in locked_variants}
-
-                    for item in cart_items:
-                        current_variant = variant_map.get(item.variant.id)
-                        if not current_variant:
-                            messages.error(request, f"Product {item.variant.product.name} is no longer available.")
-                            return render(request, 'orders/order_error.html')
-
-                        if item.quantity > current_variant.stock:
-                            messages.error(request, f'Out of stock: {current_variant.product.name}')
-                            return render(request, 'orders/order_error.html')
-                    
-                    totals = calculate_cart_totals(cart_items=cart_items)
-                    
-                    if abs(paid_amount - totals['grand_total']) > Decimal('0.01'):
-                        messages.error(request, f"Payment amount mismatch. Expected ₹{totals['grand_total']}, got ₹{paid_amount}")
-                        return render(request, 'orders/order_error.html')
-                    
-                    # Get address
-                    address_id = session_data.get('address_id')
-                    if not address_id:
-                        messages.error(request, "Address information missing.")
-                        return render(request, 'orders/order_error.html')
-                    
-                    try:
-                        address = Address.objects.get(id=address_id, user=user)
-                    except Address.DoesNotExist:
-                        messages.error(request, "Invalid address.")
-                        return render(request, 'orders/order_error.html')
-
-                    # Create order
-                    order = OrderMain.objects.create(
-                        user=user,
-                        shipping_address_name=address.full_name,
-                        shipping_address_line_1=address.address_line_1,
-                        shipping_city=address.city,
-                        shipping_state=address.state,
-                        shipping_pincode=address.postal_code,
-                        shipping_phone=address.phone_number,
-                        payment_method='razorpay',
-                        payment_status='paid',
-                        is_paid=True,
-                        order_status='pending',
-                        total_price=totals['subtotal'],
-                        discount_amount=totals['cart_discount'],
-                        shipping_amount=totals['shipping'],
-                        wallet_deduction=Decimal('0'),  # No wallet used
-                        final_price=totals['grand_total'],
-                        razorpay_order_id=razorpay_order_id,
-                        razorpay_payment_id=razorpay_payment_id,
-                        razorpay_signature=razorpay_signature,
-                    )
-
-                    # Create order items and update stock
-                    order_items_to_create = []
-                    variants_to_update = []
-                    
-                    for item in cart_items:
-                        current_variant = variant_map.get(item.variant.id)
-
-                        order_items_to_create.append(
-                            OrderItem(
+                        coupon = Coupon.objects.select_for_update().get(code=draft_order.coupon_code)
+                        
+                        if coupon:
+                            coupon.times_used += 1
+                            coupon.save()
+                            
+                            CouponUsage.objects.create(
+                                coupon=coupon,
+                                user=user,
                                 order=order,
-                                variant=current_variant,
-                                product_name=current_variant.product.name,
-                                quantity=item.quantity,
-                                price_at_purchase=item.final_price,
-                                status='pending'
+                                discount_amount=order.coupon_discount,
+                                cart_total_before_discount=order.final_price-order.discount_amount
                             )
-                        )
-
-                        current_variant.stock -= item.quantity
-                        variants_to_update.append(current_variant)
-
-                    OrderItem.objects.bulk_create(order_items_to_create)
-                    ProductVariant.objects.bulk_update(variants_to_update, ["stock"])                
+                    except Exception as e:
+                        return JsonResponse({'success':'False','error':'Something went wrong'})
                     
-                    # Clear cart
-                    cart_items.delete()
-                # Store order ID and clear session data
-                request.session['order_id'] = order.order_id
-                if 'pending_razorpay' in request.session:
-                    del request.session['pending_razorpay']
-                if 'draft_order_id' in request.session:
-                    del request.session['draft_order_id']
+                # Clear user's cart
+                try:
+                    cart = Cart.objects.get(user=user)
+                    cart.items.all().delete()
+                except Cart.DoesNotExist:
+                    pass
+                
+                # Update item statuses
+                order.items.all().update(status='pending')
 
-            # Send confirmation email
-            try:
-                user_email = order.user.email
-                plain_message = 'Order placed successfully!'
-                html_message = render_to_string(
-                    'email/order_success_mail.html',
-                    {'order': order, 'items': order.items.all()}
-                )
-                msg = EmailMultiAlternatives(
-                    body=plain_message,
-                    subject='Order Successful',
-                    to=[user_email],
-                )
-                msg.attach_alternative(html_message, 'text/html')
-                msg.send()
-            except Exception as e:
-                print(f"Email sending failed: {e}")
+            # Store order ID in session as a courtesy (for other parts of site)
+            request.session['order_id'] = order.order_id
+            if 'pending_razorpay' in request.session:
+                del request.session['pending_razorpay']
+            if 'draft_order_id' in request.session:
+                del request.session['draft_order_id']
 
-            return render(request, 'orders/order_success.html', {'order': order})
-            
+            # 🛑 CRITICAL: If session was lost during Razorpay's POST callback (SameSite=Lax issue),
+            # we must log the user back in manually so the next redirect works.
+            if not request.user.is_authenticated:
+                auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+            # Redirect to animation page (email will be sent there)
+            return redirect('order_processing_animation', order_id=order.order_id)
+
         except Exception as e:
             print(f"Razorpay Order Placement Error: {e}")
-            import traceback
-            traceback.print_exc()
             messages.error(request, "Payment received but there was an error creating the order. Our support team will assist you.")
             return render(request, 'orders/order_error.html')
+
     return redirect('checkout')
 
 @require_http_methods(["POST"])

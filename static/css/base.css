@@ -42,8 +42,8 @@ img {
     max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: 24px;
+    padding-right: 24px;
 }
 
 /* ==================== HEADER / NAVBAR ==================== */
@@ -64,8 +64,8 @@ img {
     justify-content: space-between;
     align-items: center;
     height: 80px;
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: 24px;
+    padding-right: 24px;
     position: relative;
 }
 
@@ -129,6 +129,8 @@ img {
     gap: 40px;
     flex-wrap: wrap;
     margin-bottom: 40px;
+    padding-left: 24px;
+    padding-right: 24px;
 }
 
 .footer-column {
@@ -206,8 +208,8 @@ img {
     justify-content: space-between;
     font-size: 13px;
     color: #aaa;
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: 24px;
+    padding-right: 24px;
 }
 
 /* ==================== OFFER CAROUSEL ==================== */
@@ -441,76 +443,76 @@ img {
 /* ==================== RESPONSIVE DESIGN ==================== */
 @media (max-width: 768px) {
     .container {
-        padding-left: 20px;
-        padding-right: 20px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     .navbar {
-        height: 70px;
+        height: 60px;
         padding-left: 0;
         padding-right: 0;
     }
 
     .logo {
         position: absolute;
-        left: 50%;
+        left: 20px;
         top: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 22px;
+        transform: translateY(-50%);
+        font-size: 20px;
     }
 
-    .nav-links,
+    .nav-links {
+        display: none;
+    }
+
     .nav-icons {
         display: none;
     }
 
-    /* ✅ Correct Hamburger Position */
+    /* Keep icons visible on mobile header? Or use mobile drawer? */
+    /* The current base.html has a separate .mobile-menu */
+    
     .menu-icon {
         display: block;
         position: absolute;
-        right: 20px;
+        right: 10px;
         top: 50%;
         transform: translateY(-50%);
         padding: 10px;
         margin: 0;
     }
 
-    /* ✅ Hide hamburger when menu is open */
-    .menu-toggle:checked~.menu-icon {
-        display: none !important;
-    }
-
     .footer-container {
         flex-direction: column;
-        gap: 40px;
+        gap: 30px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     .footer-bottom {
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         text-align: center;
-        padding-left: 0;
-        padding-right: 0;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     .offer-carousel {
-        height: 35px;
-        font-size: 0.8rem;
+        height: 30px;
+        font-size: 0.75rem;
     }
 
     .offer-item {
-        margin-right: 50px;
+        margin-right: 40px;
     }
 
-    /* ✅ NEW: Adjust body padding for mobile (35px carousel + 70px header = 105px) */
     body {
-        padding-top: 105px;
+        padding-top: 90px; /* 30px carousel + 60px header */
     }
 
-    /* ✅ NEW: Adjust fixed header position for mobile (35px carousel height) */
     .header {
-        top: 35px;
+        top: 30px;
     }
 }
 

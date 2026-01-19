@@ -1,125 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmation</title>
-    <style>
-        /* RESET STYLES */
-        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-        img { -ms-interpolation-mode: bicubic; }
-        
-        /* GENERAL STYLES */
-        body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; background-color: #f4f4f4; font-family: Helvetica, Arial, sans-serif; }
-        
-        /* RESPONSIVE STYLES */
-        @media screen and (max-width: 600px) {
-            .email-container { width: 100% !important; }
-            .mobile-padding { padding-left: 15px !important; padding-right: 15px !important; }
-        }
-    </style>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+{% extends "email/base_email.html" %}
 
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f4f4;">
+{% block title %}Order Confirmation - #{{ order.order_id }}{% endblock %}
+
+{% block content %}
+<div class="success-badge">
+    <img src="https://img.icons8.com/ios-filled/100/111111/checkmark--v1.png" alt="Success">
+</div>
+
+<h2 style="margin: 0 0 10px 0; color: #111111; font-size: 24px; font-weight: 700; text-align: center;">Order Placed Successfully</h2>
+<p style="margin: 0 0 30px 0; font-size: 16px; color: #555555; line-height: 1.5; text-align: center;">
+    Thank you for choosing SecondStrap. We have received your order and are preparing it for shipment.
+</p>
+
+<div style="text-align: center; margin-bottom: 30px;">
+    <p style="margin: 0; font-size: 14px; color: #111111;"><strong>Order ID:</strong> #{{ order.order_id }}</p>
+    <p style="margin: 5px 0 0 0; font-size: 14px; color: #777777;">Date: {{ order.created_at|date:"F d, Y" }}</p>
+</div>
+
+<table class="order-table" cellpadding="0" cellspacing="0">
+    <thead>
         <tr>
-            <td align="center" style="padding: 40px 0;">
-                
-                <table class="email-container" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border: 1px solid #dddddd; border-collapse: collapse;">
-                    
-                    <tr>
-                        <td align="center" style="padding: 30px; background-color: #000000; color: #ffffff;">
-                            <h1 style="margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase;">SecondStrap</h1>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td align="center" class="mobile-padding" style="padding: 40px 30px 20px 30px;">
-                            <img src="https://img.icons8.com/ios-filled/100/28a745/checkmark--v1.png" alt="Success" width="60" height="60" style="display: block; border: 0;" />
-                            
-                            <h2 style="margin-top: 20px; margin-bottom: 10px; font-size: 24px; color: #000000;">Order Placed Successfully</h2>
-                            <p style="margin: 0; font-size: 16px; color: #555555; line-height: 1.5;">Thank you for ordering with us. We have received your order and are preparing it for shipment.</p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td align="center" style="padding: 0 30px 30px 30px;">
-                            <p style="margin: 0; font-size: 14px; color: #000000;"><strong>Order ID:</strong> #{{order.order_id}}</p>
-                            <p style="margin: 5px 0 0 0; font-size: 14px; color: #777777;">Date: {{order.created_at|date:"F d, Y"}}</p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td class="mobile-padding" style="padding: 0 30px 30px 30px;">
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse;">
-                                <thead>
-                                    <tr style="border-bottom: 2px solid #000000;">
-                                        <th align="left" style="padding: 10px 0; font-size: 14px; text-transform: uppercase; color: #000000;">Item</th>
-                                        <th align="right" style="padding: 10px 0; font-size: 14px; text-transform: uppercase; color: #000000;">Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in order.items.all %}
-                                        <tr style="border-bottom: 1px solid #eeeeee;">
-                                            <td align="left" style="padding: 15px 0; font-size: 16px; color: #333333;">
-                                                <span style="font-weight: bold;">{{item.product_name}}</span> <br>
-                                                <span style="font-size: 12px; color: #777777;">Size: {{item.variant.size}} | Qty: {{item.quantity}}</span>
-                                            </td>
-                                            <td align="right" style="padding: 15px 0; font-size: 16px; color: #333333;">₹ {{item.get_total_price}}</td>
-                                        </tr>
-                                    {% endfor %}
-                                    <tr>
-                                        <td align="left" style="padding-top: 20px; font-size: 18px; font-weight: bold; color: #000000;">Total</td>
-                                        <td align="right" style="padding-top: 20px; font-size: 18px; font-weight: bold; color: #000000;">₹ {{order.final_price}}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td class="mobile-padding" style="padding: 30px; background-color: #fafafa; border-top: 1px solid #dddddd;">
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td valign="top" width="100%" style="padding-bottom: 20px;">
-                                        <h3 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #000000;">Shipping Address</h3>
-                                        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #555555;">
-                                            {{ order.shipping_address_line_1 }}<br>
-                                            {% if order.shipping_address_line_2 %}
-                                                {{ order.shipping_address_line_2 }}<br>
-                                            {% endif %}
-                                            {{ order.shipping_city }} - {{ order.shipping_pincode }}<br>
-                                            {{ order.shipping_state }}<br>
-                                            <strong>Phone:</strong> {{ order.shipping_phone }}
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    <tr>
-                        <div style="background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 12px 15px; margin: 10px 10px; align-items : center;">
-                            <span class="value" style="color: #155724; font-weight: 700; font-size: 15px; display: flex; align-items: center;">
-                                <span style="margin-right: 8px;">🎉</span>
-                                On this order you save ₹{{ order.discount_amount }} !!
-                            </span>
-                        </div>
-                    </tr>
-                    <tr>
-                        <td align="center" style="padding: 30px; background-color: #000000; color: #ffffff;">
-                            <p style="margin: 0; font-size: 14px;">Thank you for shopping with SecondStrap.</p>
-                            <p style="margin: 10px 0 0 0; font-size: 12px; color: #aaaaaa;">&copy; 2025 SecondStrap. All rights reserved.</p>
-                            <div style="margin-top: 15px;">
-                                <a href="#" style="color: #ffffff; text-decoration: underline; font-size: 12px; margin: 0 5px;">Visit Website</a>
-                            </div>
-                        </td>
-                    </tr>
-
-                </table>
-            </td>
+            <th>Item</th>
+            <th style="text-align: right;">Price</th>
         </tr>
-    </table>
+    </thead>
+    <tbody>
+        {% for item in order.items.all %}
+        <tr>
+            <td>
+                <span style="font-weight: 700; color: #111111;">{{ item.product_name }}</span><br>
+                <span style="font-size: 13px; color: #777777;">Size: {{ item.variant.size }} | Qty: {{ item.quantity }}</span>
+            </td>
+            <td style="text-align: right; color: #111111;">₹ {{ item.get_total_price }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td style="padding-top: 20px; font-size: 16px; color: #555555;">Subtotal</td>
+            <td style="padding-top: 20px; text-align: right; font-size: 16px; color: #555555;">₹ {{ order.total_price }}</td>
+        </tr>
+        {% if order.discount_amount > 0 %}
+        <tr>
+            <td style="padding-top: 10px; font-size: 16px; color: #059669; font-weight: 600;">Discount</td>
+            <td style="padding-top: 10px; text-align: right; font-size: 16px; color: #059669; font-weight: 600;">- ₹ {{ order.discount_amount }}</td>
+        </tr>
+        {% endif %}
+        {% if order.wallet_deduction > 0 %}
+        <tr>
+            <td style="padding-top: 10px; font-size: 16px; color: #059669; font-weight: 600;">Wallet Deduction</td>
+            <td style="padding-top: 10px; text-align: right; font-size: 16px; color: #059669; font-weight: 600;">- ₹ {{ order.wallet_deduction }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="order-total" style="border: none;">Total</td>
+            <td class="order-total" style="text-align: right; border: none;">₹ {{ order.total_paid }}</td>
+        </tr>
+        <tr>
+            <td style="padding-bottom: 20px; font-size: 14px; color: #777;">Balance Paid/Cod</td>
+            <td style="padding-bottom: 20px; text-align: right; font-size: 14px; color: #777;">₹ {{ order.final_price }}</td>
+        </tr>
+    </tfoot>
+</table>
 
-</body>
-</html>
+{% if order.discount_amount > 0 %}
+<div class="savings-banner">
+    🎉 You saved ₹{{ order.discount_amount }} on this order!
+</div>
+{% endif %}
+
+<div class="info-card">
+    <h3>Shipping Address</h3>
+    <p>
+        <strong>{{ order.user.get_full_name }}</strong><br>
+        {{ order.shipping_address_line_1 }}<br>
+        {% if order.shipping_address_line_2 %}
+            {{ order.shipping_address_line_2 }}<br>
+        {% endif %}
+        {{ order.shipping_city }} - {{ order.shipping_pincode }}<br>
+        {{ order.shipping_state }}<br>
+        <strong>Phone:</strong> {{ order.shipping_phone }}
+    </p>
+</div>
+
+<div style="margin-top: 40px; text-align: center;">
+    <a href="#" class="button">Track Your Order</a>
+</div>
+{% endblock %}

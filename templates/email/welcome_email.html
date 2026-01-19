@@ -1,0 +1,43 @@
+{% extends "email/base_email.html" %}
+
+{% block title %}Welcome to SecondStrap{% endblock %}
+
+{% block banner %}
+<tr>
+    <td style="padding-top: 50px; text-align: center;">
+        <img src="https://images.unsplash.com/photo-1594932224011-041042613e78?auto=format&fit=crop&q=80&w=600&h=300" alt="Welcome" style="width: 100%; height: auto; border-radius: 8px 8px 0 0;">
+    </td>
+</tr>
+{% endblock %}
+
+{% block content %}
+<h2 style="margin: 0 0 20px 0; color: #000000; font-size: 24px; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 2px;">Welcome to the Inner Circle</h2>
+
+<p style="margin: 0 0 20px 0;">Hello {{ first_name|default:"Style Enthusiast" }},</p>
+
+<p style="margin: 0 0 30px 0; color: #444444; line-height: 1.8;">
+    We're thrilled to have you join SecondStrap. You've just stepped into a community of modern individuals who value premium quality, timeless design, and essential craftsmanship.
+</p>
+
+<div class="info-card">
+    <h3 style="margin-bottom: 20px;">What's Next?</h3>
+    <p style="margin-bottom: 15px;">Explore our collections and find pieces that define your personal style. Here's what you can look forward to:</p>
+    <ul style="padding-left: 20px; color: #444444;">
+        <li style="margin-bottom: 10px;">Exclusive First Access to New Collections</li>
+        <li style="margin-bottom: 10px;">Curated Style Guides & Inspirations</li>
+        <li style="margin-bottom: 10px;">Member-Only Private Sales</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin: 40px 0;">
+    <a href="http://127.0.0.1:8000" class="button">Explore Collections</a>
+</div>
+
+<p style="margin-top: 40px; color: #666666; font-size: 14px; text-align: center;">
+    Your journey towards refined style starts here. We're honored to be a part of it.
+</p>
+
+<p style="margin-top: 40px; color: #000000; font-weight: 800; text-align: center;">
+    THE SECONDSTRAP TEAM
+</p>
+{% endblock %}

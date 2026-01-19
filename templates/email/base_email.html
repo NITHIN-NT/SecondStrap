@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SecondStrap{% endblock %}</title>
+    <style>
+        /* Email client specific resets */
+        body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; background-color: #f4f4f4; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; max-width: 100%; height: auto; }
+        table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        td { mso-line-height-rule: exactly; }
+
+        /* General Styles */
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f4f4f4; padding: 40px 0; }
+        .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 600px; border-spacing: 0; color: #1a1a1a; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .header { background-color: #000000; padding: 50px 20px; text-align: center; }
+        .logo { color: #ffffff; font-size: 28px; font-weight: 900; letter-spacing: 4px; text-decoration: none; text-transform: uppercase; }
+        .content { padding: 50px 40px; line-height: 1.8; }
+        .footer { padding: 40px; text-align: center; font-size: 13px; color: #999999; background-color: #ffffff; border-top: 1px solid #f0f0f0; }
+        .button { background-color: #000000; color: #ffffff !important; padding: 16px 32px; text-decoration: none; border-radius: 4px; font-weight: 700; display: inline-block; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .otp-box { background-color: #fafafa; border: 1px solid #eeeeee; border-radius: 12px; padding: 40px 20px; margin: 35px 0; text-align: center; }
+        .otp-code { font-size: 42px; font-weight: 900; color: #000000; letter-spacing: 10px; font-family: 'Courier New', Courier, monospace; }
+        
+        /* Table Styles */
+        .order-table { width: 100%; margin-top: 30px; border-bottom: 2px solid #000000; }
+        .order-table th { text-align: left; padding: 15px 0; border-bottom: 2px solid #000000; font-size: 12px; text-transform: uppercase; color: #000000; letter-spacing: 1px; }
+        .order-table td { padding: 20px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .order-total { padding-top: 25px; font-size: 20px; font-weight: 800; color: #000000; }
+
+        /* Info Card */
+        .info-card { background-color: #fafafa; padding: 30px; border-radius: 8px; margin-top: 35px; }
+        .info-card h3 { margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; color: #000000; letter-spacing: 2px; font-weight: 800; }
+        .info-card p { margin: 0; font-size: 14px; color: #444444; line-height: 1.7; }
+
+        /* Success Badge */
+        .success-badge { text-align: center; margin-bottom: 30px; }
+        .success-badge img { width: 64px; height: 64px; }
+
+        /* Savings Banner */
+        .savings-banner { background-color: #f0fdf4; border: 1px dashed #22c55e; border-radius: 8px; padding: 15px; margin: 25px 0; color: #166534; font-weight: 700; font-size: 14px; text-align: center; }
+
+        .social-link { display: inline-block; margin: 0 10px; color: #000000; text-decoration: none; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Responsive */
+        @media screen and (max-width: 600px) {
+            .content { padding: 40px 25px !important; }
+            .otp-code { font-size: 32px !important; letter-spacing: 6px !important; }
+        }
+    </style>
+</head>
+<body>
+    <center class="wrapper">
+        <table class="main" width="100%">
+            <!-- Header -->
+            <tr>
+                <td class="header">
+                    <a href="http://127.0.0.1:8000" class="logo">SecondStrap</a>
+                </td>
+            </tr>
+
+            <!-- Banner / Title -->
+            {% block banner %}
+            {% endblock %}
+
+            <!-- Main Content -->
+            <tr>
+                <td class="content">
+                    {% block content %}
+                    {% endblock %}
+                </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+                <td class="footer">
+                    <div style="margin-bottom: 25px;">
+                        <a href="#" class="social-link">Instagram</a>
+                        <a href="#" class="social-link">Twitter</a>
+                        <a href="#" class="social-link">Facebook</a>
+                    </div>
+                    <p style="margin: 0 0 10px 0; color: #000000; font-weight: 700;">SECONDSTRAP PREMIUM MEN'S WEAR</p>
+                    <p style="margin: 0 0 20px 0; line-height: 1.6;">You're receiving this because you're a valued member of the SecondStrap community.</p>
+                    <p style="margin: 0; opacity: 0.6;">&copy; 2026 SecondStrap. All rights reserved.</p>
+                </td>
+            </tr>
+        </table>
+    </center>
+</body>
+</html>

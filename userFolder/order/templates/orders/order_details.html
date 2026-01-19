@@ -36,20 +36,23 @@
         <div class="od-card">
             <h3 class="od-card-title">Order Status</h3>
             
-            {% if order.order_status == 'cancelled' or order.order_status == 'partially_cancelled' %}
+            {% if order.order_status in 'cancelled partially_cancelled' %}
                 <div class="status-header">
                     <div class="status-icon-box" style="background: #fee2e2;">
                         <i class='bx bx-x' style="color: #dc2626;"></i>
                     </div>
                     <div class="status-text">
-                        <h3>Order {{order.get_order_status_display}}</h3>
+                        <h3>Order {{ order.get_order_status_display }}</h3>
                         <p>Updated on {{ order.updated_at|date:"M d, Y" }}</p>
                     </div>
                 </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" style="width: 100%; background: #dc2626;"></div>
-                </div>
 
+                {% if order.payment_method in 'wallet razorpay' %}
+                     <div class='status-texts'>
+                    <h3>Amount refunded to your Wallet</h3>
+                    <p>Check you wallet</p>
+                </div>
+                {% endif %}
             {% elif order.order_status == 'returned' or order.order_status == 'partially_returned' %}
                 <div class="status-header">
                     <div class="status-icon-box" style="background: #ffedd5;">
@@ -238,16 +241,14 @@
 
         <div class="od-card order-summary-card">
             <h3 class="od-card-title">Order Summary</h3>
-            <div class="summary-row"><span>Subtotal</span><span>₹{{ order.total_price }}</span></div>
-            <div class="summary-row"><span>Shipping</span><span>+₹{{order.shipping_amount}}</span></div>
-            <div class="summary-row"><span>Discount</span><span style="color: #10b981;">-₹{{ order.discount_amount }}</span></div>
+            <div class="summary-row"><span>Order Total</span><span>₹{{ order.total_paid }}</span></div>
             {% if order.wallet_deduction %}
                 <div class="summary-row"><span>Wallet Deduction</span><span style="color: #10b981;">-₹{{ order.wallet_deduction }}</span></div>
             {% endif %}
             {% if order.coupon_discount %}
                 <div class="summary-row"><span>Coupon Deduction</span><span style="color: #10b981;">-₹{{ order.coupon_discount }}</span></div>
             {% endif %}
-            <div class="summary-row total"><span>Total</span><span>₹{{ order.final_price }}</span></div>
+            <div class="summary-row total"><span>Balance Payable</span><span>₹{{ order.final_price }}</span></div>
         </div>
 
         {% if order.order_status != 'cancelled' and order.order_status != 'returned' %}

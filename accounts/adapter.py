@@ -6,27 +6,32 @@ logger = logging.getLogger(__name__)
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
-    print("--- CUSTOM SOCIAL ADAPTER SAVE_USER IS RUNNING ---")
-    '''
-        This Adapter is used to auto Active the Google authenticated users 
-        Saving their Data to the database .
-    '''
     def is_open_for_signup(self, request, sociallogin):
         return True
 
     def pre_social_login(self, request, sociallogin):
+        logger.info(f"--- pre_social_login started for {sociallogin.account.provider} ---")
         # This is called when the user is about to be logged in.
         # sociallogin.user is not yet created.
         if sociallogin.is_existing:
+            logger.info("Social account already exists, continuing.")
             return
 
         # check if a user with this email already exists
+        email = sociallogin.account.extra_data.get('email')
+        logger.info(f"Social login extra_data: {sociallogin.account.extra_data}")
+        if not email:
+            logger.error("No email provided by social provider")
+            return
+
         try:
             User = get_user_model()
-            user = User.objects.get(email=sociallogin.account.extra_data['email'])
+            user = User.objects.get(email=email)
+            logger.info(f"Found existing user with email {email}, connecting social account.")
             sociallogin.connect(request, user)
             return
         except User.DoesNotExist:
+            logger.info(f"No user found with email {email}, will proceed with new user creation.")
             pass
 
         # you can check for more things here, like if the user's email is verified
@@ -39,7 +44,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         # create a new user
         user = get_adapter().new_user(request)
-        user.email = sociallogin.account.extra_data['email']
+        user.email = email
         user.first_name = sociallogin.account.extra_data.get('given_name', '')
         user.last_name = sociallogin.account.extra_data.get('family_name', '')
         user.is_active = True

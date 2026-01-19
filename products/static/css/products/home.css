@@ -107,7 +107,7 @@
 /* ==================== CATEGORY GRID ==================== */
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(4, 0.5fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
 }
 
@@ -286,81 +286,79 @@
 
     /* --- Hero Section (Mobile) --- */
     .hero-section {
-        padding: 60px 20px;
-        min-height: 50vh;
-        margin-bottom: 30px;
-
-        /* These are the mobile curved border styles */
-        margin-left: 10px;
-        /* Smaller margin for mobile */
-        margin-right: 10px;
-        /* Smaller margin for mobile */
-        border-radius: 30px;
-        /* This is the stronger mobile curve */
+        padding: 40px 16px;
+        min-height: 40vh;
+        margin-bottom: 24px;
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: 20px;
     }
 
     .hero-content h1 {
-        font-size: 32px;
-        /* Smaller font for mobile */
+        font-size: 28px;
+        margin-bottom: 12px;
     }
 
     .hero-content p {
-        font-size: 16px;
+        font-size: 15px;
+        margin-bottom: 20px;
+        line-height: 1.5;
     }
 
     .btn-primary {
-        padding: 12px 24px;
-        font-size: 15px;
+        padding: 10px 20px;
+        font-size: 14px;
     }
 
 
     /* --- General Section --- */
     .home-section {
-        margin-bottom: 40px;
+        margin-bottom: 30px;
     }
 
     .section-title {
-        font-size: 20px;
-        /* Smaller title */
-        margin-bottom: 24px;
+        font-size: 18px;
+        margin-bottom: 16px;
     }
 
-    /* --- Grids (The main change) --- */
+    /* --- Grids --- */
     .category-grid {
-        grid-template-columns: 1fr;
-        /* 1 column for mobile */
-        gap: 15px;
-        /* Slightly smaller gap */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
 
     .product-grid {
         grid-template-columns: repeat(2, 1fr);
-        /* 2 columns for mobile */
-        gap: 15px;
-        /* Slightly smaller gap */
+        gap: 12px;
     }
 
-    /* --- Product Card Icons (to match screenshot) --- */
+    /* --- Category Card (Mobile) --- */
+    .category-card span {
+        font-size: 16px;
+    }
+
+    /* --- Product Card Icons (Mobile) --- */
     .product-card-icons {
         opacity: 1;
-        /* Always visible on mobile */
         transform: none;
-        /* Remove hover-in animation */
+        top: 8px;
+        right: 8px;
+        gap: 6px;
     }
 
-    .product-card:hover .product-card-icons {
-        /* Disable any remaining hover effect */
-        transform: none;
-    }
-
-    /* Hide "Quick view" icon on mobile */
-    .product-card-icons button[aria-label="Quick view"] {
-        display: none;
+    .product-card-icons button {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
     }
 
     .product-name {
+        font-size: 13px;
+        margin-bottom: 2px;
+    }
+
+    .product-price {
         font-size: 14px;
-        /* Slightly smaller for 2-col layout */
     }
 }
 

@@ -88,7 +88,7 @@ INSTALLED_APPS = [
 ]
 
 # ============================ AUTHENTICATION SETTINGS ============================
-LOGIN_URL = 'accounts/login'
+LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'Home_page_user'
 LOGIN_REDIRECT_URL = 'Home_page_user'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'Home_page_user'
@@ -171,7 +171,6 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': [
             'profile',
             'email',
-            'https://www.googleapis.com/auth/user.phonenumbers.read'
             ],
         'AUTH_PARAMS': {'access_type': 'online'},
         'OAUTH_PKCE_ENABLED': True,
@@ -216,7 +215,15 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# Security settings for ngrok/proxies
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = not DEBUG  # True in prod, False in local dev
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = not DEBUG    # True in prod, False in local dev
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': env('CLOUD_NAME'),

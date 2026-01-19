@@ -1,101 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Your Email Change</title>
-    <style>
-        /* Reset styles for email clients */
-        body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-        img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
-        table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-        td { mso-line-height-rule: exactly; }
-    </style>
-</head>
-<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: Helvetica, Arial, sans-serif;">
+{% extends "email/base_email.html" %}
 
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
-        <tr>
-            <td align="center">
-                
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
-                    
-                    <tr>
-                        <td align="center" bgcolor="#111111" style="padding: 40px 20px; background-color: #111111;">
-                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">
-                                SECONDSTRAP
-                            </h1>
-                            <p style="margin: 10px 0 0 0; color: #aaaaaa; font-size: 14px; text-transform: uppercase;">
-                                PREMIUM MEN'S WEAR
-                            </p>
-                        </td>
-                    </tr>
+{% block title %}Verify Your Email Change{% endblock %}
 
-                    <tr>
-                        <td style="padding: 40px 30px; color: #333333; line-height: 1.6;">
-                            
-                            <h2 style="margin: 0 0 30px 0; color: #111111; font-size: 24px; font-weight: bold;">
-                                Verify Your Email Change
-                            </h2>
+{% block content %}
+<h2 style="margin: 0 0 20px 0; color: #111111; font-size: 24px; font-weight: 700;">Verify Your Email Change</h2>
 
-                            <p style="font-size: 16px; margin: 0 0 20px 0;">
-                                Hello {{ first_name|default:"Customer" }} ,
-                            </p>
+<p style="margin: 0 0 20px 0;">Hello {{ first_name|default:"Customer" }},</p>
 
-                            <p style="font-size: 16px; margin: 0 0 30px 0; color: #555555;">
-                                You've requested to change your email address. To verify this new email, please use the verification code below.
-                            </p>
+<p style="margin: 0 0 30px 0; color: #555555;">
+    You've requested to change your email address. To verify this new email, please use the verification code below.
+</p>
 
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td align="center" style="padding-bottom: 30px;">
-                                        <table border="0" cellpadding="0" cellspacing="0" 
-                                               style="background-color: #f3f4f6; 
-                                                      border-radius: 8px; 
-                                                      border-left: 6px solid #111111; 
-                                                      box-shadow: 6px 6px 0px -1px rgba(0,0,0,0.1);
-                                                      -webkit-box-shadow: 6px 6px 0px -1px rgba(0,0,0,0.1);
-                                                      -moz-box-shadow: 6px 6px 0px -1px rgba(0,0,0,0.1);">
-                                            <tr>
-                                                <td align="center" style="padding: 20px 40px; font-size: 32px; font-weight: bold; color: #111111; letter-spacing: 4px; mso-padding-alt: 20px 40px;">
-                                                    {{ otp_code }}
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
+<div class="otp-box">
+    <div class="otp-code">{{ otp_code }}</div>
+</div>
 
-                            <p style="font-size: 16px; margin: 0 0 20px 0; color: #555555;">
-                                This code will expire in <span style="color: #333333; font-weight: 500;">1 minutes</span> .
-                            </p>
+<p style="margin: 0 0 20px 0; color: #555555;">
+    This code will expire in <span style="font-weight: 700; color: #111111;">1 minute</span>.
+</p>
 
-                            <p style="font-size: 16px; margin: 0 0 30px 0; color: #555555;">
-                                If you didn't request this code, please ignore this email or contact our support team if you have concerns.
-                            </p>
+<p style="margin: 0 0 30px 0; color: #777777; font-size: 14px;">
+    If you didn't request this code, please ignore this email or contact our support team if you have concerns.
+</p>
 
-                            <p style="font-size: 16px; margin: 0; color: #333333;">
-                                Thank you,<br>
-                                The SecondStrap Team
-                            </p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td align="center" bgcolor="#f9fafb" style="padding: 30px; background-color: #f9fafb; border-top: 1px solid #eeeeee;">
-                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #777777;">
-                                &copy; 2025 &nbsp; SecondStrap. All rights reserved.
-                            </p>
-                            <p style="margin: 0; font-size: 14px; color: #999999;">
-                                This is an automated message, please do not reply.
-                            </p>
-                        </td>
-                    </tr>
-
-                </table>
-                </td>
-        </tr>
-    </table>
-
-</body>
-</html>
+<p style="margin: 0; color: #111111; font-weight: 600;">
+    Best regards,<br>
+    The SecondStrap Team
+</p>
+{% endblock %}

@@ -77,9 +77,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (show) {
             modal.classList.add("active");
             modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add("modal-open");
         } else {
             modal.classList.remove("active");
             modal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove("modal-open");
         }
     };
 

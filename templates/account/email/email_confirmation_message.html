@@ -1,0 +1,26 @@
+{% extends "email/base_email.html" %}
+
+{% block title %}Confirm Your Email - SecondStrap{% endblock %}
+
+{% block content %}
+<h2 style="margin: 0 0 20px 0; color: #000000; font-size: 24px; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 2px;">Confirm Your Email</h2>
+
+<p style="margin: 0 0 20px 0;">Hello,</p>
+
+<p style="margin: 0 0 30px 0; color: #444444;">
+    Welcome to SecondStrap. To complete your registration and verify your email address, please click the button below. This will ensure you receive updates about your orders and exclusive offers.
+</p>
+
+<div style="text-align: center; margin: 40px 0;">
+    <a href="{{ activate_url }}" class="button">Verify Email Address</a>
+</div>
+
+<p style="margin: 0 0 30px 0; color: #777777; font-size: 14px; text-align: center;">
+    If the button above doesn't work, you can copy and paste the following link into your browser:<br>
+    <a href="{{ activate_url }}" style="color: #000000; text-decoration: underline;">{{ activate_url }}</a>
+</p>
+
+<p style="margin-top: 40px; color: #999999; font-size: 13px; text-align: center;">
+    If you did not sign up for a SecondStrap account, please ignore this email.
+</p>
+{% endblock %}

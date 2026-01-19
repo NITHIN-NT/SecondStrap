@@ -1,5 +1,5 @@
 import json
-from django.shortcuts import render, redirect,get_object_or_404,HttpResponse
+from django.shortcuts import render, redirect,get_object_or_404,HttpResponse, Http404
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.decorators import login_required
@@ -11,8 +11,9 @@ from .models import *
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.db import transaction
+from django.urls import reverse
 from decimal import Decimal
-from .utils import render_to_pdf 
+from .utils import render_to_pdf, send_order_success_email
 from django.http import JsonResponse
 from django.db import transaction
 from django.views.decorators.cache import never_cache
@@ -103,7 +104,7 @@ def order(request):
 
         Cart.objects.filter(user=user).delete()
 
-        return render(request, 'orders/order_success.html', {'order': order})
+        return redirect('order_processing_animation', order_id=order.order_id)
     try:
         cart_items, error = validate_stock_and_cart(user)
         if error:
@@ -170,27 +171,66 @@ def order(request):
         cart_items.delete()
         request.session['order_id'] = order.order_id
 
-        try:
-            html_message = render_to_string(
-                'email/order_success_mail.html',
-                {'order': order, 'items': order.items.all()}
-            )
-            msg = EmailMultiAlternatives(
-                subject='Order Successful',
-                body='Order placed successfully!',
-                to=[order.user.email],
-            )
-            msg.attach_alternative(html_message, 'text/html')
-            msg.send()
-        except Exception as e:
-            print(f"Email failed: {e}")
-
-        return render(request, 'orders/order_success.html', {'order': order})
+        return redirect('order_processing_animation', order_id=order.order_id)
 
     except Exception as e:
         print(f"Order error: {e}")
         messages.error(request, "Something went wrong. Please try again.")
         return redirect('checkout')
+
+@never_cache
+def order_processing_animation_view(request, order_id):
+    """
+    Shows a cool animation of a parcel being loaded into a truck.
+    """
+    order = get_object_or_404(OrderMain, order_id=order_id)
+    
+    is_authorized = False
+    if request.user.is_authenticated:
+        if order.user == request.user:
+            is_authorized = True
+    else:
+        if request.session.get('order_id') == order_id:
+            is_authorized = True
+
+    if not is_authorized:
+        return redirect('login') 
+
+    context = {
+        'order': order,
+        'order_items': order.items.all(),
+    }
+    return render(request, 'orders/order_animation.html', context)
+
+@never_cache
+def send_order_email_ajax(request, order_id):
+    """
+    AJAX endpoint to send order confirmation email.
+    """
+    order = get_object_or_404(OrderMain, order_id=order_id)
+    
+    is_authorized = False
+    if request.user.is_authenticated:
+        if order.user == request.user:
+            is_authorized = True
+    else:
+        if request.session.get('order_id') == order_id:
+            is_authorized = True
+
+    if not is_authorized:
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+    
+    if not request.session.get(f'email_sent_{order_id}'):
+        try:
+            from .utils import send_order_success_email
+            send_order_success_email(order)
+            request.session[f'email_sent_{order_id}'] = True
+            return JsonResponse({'status': 'success', 'message': 'Email sent'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    else:
+        return JsonResponse({'status': 'success', 'message': 'Email already sent'})
+    return render(request, 'orders/order_animation.html', context)
 
 @never_cache
 @login_required

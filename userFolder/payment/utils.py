@@ -14,9 +14,9 @@ def validate_stock_and_cart(user):
     try:
         cart = Cart.objects.get(user=user)
         if not cart.items.exists():
-            return JsonResponse({"success": False, "error": "Cart is empty."}, status=400)
+            return None, {"success": False, "error": "Cart is empty."}
     except Cart.DoesNotExist:
-        return JsonResponse({"success": False, "error": "No cart found."}, status=400)
+        return None, {"success": False, "error": "No cart found."}
     
     cart_items = get_annotated_cart_items(user=user)
     variant_ids = [item.variant.id for item in cart_items]
