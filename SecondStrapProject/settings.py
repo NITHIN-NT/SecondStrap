@@ -164,7 +164,7 @@ SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
             'client_id': env('CLIENT_ID'),
-            'secret': env('secret'),
+            'secret': env('CLIENT_SECRET'),
             'key': '',
             'FETCH_USERINFO': True,
         },

@@ -33,6 +33,8 @@ jobs:
               -e API_KEY="${{ secrets.API_KEY }}" \
               -e API_SECRET="${{ secrets.API_SECRET }}" \
               -e CLIENT_ID="${{ secrets.CLIENT_ID }}" \
+              -e CLIENT_SECRET="${{ secrets.CLIENT_SECRET }}" \
+              -e CSRF_TRUSTED_ORIGINS="${{ secrets.CSRF_TRUSTED_ORIGINS }}" \
               -e RAZORPAY_KEY_ID="${{ secrets.RAZORPAY_KEY_ID }}" \
               -e RAZORPAY_KEY_SECRET="${{ secrets.RAZORPAY_KEY_SECRET }}" \
               -e RAZORPAY_CALLBACK_URL="${{ secrets.RAZORPAY_CALLBACK_URL }}" \
