@@ -163,7 +163,7 @@ DATABASES = {
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': env('client_id'),
+            'client_id': env('CLIENT_ID'),
             'secret': env('secret'),
             'key': '',
             'FETCH_USERINFO': True,
