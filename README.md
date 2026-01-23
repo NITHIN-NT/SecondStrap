@@ -18,7 +18,7 @@ SecondStrap is a comprehensive, modular e-commerce web application built with Dj
 ## 🛠 Tech Stack
 
 *   **Backend:** Python 3.x, Django 5.2.7
-*   **Database:** PostgreSQL (via `psycopg2` & `dj-database-url`)
+*   **Database:** PostgreSQL (via `psycopg2` & `dj-database-url`) 
 *   **Frontend:** Django Templates (HTML/CSS/JS)
 *   **Authentication:** `django-allauth`
 *   **Utilities:** `django-environ` (Configuration), `xhtml2pdf` (PDFs)
