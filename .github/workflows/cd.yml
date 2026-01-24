@@ -41,3 +41,4 @@ jobs:
               -e EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER }}" \
               -e EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD }}" \
               ${{ secrets.DOCKER_USERNAME }}/secondstrap:latest
+            docker exec -t secondstrap-container python manage.py migrate
