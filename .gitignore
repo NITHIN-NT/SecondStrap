@@ -202,7 +202,6 @@ yarn-error.log
 # Project-specific ignores
 ########################################
 GEMINI.md
-extracted_products_with_variants.json
 status.md
 What_i_am_doing.txt
 .vscode
