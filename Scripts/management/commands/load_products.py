@@ -17,14 +17,16 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 class Command(BaseCommand):
     help = 'Imports products from JSON, converts images to WebP, and applies size-based pricing.'
 
-    # Pricing Logic Configuration
+    # ✅ Pricing Logic Configuration (Added ONE SIZE / OS)
     PRICE_INCREMENTS = {
-        'XS': Decimal('0.00'),
-        'S':  Decimal('20.00'),
-        'M':  Decimal('50.00'),
-        'L':  Decimal('100.00'),
-        'XL': Decimal('150.00'),
-        'XXL': Decimal('200.00'),
+        "ONE SIZE": Decimal("0.00"),
+
+        "XS": Decimal("0.00"),
+        "S":  Decimal("20.00"),
+        "M":  Decimal("100.00"),
+        "L":  Decimal("200.00"),
+        "XL": Decimal("350.00"),
+        "XXL": Decimal("500.00"),
     }
 
     def add_arguments(self, parser):
@@ -33,16 +35,21 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.session = requests.Session()
-        retries = Retry(total=3, backoff_factor=0.5, status_forcelist=[429, 500, 502, 503, 504])
+        retries = Retry(
+            total=3,
+            backoff_factor=0.5,
+            status_forcelist=[429, 500, 502, 503, 504]
+        )
         self.session.mount("https://", HTTPAdapter(max_retries=retries))
         self.session.mount("http://", HTTPAdapter(max_retries=retries))
 
     def convert_to_webp(self, image_content):
         try:
             img = Image.open(io.BytesIO(image_content))
+
             if img.mode in ("CMYK", "P"):
                 img = img.convert("RGB")
-            
+
             img = img.convert("RGBA") if "A" in img.getbands() else img.convert("RGB")
 
             buffer = io.BytesIO()
@@ -78,11 +85,12 @@ class Command(BaseCommand):
         for i, item in enumerate(products_data):
             title = item.get("title", "N/A")
             handle = item.get('handle')
-            
+
             # 1. Base Price Parsing
             try:
                 raw_price = Decimal(str(item.get('price'))).quantize(Decimal("0.01"))
-                if raw_price <= 0: raise InvalidOperation
+                if raw_price <= 0:
+                    raise InvalidOperation
             except (InvalidOperation, TypeError):
                 self.stdout.write(self.style.WARNING(f" Skipping {title}: Invalid Price"))
                 skipped_count += 1
@@ -93,10 +101,12 @@ class Command(BaseCommand):
             if not category_name:
                 skipped_count += 1
                 continue
+
             category, _ = Category.objects.get_or_create(name=category_name)
 
             try:
                 with transaction.atomic():
+
                     # 3. Product Creation
                     product, created = Product.objects.update_or_create(
                         slug=handle,
@@ -111,8 +121,10 @@ class Command(BaseCommand):
 
                     # 4. Image Handling
                     images_list = item.get('images', [])
+
                     if images_list:
-                        # Set main image if not present
+
+                        # Main image
                         if not product.image:
                             data = self.download_image(images_list[0])
                             if data:
@@ -121,27 +133,53 @@ class Command(BaseCommand):
                                     fname = f"{os.path.basename(urlparse(images_list[0]).path).split('.')[0]}.webp"
                                     product.image.save(fname, webp, save=True)
 
-                        # Update Gallery
+                        # Gallery
                         ProductImage.objects.filter(product=product).delete()
+
                         for img_url in images_list:
                             img_data = self.download_image(img_url)
                             if img_data:
                                 webp_gal = self.convert_to_webp(img_data)
                                 if webp_gal:
                                     fname = f"{os.path.basename(urlparse(img_url).path).split('.')[0]}.webp"
-                                    ProductImage.objects.create(product=product, image=ContentFile(webp_gal.read(), name=fname))
+                                    ProductImage.objects.create(
+                                        product=product,
+                                        image=ContentFile(webp_gal.read(), name=fname)
+                                    )
 
-                    # 5. Size Variants & Dynamic Pricing
-                    size_variants_list = item.get('size_variants') or ["S"] # Default to S if empty
+                    # ✅ 5. Variants (Supports normal sizes + ONE SIZE)
                     ProductVariant.objects.filter(product=product).delete()
-                    
+
+                    one_size = item.get("one_size", False)  # optional boolean from json
+                    size_variants_list = item.get("size_variants")
+
+                    # Normalize cases
+                    if not size_variants_list:
+                        if one_size:
+                            size_variants_list = ["ONE SIZE"]
+                        else:
+                            size_variants_list = ["S"]
+
+                    # If explicitly one_size, override everything
+                    if one_size is True:
+                        size_variants_list = ["ONE SIZE"]
+
+                    # Clean + normalize
+                    size_variants_list = [
+                        str(s).strip().upper()
+                        for s in size_variants_list
+                        if str(s).strip()
+                    ]
+
+                    if not size_variants_list:
+                        size_variants_list = ["ONE SIZE"]
+
                     for size_name in size_variants_list:
                         size_obj, _ = Size.objects.get_or_create(size=size_name)
-                        
-                        # Apply Increment Logic
-                        increment = self.PRICE_INCREMENTS.get(size_name, Decimal('0.00'))
+
+                        increment = self.PRICE_INCREMENTS.get(size_name, Decimal("0.00"))
                         final_base_price = raw_price + increment
-                        final_offer_price = (final_base_price * Decimal('0.90')).quantize(Decimal("0.01"))
+                        final_offer_price = (final_base_price * Decimal("0.90")).quantize(Decimal("0.01"))
 
                         ProductVariant.objects.create(
                             product=product,
@@ -152,10 +190,12 @@ class Command(BaseCommand):
                         )
 
                 processed_count += 1
-                self.stdout.write(f" Successfully processed {i+1}: {title}")
+                self.stdout.write(f"✅ Successfully processed {i+1}: {title}")
 
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f" Error processing {title}: {e}"))
+                self.stdout.write(self.style.ERROR(f"❌ Error processing {title}: {e}"))
                 skipped_count += 1
 
-        self.stdout.write(self.style.SUCCESS(f'Import Complete. Processed: {processed_count}, Skipped: {skipped_count}'))
+        self.stdout.write(self.style.SUCCESS(
+            f'✅ Import Complete. Processed: {processed_count}, Skipped: {skipped_count}'
+        ))
