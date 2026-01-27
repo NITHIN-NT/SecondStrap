@@ -723,14 +723,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Razorpay error:', err);
                 placeOrderBtn.classList.remove('loading');
                 
-                axios.post("{% url 'payment_failed_logging' %}", {
-                    failure_type: 'INITIALIZATION_ERROR',
-                    error_description: err.message || 'Failed to initialize Razorpay',
-                    error_code: 'INIT_FAILED'
-                }, {
-                    headers: { 'X-CSRFToken': csrfToken }
-                }).catch(logErr => console.error('Failed to log:', logErr));
-                
                 toastr.error('Payment initialization failed.');
                 setTimeout(() => {
                     const orderId = document.querySelector('input[name="draft_order_id"]')?.value || '';
