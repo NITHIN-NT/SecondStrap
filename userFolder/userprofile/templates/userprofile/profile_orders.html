@@ -17,21 +17,30 @@
     <div class="profile-card-body">
         <div class="order-list">
             {% for order in orders %}
-                <a href="{% url "order_details" order.order_id %}" class="order-item">
-                    <div class="order-item-details">
-                        <span class="order-item-id">Order #{{ order.order_id }}
-                            <span class="badge bg-{{ order.get_status_color}}">
-                                {{ order.get_order_status_display }}
-                            </span>
-                        </span> 
-                        
-                        <p class="order-item-meta">
-                            {{ order.created_at|date:"M d, Y" }} • ₹{{ order.total_paid }}
-                        </p>
-                        
-                    </div>
-                    <i class='bx bx-chevron-right'></i>
-                </a>
+                <div class="order-item-wrapper" style="position: relative;">
+                    <a href="{% url "order_details" order.order_id %}" class="order-item">
+                        <div class="order-item-details">
+                            <span class="order-item-id">Order #{{ order.order_id }}
+                                <span class="badge bg-{{ order.get_status_color}}">
+                                    {{ order.get_order_status_display }}
+                                </span>
+                            </span> 
+                            
+                            <p class="order-item-meta">
+                                {{ order.created_at|date:"M d, Y" }} • ₹{{ order.total_paid }}
+                            </p>
+                            
+                        </div>
+                        <i class='bx bx-chevron-right'></i>
+                    </a>
+                    {% if order.order_status == 'failed' %}
+                        <button class="retry-payment-btn-small" 
+                                data-order-id="{{ order.order_id }}"
+                                style="position: absolute; right: 40px; top: 50%; transform: translateY(-50%); background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; z-index: 10;">
+                            Pay Now
+                        </button>
+                    {% endif %}
+                </div>
             
             {% empty %}
                 <div style="padding: 20px; text-align: center; color: #666;">
@@ -79,3 +88,55 @@
 
 </div>
 {% endblock profile_content %}
+
+{% block extra_script %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.retry-payment-btn-small').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const orderId = this.getAttribute('data-order-id');
+            this.disabled = true;
+            this.innerText = '...';
+            
+            try {
+                const response = await axios.get(`/payment/retry/${orderId}/`);
+                const data = response.data;
+                
+                if (data.success) {
+                    const options = {
+                        key: data.razorpay_key_id,
+                        amount: data.amount_paise,
+                        currency: data.currency,
+                        name: "SecondStrap",
+                        order_id: data.razorpay_order_id,
+                        callback_url: data.callback_url,
+                        redirect: true,
+                        prefill: {
+                            name: data.user_name,
+                            email: data.user_email,
+                            contact: data.user_phone
+                        },
+                    };
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                } else {
+                    alert(data.error || 'Failed to initiate payment');
+                    this.disabled = false;
+                    this.innerText = 'Pay Now';
+                }
+            } catch (err) {
+                console.error('Retry error:', err);
+                alert('An error occurred. Please try again.');
+                this.disabled = false;
+                this.innerText = 'Pay Now';
+            }
+        });
+    });
+});
+</script>
+{% endblock extra_script %}

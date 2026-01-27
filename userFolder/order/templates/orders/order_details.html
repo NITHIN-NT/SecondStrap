@@ -281,6 +281,10 @@
                     <button type="button" onclick="openCancelOrderModal()" class="btn-action btn-cancel-full">
                         <i class='bx bx-x-circle'></i>Cancel Order
                     </button>
+                {% elif order.order_status == 'failed' %}
+                    <button type="button" id="retryPaymentBtnDetails" class="btn-action" style="background: #dc2626; color: white;">
+                        <i class='bx bx-credit-card'></i> Retry Payment
+                    </button>
                 {% endif %}
 
             </div>
@@ -541,5 +545,50 @@
 
 {% block extra_script %}
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="{% static "js/order/order.js" %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const retryBtn = document.getElementById('retryPaymentBtnDetails');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', async function() {
+            this.disabled = true;
+            this.innerText = 'Initializing...';
+            
+            try {
+                const response = await axios.get(`/payment/retry/{{ order.order_id }}/`);
+                const data = response.data;
+                
+                if (data.success) {
+                    const options = {
+                        key: data.razorpay_key_id,
+                        amount: data.amount_paise,
+                        currency: data.currency,
+                        name: "SecondStrap",
+                        order_id: data.razorpay_order_id,
+                        callback_url: data.callback_url,
+                        redirect: true,
+                        prefill: {
+                            name: data.user_name,
+                            email: data.user_email,
+                            contact: data.user_phone
+                        },
+                    };
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                } else {
+                    alert(data.error || 'Failed to initiate payment');
+                    this.disabled = false;
+                    this.innerHTML = "<i class='bx bx-credit-card'></i> Retry Payment";
+                }
+            } catch (err) {
+                console.error('Retry error:', err);
+                alert('An error occurred. Please try again.');
+                this.disabled = false;
+                this.innerHTML = "<i class='bx bx-credit-card'></i> Retry Payment";
+            }
+        });
+    }
+});
+</script>
 {% endblock extra_script %}
