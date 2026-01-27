@@ -385,7 +385,7 @@ def create_razorpay_order(request):
         "user_name": user.first_name or user.username,
         "user_email": user.email,
         "user_phone": address.phone_number if address else "",
-        "callback_url": request.build_absolute_uri(reverse('razorpay_callback')),
+        "callback_url": settings.RAZORPAY_CALLBACK_URL,
     })
 
 
