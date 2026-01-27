@@ -401,6 +401,7 @@ def razorpay_callback(request):
         order_id = session_data.get('draft_order_id') if session_data else None
         if order_id:
             OrderMain.objects.filter(order_id=order_id, order_status='draft').update(order_status='failed')
+            OrderItem.objects.filter(order__order_id=order_id, status='draft').update(status='failed')
         
         messages.error(request, "Payment failed. Please try again.")
         if session_data and 'pending_razorpay' in request.session:
@@ -604,6 +605,7 @@ def payment_failed_log(request):
         order_id = data.get('order_id')
         if order_id:
             OrderMain.objects.filter(razorpay_order_id=order_id, order_status='draft').update(order_status='failed')
+            OrderItem.objects.filter(order__razorpay_order_id=order_id, status='draft').update(status='failed')
         
         # Also log to file
         logger.error(
@@ -621,6 +623,12 @@ def payment_failed_log(request):
 @require_http_methods(["GET"])          
 def payment_failed_page(request):
     order_id = request.GET.get('order_id')
+    
+    # Robustness: ensure order is marked as failed if user reaches this page
+    if order_id:
+        OrderMain.objects.filter(order_id=order_id, order_status='draft').update(order_status='failed')
+        OrderItem.objects.filter(order__order_id=order_id, status='draft').update(status='failed')
+        
     context = {
         'order_id': order_id
     }
