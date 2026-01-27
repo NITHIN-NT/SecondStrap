@@ -281,9 +281,14 @@
                     <button type="button" onclick="openCancelOrderModal()" class="btn-action btn-cancel-full">
                         <i class='bx bx-x-circle'></i>Cancel Order
                     </button>
-                {% elif order.order_status == 'failed' %}
+                    {% if order.payment_method == 'razorpay' and not order.is_paid %}
+                        <button type="button" id="retryPaymentBtnDetails" class="btn-action" style="background: #dc2626; color: white; margin-top: 10px;">
+                            <i class='bx bx-credit-card'></i> Repay / Retry Payment
+                        </button>
+                    {% endif %}
+                {% elif order.order_status == 'failed' or order.payment_method == 'razorpay' and not order.is_paid %}
                     <button type="button" id="retryPaymentBtnDetails" class="btn-action" style="background: #dc2626; color: white;">
-                        <i class='bx bx-credit-card'></i> Retry Payment
+                        <i class='bx bx-credit-card'></i> Repay / Retry Payment
                     </button>
                 {% endif %}
 

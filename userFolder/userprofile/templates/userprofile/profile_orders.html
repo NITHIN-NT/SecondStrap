@@ -33,11 +33,11 @@
                         </div>
                         <i class='bx bx-chevron-right'></i>
                     </a>
-                    {% if order.order_status == 'failed' %}
+                    {% if order.order_status == 'failed' or order.payment_method == 'razorpay' and not order.is_paid %}
                         <button class="retry-payment-btn-small" 
                                 data-order-id="{{ order.order_id }}"
                                 style="position: absolute; right: 40px; top: 50%; transform: translateY(-50%); background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; z-index: 10;">
-                            Pay Now
+                            Pay / Retry
                         </button>
                     {% endif %}
                 </div>

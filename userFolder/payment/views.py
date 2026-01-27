@@ -629,13 +629,20 @@ def payment_failed_page(request):
 @login_required(login_url='login')
 def retry_order_payment(request, order_id):
     """
-    Re-initiates payment for an order that failed.
+    Re-initiates payment for an order that is unpaid and uses Razorpay.
     """
     user = request.user
     try:
-        order = OrderMain.objects.get(order_id=order_id, user=user, order_status='failed')
+        # Allow retry if order status is failed OR if it's a razorpay order that isn't paid yet
+        # (e.g. status='pending' but is_paid=False)
+        order = OrderMain.objects.get(
+            order_id=order_id, 
+            user=user, 
+            payment_method='razorpay',
+            is_paid=False
+        )
     except OrderMain.DoesNotExist:
-        messages.error(request, "Order not found or not eligible for retry.")
+        messages.error(request, "Order not found or not eligible for repayment.")
         return redirect('checkout')
 
     # Prepare Razorpay order

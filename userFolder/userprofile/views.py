@@ -300,7 +300,7 @@ class ProfileOrderView(SecureUserMixin, ListView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            queryset = OrderMain.objects.filter(user=self.request.user).order_by('-created_at')
+            queryset = OrderMain.objects.filter(user=self.request.user).exclude(order_status='draft').order_by('-created_at')
             return queryset
         return OrderMain.objects.none()
 
