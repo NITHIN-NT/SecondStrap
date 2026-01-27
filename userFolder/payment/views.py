@@ -398,10 +398,14 @@ def razorpay_callback(request):
     """
     session_data = request.session.get('pending_razorpay')
     if request.method == "GET":
+        order_id = session_data.get('draft_order_id') if session_data else None
+        if order_id:
+            OrderMain.objects.filter(order_id=order_id, order_status='draft').update(order_status='failed')
+        
         messages.error(request, "Payment failed. Please try again.")
         if session_data and 'pending_razorpay' in request.session:
             del request.session['pending_razorpay']
-        return render(request, 'orders/order_error.html')
+        return render(request, 'orders/order_error.html', {'order_id': order_id})
     
     if request.method == 'POST':
     

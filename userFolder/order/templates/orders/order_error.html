@@ -159,57 +159,57 @@
 
         {% if order_id %}
             <button id="retryPaymentBtn" class="btn-black">Retry Payment</button>
-        {% else %}
-            <a href="{% url 'checkout' %}" class="btn-black">Try Again</a>
-        {% endif %}
-        
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+            
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
-        <script>
-        const retryBtn = document.getElementById('retryPaymentBtn');
-        if (retryBtn) {
-            retryBtn.addEventListener('click', async function() {
-                retryBtn.disabled = true;
-                retryBtn.innerText = 'Initializing...';
-                
-                try {
-                    const response = await axios.get("{% url 'retry_order_payment' order_id=order_id|default:'' %}");
-                    const data = response.data;
+            <script>
+            const retryBtn = document.getElementById('retryPaymentBtn');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', async function() {
+                    retryBtn.disabled = true;
+                    retryBtn.innerText = 'Initializing...';
                     
-                    if (data.success) {
-                        const options = {
-                            key: data.razorpay_key_id,
-                            amount: data.amount_paise,
-                            currency: data.currency,
-                            name: "SecondStrap",
-                            order_id: data.razorpay_order_id,
-                            callback_url: data.callback_url,
-                            redirect: true,
-                            prefill: {
-                                name: data.user_name,
-                                email: data.user_email,
-                                contact: data.user_phone
-                            },
-                        };
-                        const rzp = new Razorpay(options);
-                        rzp.open();
-                    } else {
-                        alert(data.error || 'Failed to retry payment');
+                    try {
+                        const response = await axios.get("{% url 'retry_order_payment' order_id=order_id %}");
+                        const data = response.data;
+                        
+                        if (data.success) {
+                            const options = {
+                                key: data.razorpay_key_id,
+                                amount: data.amount_paise,
+                                currency: data.currency,
+                                name: "SecondStrap",
+                                order_id: data.razorpay_order_id,
+                                callback_url: data.callback_url,
+                                redirect: true,
+                                prefill: {
+                                    name: data.user_name,
+                                    email: data.user_email,
+                                    contact: data.user_phone
+                                },
+                            };
+                            const rzp = new Razorpay(options);
+                            rzp.open();
+                        } else {
+                            alert(data.error || 'Failed to retry payment');
+                            retryBtn.disabled = false;
+                            retryBtn.innerText = 'Retry Payment';
+                        }
+                    } catch (err) {
+                        console.error('Retry error:', err);
+                        alert('An error occurred during retry');
                         retryBtn.disabled = false;
                         retryBtn.innerText = 'Retry Payment';
                     }
-                } catch (err) {
-                    console.error('Retry error:', err);
-                    alert('An error occurred during retry');
-                    retryBtn.disabled = false;
-                    retryBtn.innerText = 'Retry Payment';
-                }
-            });
-        }
-        </script>
+                });
+            }
+            </script>
+        {% else %}
+            <a href="{% url 'checkout' %}" class="btn-black">Try Again</a>
+        {% endif %}
         
         <a href="mailto:support@secondstrap.com" class="link-grey contact-link">Contact Support</a>
     </div>
