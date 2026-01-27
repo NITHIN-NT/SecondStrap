@@ -723,11 +723,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Razorpay error:', err);
                 placeOrderBtn.classList.remove('loading');
                 
-                toastr.error('Payment initialization failed.');
-                setTimeout(() => {
-                    const orderId = document.querySelector('input[name="draft_order_id"]')?.value || '';
-                    window.location.href = "{% url 'payment_failed_page' %}?order_id=" + orderId;
-                }, 1500);
+                toastr.error('Payment initialization failed. Please try again.');
             }
         }
     });

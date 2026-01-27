@@ -421,25 +421,11 @@ def razorpay_callback(request):
         razorpay_order_id = request.POST.get("razorpay_order_id")
         razorpay_signature = request.POST.get("razorpay_signature")
         
-        # 1. First try to find order by razorpay_order_id from database (Session Independent)
+        # Check for error in callback (Razorpay failure redirect)
+        error_code = request.POST.get("error[code]")
+        error_description = request.POST.get("error[description]")
+        
         order = None
-        try:
-            order = OrderMain.objects.get(razorpay_order_id=razorpay_order_id)
-            user = order.user
-        except OrderMain.DoesNotExist:
-            # Fallback: If not in DB, we need the session to find the Draft Order
-            if session_data and razorpay_order_id == session_data.get('razorpay_order_id'):
-                draft_order_id = session_data.get('draft_order_id')
-                try:
-                    order = OrderMain.objects.get(order_id=draft_order_id)
-                    user = order.user
-                except OrderMain.DoesNotExist:
-                    messages.error(request, "Order not found.")
-                    return render(request, 'orders/order_error.html')
-            else:
-                # No DB entry and no valid session data
-                messages.error(request, "Payment verification failed (session expired or order not found).")
-                return render(request, 'orders/order_error.html')
         
         # Helper to mark failed and render error
         def handle_failure(msg):
@@ -451,6 +437,36 @@ def razorpay_callback(request):
                     order.save(update_fields=['order_status'])
                     order.items.all().update(status='failed')
             return render(request, 'orders/order_error.html', {'order_id': order.order_id if order else None})
+
+        # 1. Lookup Order
+        if razorpay_order_id:
+            try:
+                order = OrderMain.objects.get(razorpay_order_id=razorpay_order_id)
+                user = order.user
+            except OrderMain.DoesNotExist:
+                pass
+        
+        # Fallback to session if order not found by ID
+        if not order and session_data:
+             # If exact ID match or just trusting session for failure
+             s_draft_id = session_data.get('draft_order_id')
+             s_rzp_id = session_data.get('razorpay_order_id')
+             
+             # If POST has no ID, or matches session ID
+             if not razorpay_order_id or razorpay_order_id == s_rzp_id:
+                 try:
+                     order = OrderMain.objects.get(order_id=s_draft_id)
+                     user = order.user
+                 except OrderMain.DoesNotExist:
+                     pass
+
+        if error_code:
+            print(f"Razorpay Failure Callback: {error_code} - {error_description}")
+            return handle_failure(f"Payment failed: {error_description}")
+
+        if not order:
+             messages.error(request, "Order not found.")
+             return render(request, 'orders/order_error.html')
 
         # Verify Razorpay signature
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
