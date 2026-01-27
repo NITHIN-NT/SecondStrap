@@ -584,41 +584,6 @@ def razorpay_callback(request):
 
     return redirect('checkout')
 
-@require_http_methods(["POST"])
-def payment_failed_log(request):    
-    try:
-        data = json.loads(request.body)
-        
-        # Save to database
-        PaymentFailure.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            razorpay_order_id=data.get('order_id'),
-            amount=data.get('amount'),
-            failure_type=data.get('failure_type', 'PAYMENT_FAILED'),
-            error_code=data.get('error_code'),
-            error_message=data.get('error_description'),
-            user_email=data.get('user_email'),
-            user_phone=data.get('user_phone')
-        )
-
-        # Update Order status to 'failed'
-        order_id = data.get('order_id')
-        if order_id:
-            OrderMain.objects.filter(razorpay_order_id=order_id, order_status='draft').update(order_status='failed')
-            OrderItem.objects.filter(order__razorpay_order_id=order_id, status='draft').update(status='failed')
-        
-        # Also log to file
-        logger.error(
-            f"Payment Failed - Type: {data.get('failure_type')} | "
-            f"Order: {data.get('order_id')} | "
-            f"Error: {data.get('error_code')} - {data.get('error_description')}"
-        )
-        
-        return JsonResponse({'success': True})
-    
-    except Exception as e:
-        logger.error(f"Failed to log payment error: {str(e)}")
-        return JsonResponse({'success': False}, status=500)
        
 @require_http_methods(["GET"])          
 def payment_failed_page(request):

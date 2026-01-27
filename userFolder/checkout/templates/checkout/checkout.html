@@ -703,18 +703,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     modal: {
                         ondismiss: function() {
                             // User closed modal
-                            axios.post("{% url 'payment_failed_logging' %}", {
-                                failure_type: 'MODAL_DISMISSED',
-                                order_id: data.razorpay_order_id,
-                                error_description: 'User closed payment modal',
-                                amount: data.amount_paise / 100,
-                                user_email: data.user_email,
-                                user_phone: data.user_phone
-                            }, {
-                                headers: { 'X-CSRFToken': csrfToken }
-                            }).finally(() => {
-                                window.location.href = "{% url 'payment_failed_page' %}?order_id=" + data.draft_order_id;
-                            });
+                            window.location.href = "{% url 'payment_failed_page' %}?order_id=" + data.draft_order_id;
                         }
                     },
                     retry: {
@@ -724,22 +713,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const rzp = new Razorpay(options);
                 
-                // Payment failed - Log only, don't auto-redirect immediately
-                // Razorpay's own UI will handle retries/errors if retry is enabled.
-                rzp.on('payment.failed', async function (resp) {
+                rzp.on('payment.failed', function (resp) {
                     console.error('Payment failed:', resp);
-                    
-                    axios.post("{% url 'payment_failed_logging' %}", {
-                        failure_type: 'PAYMENT_FAILED',
-                        order_id: data.razorpay_order_id,
-                        error_code: resp.error.code,
-                        error_description: resp.error.description,
-                        amount: data.amount_paise / 100,
-                        user_email: data.user_email,
-                        user_phone: data.user_phone
-                    }, {
-                        headers: { 'X-CSRFToken': csrfToken }
-                    }).catch(err => console.error('Failed to log:', err));
                 });
                 
                 rzp.open();
