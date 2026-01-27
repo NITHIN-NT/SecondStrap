@@ -424,7 +424,20 @@ def razorpay_callback(request):
         # Check for error in callback (Razorpay failure redirect)
         error_code = request.POST.get("error[code]")
         error_description = request.POST.get("error[description]")
+        error_metadata = request.POST.get("error[metadata]") # JSON string
         
+        # Attempt to extract razorpay_order_id from metadata if standard field is missing
+        if not razorpay_order_id and error_metadata:
+            try:
+                import json
+                meta = json.loads(error_metadata)
+                razorpay_order_id = meta.get('order_id')
+            except:
+                pass
+        
+        print(f"DEBUG: Callback POST Data: {request.POST}")
+        print(f"DEBUG: Derived Razorpay Order ID: {razorpay_order_id}")
+
         order = None
         
         # Helper to mark failed and render error
