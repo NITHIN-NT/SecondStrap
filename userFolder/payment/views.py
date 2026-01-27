@@ -422,6 +422,7 @@ def razorpay_callback(request):
         razorpay_signature = request.POST.get("razorpay_signature")
         
         # 1. First try to find order by razorpay_order_id from database (Session Independent)
+        order = None
         try:
             order = OrderMain.objects.get(razorpay_order_id=razorpay_order_id)
             user = order.user
@@ -440,6 +441,17 @@ def razorpay_callback(request):
                 messages.error(request, "Payment verification failed (session expired or order not found).")
                 return render(request, 'orders/order_error.html')
         
+        # Helper to mark failed and render error
+        def handle_failure(msg):
+            messages.error(request, msg)
+            if order:
+                # Mark as failed if it was still draft or pending
+                if order.order_status in ['draft', 'pending']:
+                    order.order_status = 'failed'
+                    order.save(update_fields=['order_status'])
+                    order.items.all().update(status='failed')
+            return render(request, 'orders/order_error.html', {'order_id': order.order_id if order else None})
+
         # Verify Razorpay signature
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
         
@@ -451,12 +463,10 @@ def razorpay_callback(request):
             }
             client.utility.verify_payment_signature(verification_data)
         except razorpay.errors.SignatureVerificationError:
-            messages.error(request, "Payment verification failed. Invalid signature.")
-            return render(request, 'orders/order_error.html')
+            return handle_failure("Payment verification failed. Invalid signature.")
         except Exception as e:
             print(f"Payment verification error: {e}")
-            messages.error(request, "Payment verification failed.")
-            return render(request, 'orders/order_error.html')
+            return handle_failure("Payment verification failed.")
         
         # Verify payment amount from Razorpay
         try:
@@ -464,18 +474,14 @@ def razorpay_callback(request):
             paid_amount = Decimal(payment_details['amount']) / 100  # Convert paise to rupees
         except Exception as e:
             print(f"Failed to fetch payment details: {e}")
-            messages.error(request, "Could not verify payment amount.")
-            return render(request, 'orders/order_error.html')
+            return handle_failure("Could not verify payment amount.")
         
         # Process order
         try:
             with transaction.atomic():
-                # We already found the 'order' (OrderMain) at the beginning of this function
-                # using the razorpay_order_id provided by Razorpay.
-                if not order:
-                    messages.error(request, "Order not found.")
-                    return render(request, 'orders/order_error.html')
-
+                # Refresh order from DB to lock it (if needed) or just get fresh state
+                # We already have 'order' object.
+                
                 if order.order_status != 'draft':
                     # If it's already processed (e.g., duplicate callback), just show success
                     return redirect('order_processing_animation', order_id=order.order_id)
@@ -484,20 +490,17 @@ def razorpay_callback(request):
 
                 expected_amount = draft_order.final_price 
                 if abs(paid_amount - expected_amount) > Decimal('0.01'):
-                    messages.error(request, f"Payment amount mismatch. Expected ₹{expected_amount}, got ₹{paid_amount}")
-                    return render(request, 'orders/order_error.html')
+                    return handle_failure(f"Payment amount mismatch. Expected ₹{expected_amount}, got ₹{paid_amount}")
                 
                 # Validate stock using draft order items
                 for item in draft_order.items.all():
                     try:
                         variant = ProductVariant.objects.select_for_update().get(id=item.variant.id)
                     except ProductVariant.DoesNotExist:
-                        messages.error(request, f"Product {item.product_name} is no longer available.")
-                        return render(request, 'orders/order_error.html')
+                        return handle_failure(f"Product {item.product_name} is no longer available.")
                     
                     if item.quantity > variant.stock:
-                        messages.error(request, f'Out of stock: {item.product_name}')
-                        return render(request, 'orders/order_error.html')
+                        return handle_failure(f'Out of stock: {item.product_name}')
                     
                     # Update stock
                     variant.stock -= item.quantity
@@ -509,8 +512,7 @@ def razorpay_callback(request):
                         wallet = Wallet.objects.select_for_update().get(user=user)
                         
                         if wallet.balance < draft_order.wallet_deduction:
-                            messages.error(request, "Insufficient wallet balance.")
-                            return render(request, 'orders/order_error.html')
+                            raise Exception("Insufficient wallet balance.")
                         
                         wallet.balance -= draft_order.wallet_deduction
                         wallet.save()
@@ -523,8 +525,7 @@ def razorpay_callback(request):
                             description=f'Payment for order {draft_order.order_id}'
                         )
                     except Wallet.DoesNotExist:
-                        messages.error(request, "Wallet not found.")
-                        return render(request, 'orders/order_error.html')  
+                        raise Exception("Wallet not found.")
                 
                 # Convert draft to final order
                 draft_order.order_status = 'pending'  
@@ -537,7 +538,8 @@ def razorpay_callback(request):
                 draft_order.expires_at = None  
                 draft_order.save()
                 
-                order = draft_order
+                order = draft_order # Ensure 'order' ref is updated
+                
                 if order.coupon_code:
                     try:
                         coupon = Coupon.objects.select_for_update().get(code=draft_order.coupon_code)
@@ -554,7 +556,9 @@ def razorpay_callback(request):
                                 cart_total_before_discount=order.final_price-order.discount_amount
                             )
                     except Exception as e:
-                        return JsonResponse({'success':'False','error':'Something went wrong'})
+                        # Non-critical, but log it
+                        print(f"Coupon usage tracking failed: {e}")
+                        pass
                     
                 # Clear user's cart
                 try:
@@ -566,25 +570,23 @@ def razorpay_callback(request):
                 # Update item statuses
                 order.items.all().update(status='pending')
 
-            # Store order ID in session as a courtesy (for other parts of site)
+            # Store order ID in session as a courtesy
             request.session['order_id'] = order.order_id
             if 'pending_razorpay' in request.session:
                 del request.session['pending_razorpay']
             if 'draft_order_id' in request.session:
                 del request.session['draft_order_id']
 
-            # 🛑 CRITICAL: If session was lost during Razorpay's POST callback (SameSite=Lax issue),
-            # we must log the user back in manually so the next redirect works.
+            # Restore login if needed (SameSite=Lax)
             if not request.user.is_authenticated:
                 auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-            # Redirect to animation page (email will be sent there)
+            # Redirect to animation page
             return redirect('order_processing_animation', order_id=order.order_id)
 
         except Exception as e:
             print(f"Razorpay Order Placement Error: {e}")
-            messages.error(request, "Payment received but there was an error creating the order. Our support team will assist you.")
-            return render(request, 'orders/order_error.html')
+            return handle_failure(f"Order processing failed: {str(e)}")
 
     return redirect('checkout')
 
