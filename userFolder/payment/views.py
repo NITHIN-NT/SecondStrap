@@ -385,6 +385,7 @@ def create_razorpay_order(request):
         "user_name": user.first_name or user.username,
         "user_email": user.email,
         "user_phone": address.phone_number if address else "",
+        "draft_order_id": draft_order.order_id if draft_order else None,
         "callback_url": settings.RAZORPAY_CALLBACK_URL,
     })
 
@@ -398,7 +399,10 @@ def razorpay_callback(request):
     """
     session_data = request.session.get('pending_razorpay')
     if request.method == "GET":
-        order_id = session_data.get('draft_order_id') if session_data else None
+        order_id = request.GET.get('order_id')
+        if not order_id and session_data:
+            order_id = session_data.get('draft_order_id')
+            
         if order_id:
             OrderMain.objects.filter(order_id=order_id, order_status='draft').update(order_status='failed')
             OrderItem.objects.filter(order__order_id=order_id, status='draft').update(status='failed')
@@ -589,7 +593,13 @@ def razorpay_callback(request):
 def payment_failed_page(request):
     order_id = request.GET.get('order_id')
     
-    # Robustness: ensure order is marked as failed if user reaches this page
+    # Robustness: if order_id is missing from GET, try to get it from session
+    if not order_id:
+        session_data = request.session.get('pending_razorpay')
+        if session_data:
+            order_id = session_data.get('draft_order_id')
+    
+    # Ensure order is marked as failed if user reaches this page
     if order_id:
         OrderMain.objects.filter(order_id=order_id, order_status='draft').update(order_status='failed')
         OrderItem.objects.filter(order__order_id=order_id, status='draft').update(status='failed')

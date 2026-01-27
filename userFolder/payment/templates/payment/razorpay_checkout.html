@@ -33,7 +33,7 @@
         "modal": {
             "ondismiss": function(){
                 // If user closes modal, redirect to callback to mark as failed
-                window.location.href = "{% url 'razorpay_callback' %}";
+                window.location.href = "{% url 'razorpay_callback' %}?order_id={{ razorpay_order_id }}";
             }
         }
     };
@@ -73,7 +73,7 @@
     
     rzp1.on('payment.failed', function (response){
         // Log failure and redirect to callback
-        window.location.href = "{% url 'razorpay_callback' %}";
+        window.location.href = "{% url 'razorpay_callback' %}?order_id={{ razorpay_order_id }}";
     });
 
     document.getElementById('rzp-button').onclick = function(e){
