@@ -595,6 +595,11 @@ def payment_failed_log(request):
             user_email=data.get('user_email'),
             user_phone=data.get('user_phone')
         )
+
+        # Update Order status to 'failed'
+        order_id = data.get('order_id')
+        if order_id:
+            OrderMain.objects.filter(razorpay_order_id=order_id, order_status='draft').update(order_status='failed')
         
         # Also log to file
         logger.error(
@@ -611,4 +616,58 @@ def payment_failed_log(request):
        
 @require_http_methods(["GET"])          
 def payment_failed_page(request):
-    return render(request,'orders/order_error.html')
+    order_id = request.GET.get('order_id')
+    context = {
+        'order_id': order_id
+    }
+    return render(request,'orders/order_error.html', context)
+
+@login_required(login_url='login')
+def retry_order_payment(request, order_id):
+    """
+    Re-initiates payment for an order that failed.
+    """
+    user = request.user
+    try:
+        order = OrderMain.objects.get(order_id=order_id, user=user, order_status='failed')
+    except OrderMain.DoesNotExist:
+        messages.error(request, "Order not found or not eligible for retry.")
+        return redirect('checkout')
+
+    # Prepare Razorpay order
+    try:
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        amount_paise = int(order.final_price * 100)
+        razorpay_order = client.order.create({
+            "amount": amount_paise,
+            "currency": settings.RAZORPAY_CURRENCY,
+            "payment_capture": 1,
+        })
+        
+        order.razorpay_order_id = razorpay_order["id"]
+        order.save(update_fields=['razorpay_order_id'])
+        
+        # Update session for callback
+        request.session['pending_razorpay'] = {
+            "razorpay_order_id": razorpay_order["id"],
+            "draft_order_id": order.order_id,
+        }
+
+        # Handle phone number for prefill
+        user_phone = order.shipping_phone or ""
+
+        return JsonResponse({
+            "success": True,
+            "razorpay_key_id": settings.RAZORPAY_KEY_ID,
+            "razorpay_order_id": razorpay_order["id"],
+            "amount_paise": amount_paise,
+            "amount_display": str(order.final_price),
+            "currency": settings.RAZORPAY_CURRENCY,
+            "user_name": user.first_name or user.username,
+            "user_email": user.email,
+            "user_phone": user_phone,
+            "callback_url": settings.RAZORPAY_CALLBACK_URL,
+        })
+    except Exception as e:
+        print("Retry payment error:", e)
+        return JsonResponse({"success": False, "error": f"Failed to re-initiate payment: {str(e)}"}, status=500)

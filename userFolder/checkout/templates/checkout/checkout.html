@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             }, {
                                 headers: { 'X-CSRFToken': csrfToken }
                             }).finally(() => {
-                                window.location.href = "{% url 'payment_failed_page' %}";
+                                window.location.href = "{% url 'payment_failed_page' %}?order_id=" + data.draft_order_id;
                             });
                         }
                     },
@@ -758,7 +758,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 toastr.error('Payment initialization failed.');
                 setTimeout(() => {
-                    window.location.href = "{% url 'payment_failed_page' %}";
+                    const orderId = document.querySelector('input[name="draft_order_id"]')?.value || '';
+                    window.location.href = "{% url 'payment_failed_page' %}?order_id=" + orderId;
                 }, 1500);
             }
         }

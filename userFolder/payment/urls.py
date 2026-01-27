@@ -10,4 +10,5 @@ urlpatterns = [
     
     path('failed/log/', views.payment_failed_log, name='payment_failed_logging'),
     path('failed/', views.payment_failed_page, name='payment_failed_page'),
+    path('retry/<str:order_id>/', views.retry_order_payment, name='retry_order_payment'),
 ]

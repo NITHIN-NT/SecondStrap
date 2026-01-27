@@ -23,6 +23,7 @@ ORDER_STATUS_CHOICES = [
     ('partially_returned', 'Partially Returned'), 
     ('partially_cancelled', 'Partially cancelled'), 
     ('return_canceled','Return Canceled'),
+    ('failed', 'Failed'),
 ]
 ADMIN_ORDER_STATUS_CHOICES = [
     ('pending', 'Pending'),
@@ -72,7 +73,7 @@ def generate_cancel_id():
 def get_status_color_value(status):
     if status in ['delivered', 'return_approved', 'partially_returned', 'returned']:
         return 'success' 
-    elif status in ['cancelled', 'return_rejected','draft']: # Removed 'returned' from here
+    elif status in ['cancelled', 'return_rejected','draft', 'failed']: # Removed 'returned' from here
         return 'danger'  
     elif status in ['pending', 'return_requested']:
         return 'warning' 
