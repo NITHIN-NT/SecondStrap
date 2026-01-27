@@ -511,7 +511,7 @@ def razorpay_callback(request):
                 # Refresh order from DB to lock it (if needed) or just get fresh state
                 # We already have 'order' object.
                 
-                if order.order_status != 'draft':
+                if order.order_status not in ['draft', 'failed']:
                     # If it's already processed (e.g., duplicate callback), just show success
                     return redirect('order_processing_animation', order_id=order.order_id)
                 
