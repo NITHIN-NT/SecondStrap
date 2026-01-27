@@ -33,7 +33,7 @@ The project follows a modular structure where user-related applications are grou
 *   `products/`: Product catalog and management.
 *   `coupon/` & `offer/`: Discount logic.
 *   `userFolder/`: Namespace for customer-centric apps:
-    *   `cart/`: Shopping cart functionality.
+    *   `cart/`: Shopping cart functionality. 
     *   `checkout/`: Order placement logic.
     *   `order/`: User order management.
     *   `payment/`: Payment gateway integration.
