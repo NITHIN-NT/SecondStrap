@@ -115,6 +115,7 @@ class OrderMain(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_item_updated_at = models.DateTimeField(null=True, blank=True)        
     
     def get_progress_status(self):
         status_map = {
@@ -143,7 +144,7 @@ class OrderMain(models.Model):
     # using the @ property we can directly call teh has_return_requested in views/shell . 
     # if don't use that we call like has_return_requested() like this 
     class Meta:
-        ordering = ['-created_at'] 
+        ordering = ['-last_item_updated_at', '-updated_at']
         
     def is_draft(self):
         return self.status == 'draft'
@@ -185,7 +186,7 @@ class OrderItem(models.Model):
     status = models.CharField(max_length=50, choices=ORDER_STATUS_CHOICES, default='pending')
     
     is_returned = models.BooleanField(default=False)
-
+    updated_at = models.DateTimeField(auto_now=True)
     
     @property
     def get_total_price(self):
@@ -197,6 +198,13 @@ class OrderItem(models.Model):
     @property
     def get_status_color(self):
         return get_status_color_value(self.status)
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        
+        OrderMain.objects.filter(id=self.order_id).update(
+            last_item_updated_at=timezone.now()
+        )
 
 class ReturnOrder(models.Model):
     order = models.ForeignKey(OrderMain, on_delete=models.CASCADE  ,related_name='returns')
