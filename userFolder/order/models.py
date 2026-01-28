@@ -71,13 +71,13 @@ def generate_cancel_id():
 
 
 def get_status_color_value(status):
-    if status in ['delivered', 'return_approved', 'partially_returned', 'returned']:
+    if status in ['delivered', 'return_approved', 'partially_returned', 'returned', 'completed']:
         return 'success' 
-    elif status in ['cancelled', 'return_rejected','draft', 'failed']: # Removed 'returned' from here
+    elif status in ['cancelled', 'return_rejected', 'draft', 'failed', 'rejected']: 
         return 'danger'  
-    elif status in ['pending', 'return_requested']:
+    elif status in ['pending', 'return_requested', 'partially_cancelled']:
         return 'warning' 
-    elif status in ['confirmed', 'shipped', 'out_for_delivery']:
+    elif status in ['confirmed', 'shipped', 'out_for_delivery', 'approved', 'paid']:
         return 'primary' 
     return 'secondary'
 class OrderMain(models.Model):
