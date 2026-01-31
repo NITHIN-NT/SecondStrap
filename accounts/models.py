@@ -2,6 +2,7 @@ import random
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager,PermissionsMixin
 from django.db import models
 from datetime import timedelta
+from django.core.validators import RegexValidator
 from django.utils import timezone
 # Create your models here.
 class CustomUserManager(BaseUserManager):
@@ -23,18 +24,32 @@ class CustomUserManager(BaseUserManager):
     
 
 class CustomUser(AbstractBaseUser,PermissionsMixin):
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=150,null=True,blank=True)
-    last_name = models.CharField(max_length=150,null=True,blank=True)
-    phone = models.CharField(max_length=20,null=True,blank=True)
+    
+    name_validator_regex = RegexValidator(
+        regex=r'^[A-Za-z\s]+$',
+        message="Name must contain only letters",
+        code='invalid_name'
+    )
+    email_regex = RegexValidator(
+        regex=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+        message="Enter a valid email address."
+    )
+    phone_validator = RegexValidator(
+        regex=r'^[6-9]\d{9}$',
+        message="Enter a valid 10-digit Indian phone number.",
+        code="invalid_phone"
+    )
+    email = models.EmailField(unique=True,validators=[email_regex])
+    first_name = models.CharField(max_length=150,null=True,blank=True,validators=[name_validator_regex])
+    last_name = models.CharField(max_length=150,null=True,blank=True,validators=[name_validator_regex])
+    phone = models.CharField(max_length=20,null=True,blank=True,validators=[phone_validator])
     profile = models.URLField(null=True,blank=True)
     is_active = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    referral_used = models.CharField(max_length=50,null=True,blank=True),
+    referral_used = models.CharField(max_length=50,null=True,blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    last_login = models.DateField(auto_now_add=True,null=True,blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

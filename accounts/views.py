@@ -40,14 +40,15 @@ def signup_view(request):
     if request.method == 'POST':
         form = CustomUserRegisterForm(request.POST)
         check = request.POST.get('terms')
-        if not check ==  'on':
-            messages.error(request,'check the aggrement to continue..')
-            return render(request,'accounts/signup.html',{'form':form})
+        
         if form.is_valid():
             email = form.cleaned_data['email']
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
             password = form.cleaned_data['password']
+            if check !=  'on':
+                messages.error(request,'check the aggrement to continue..')
+                return render(request,'accounts/signup.html',{'form':form})
 
             try:
                 with transaction.atomic():
@@ -87,6 +88,7 @@ def signup_view(request):
             messages.info(request, "OTP sent to your email. Verify to continue.")
             return redirect('activate_account')
         else:
+            messages.error(request,'Please correct the errors to continue.. ')
             return render(request, 'accounts/signup.html', {'form': form})
     else:
         form = CustomUserRegisterForm()
