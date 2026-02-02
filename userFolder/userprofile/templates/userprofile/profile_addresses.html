@@ -51,7 +51,15 @@
         </div>
     </div>
     {% empty %}
-    <p>No Data</p>
+    <div class="empty-address-state">
+        <div class="empty-address-content">
+            <div class="empty-icon-wrapper">
+                <i class="bx bx-map-alt"></i>
+            </div>
+            <h3>No Saved Addresses</h3>
+            <p>You haven't added any shipping addresses yet. Add one to make checkout faster and easier.</p>
+        </div>
+    </div>
     {% endfor %}
 </div>
 
@@ -101,19 +109,19 @@
                     <div class="radio-icon-container">
                         <input type="radio" id="type_home" name="address_type" value="HOME">
                         <label for="type_home" class="radio-icon-label">
-                            <i class="bx bxs-home"></i> 
+                            <i class="bx bx-home-alt"></i> 
                             <span>Home</span>
                         </label>
 
                         <input type="radio" id="type_work" name="address_type" value="WORK">
                         <label for="type_work" class="radio-icon-label">
-                            <i class="bx bxs-briefcase"></i> 
+                            <i class="bx bx-building-house"></i> 
                             <span>Work/Office</span>
                         </label>
                         
                         <input type="radio" id="type_other" name="address_type" value="OTHER">
                         <label for="type_other" class="radio-icon-label">
-                            <i class="bx bxs-map"></i> 
+                            <i class="bx bx-map-pin"></i> 
                             <span>Other</span>
                         </label>
                     </div>

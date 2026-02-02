@@ -3,6 +3,10 @@
 /* ================================================= */
 
 /* --- Profile Card Header --- */
+.profile-card {
+    display: flow-root; /* Prevents margin collapse of children */
+}
+
 .profile-card-header {
     display: flex;
     justify-content: space-between;
@@ -154,15 +158,14 @@
 /* --- MODAL STYLES (Add/Edit Address) --- */
 /* ================================================= */
 
-/* General modal overlay style for both modals */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.259);
-    /* Default grey for Add/Edit */
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
     display: none;
     justify-content: center;
     align-items: center;
@@ -171,24 +174,21 @@
     overflow-y: auto;
 }
 
-/* Show modal */
 .modal-overlay.active {
     display: flex;
 }
 
-/* General modal content style for both modals */
 .modal-content {
     background-color: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    width: 75%;
-    max-width: 460px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 1.75rem;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
     position: relative;
-
-    transform: translateY(-50px);
+    transform: translateY(-20px);
     opacity: 0;
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-overlay.active .modal-content {
@@ -196,389 +196,335 @@
     opacity: 1;
 }
 
-/* --- NEW SCROLLABLE BODY (WITH HIDDEN SCROLLBAR) --- */
 .modal-scroll-body {
-    /* Limit the height and enable native scrolling */
-    max-height: calc(85vh - 200px);
+    max-height: calc(90vh - 140px);
     overflow-y: auto;
-    overscroll-behavior: contain;
-
-    /* Add padding/margin to separate the scrollable area from the header and footer */
-    margin-bottom: 1.5rem;
-    margin-top: -0.5rem;
     padding-right: 0.5rem;
-    padding-left: 0.5rem;
-
-    /* HIDE SCROLLBAR STYLES: */
-    /* 1. For Internet Explorer and Edge */
-    -ms-overflow-style: none;
-
-    /* 2. For Firefox */
-    scrollbar-width: none;
+    margin-right: -0.5rem;
 }
 
-/* 3. For Chrome, Safari, and Opera (Webkit) */
 .modal-scroll-body::-webkit-scrollbar {
-    display: none;
-    width: 0 !important;
-    height: 0;
+    width: 4px;
 }
 
-/* --------------------------------------------------- */
+.modal-scroll-body::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+}
 
-
-/* General modal header style for both modals */
 .modal-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f3f5;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
 }
 
 .modal-header h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1a1a1a;
     margin: 0;
-    font-size: 1.35rem;
-    font-weight: 600;
-    color: #333;
 }
 
 .close-modal-btn {
-    background: none;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f8f9fa;
+    color: #495057;
+    font-size: 1.25rem;
+    transition: all 0.2s;
     border: none;
-    font-size: 1.75rem;
-    color: #6c757d;
     cursor: pointer;
-    line-height: 1;
-    transition: color 0.2s ease;
 }
 
 .close-modal-btn:hover {
+    background: #e9ecef;
     color: #000;
 }
 
-/* ================================================= */
-/* --- DELETE CONFIRMATION MODAL SPECIFIC STYLES --- */
-/* ================================================= */
-
-/* Override background for delete modal to be darker */
+/* --- DELETE MODAL SPECIFIC --- */
 #deleteConfirmModal {
-    background-color: rgba(0, 0, 0, 0.8);
-    /* Darker overlay for delete */
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 #deleteConfirmModal .modal-content {
-    background-color: #fff;
-    /* Keep content white */
-    max-width: 400px;
-    /* Make delete modal a bit narrower */
+    max-width: 380px;
     text-align: center;
-    /* Center align all content inside the delete modal */
-    padding: 1.5rem 1rem;
-    /* Adjust padding for smaller modal */
+    padding: 1.5rem;
 }
 
 #deleteConfirmModal .modal-header {
+    border: none;
     justify-content: center;
-    /* Center header title */
-    border-bottom: none;
-    /* Remove border from delete modal header */
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-}
-
-#deleteConfirmModal .modal-header h3 {
-    color: #333;
-    /* Darker text for header */
-}
-
-#deleteConfirmModal .close-modal-btn {
-    position: absolute;
-    /* Position close button absolutely */
-    top: 10px;
-    right: 15px;
-    color: #666;
-    font-size: 2rem;
-}
-
-#deleteConfirmModal .close-modal-btn:hover {
-    color: #000;
-}
-
-#deleteConfirmModal .modal-body {
-    padding-bottom: 1.5rem;
-    color: #555;
-    /* Default text color */
-    font-size: 1rem;
-    line-height: 1.5;
-}
-
-#deleteConfirmModal .modal-body strong {
-    color: #333;
-    /* Stronger color for the address label */
+    margin-bottom: 0.75rem;
 }
 
 #deleteConfirmModal .modal-actions {
-    justify-content: center;
-    /* Center align buttons */
-    border-top: none;
-    /* Remove border from delete modal actions */
+    border: none;
+    margin-top: 1.25rem;
     padding-top: 0;
-    margin-top: 0;
 }
 
-#deleteConfirmModal .modal-actions button {
-    min-width: 100px;
-    /* Ensure buttons have a decent minimum width */
-    padding: 0.7rem 1.2rem;
-    /* Slightly smaller padding for delete buttons */
-    font-size: 0.9rem;
+.danger-btn {
+    background: #dc3545 !important;
+    border: none !important;
 }
 
-/* Ensuring cancel button also fits the black/white theme with dark text */
-#deleteConfirmModal .cancel-btn {
-    background-color: #eee;
-    color: #333;
-    border-color: #ddd;
+.danger-btn:hover {
+    background: #c82333 !important;
 }
 
-#deleteConfirmModal .cancel-btn:hover {
-    background-color: #ddd;
-    border-color: #ccc;
-}
-
-/* Danger button already has red, which contrasts well */
-/* No specific changes needed for danger-btn here */
-
-
-/* ================================================= */
-/* --- FORM ELEMENTS INSIDE MODAL --- */
-/* ================================================= */
-
+/* --- Form Design --- */
 .form-group {
     margin-bottom: 1.25rem;
 }
 
 .input-label,
 .form-group label {
-    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
     margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #333;
-    font-size: 0.9rem;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .form-group input:not([type="radio"]):not([type="checkbox"]) {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 1rem;
+    padding: 0.7rem 1rem;
+    border: 2px solid #edeff2;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    background: #f8f9fa;
     box-sizing: border-box;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.2s;
 }
 
-.form-group input:not([type="radio"]):not([type="checkbox"]):focus {
-    border-color: #80bdff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+.form-group input:focus {
+    background: #fff;
+    border-color: #000;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
 }
 
-/* --- Form Row (Side-by-side inputs) --- */
 .form-row {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
 }
 
-.form-row .form-group {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-/* --- Address Type Radio Icons --- */
+/* --- Address Type Selector --- */
 .radio-icon-container {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
 }
 
 .radio-icon-label {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Resetting/Normalizing padding for better look */
     padding: 1rem 0.5rem;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
+    border: 2px solid #edeff2;
+    border-radius: 12px;
+    background: #fff;
     cursor: pointer;
-    min-width: 90px;
-    text-align: center;
-    transition: all 0.2s ease;
-    user-select: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .radio-icon-label i {
     font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    color: #6c757d;
-    transition: color 0.2s ease;
+    margin-bottom: 0.4rem;
+    color: #adb5bd;
 }
 
 .radio-icon-label span {
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6c757d;
 }
 
-/* Hide actual radio input */
 .address-type-group input[type="radio"] {
     display: none;
 }
 
-/* Style when radio is checked */
-.address-type-group input[type="radio"]:checked+.radio-icon-label {
-    border-color: #0000;
-    background-color: #e7f3ff;
-    box-shadow: 0 0 0 1px #000;
+.address-type-group input[type="radio"]:checked + .radio-icon-label {
+    background: #000;
+    border-color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.address-type-group input[type="radio"]:checked+.radio-icon-label i {
-    color: #000;
+.address-type-group input[type="radio"]:checked + .radio-icon-label i,
+.address-type-group input[type="radio"]:checked + .radio-icon-label span {
+    color: #fff;
 }
 
-/* --- Checkbox Group --- */
+/* --- Checkbox --- */
 .checkbox-group {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1.5rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
+    gap: 0.75rem;
 }
 
 .checkbox-group input[type="checkbox"] {
-    width: 1rem;
-    height: 1rem;
+    width: 18px;
+    height: 18px;
     accent-color: #000;
+    cursor: pointer;
 }
 
 .checkbox-group label {
     margin: 0;
-    font-weight: 400;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
 }
 
-/* --- Modal Action Buttons (General/Desktop View) --- */
+/* --- Actions --- */
 .modal-actions {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f1f3f5;
     display: flex;
-    justify-content: flex-end;
-    /* Default for Add/Edit: buttons to the right */
     gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
 }
 
 .modal-actions button {
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
+    flex: 1;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.2s ease, opacity 0.2s ease;
+    transition: all 0.2s;
 }
 
 .cancel-btn {
-    background-color: #f8f9fa;
-    color: #333;
-    border: 1px solid #ced4da;
+    background: #fff;
+    color: #495057;
+    border: 2px solid #edeff2;
 }
 
 .cancel-btn:hover {
-    background-color: #e2e6ea;
+    background: #f8f9fa;
+    border-color: #dee2e6;
 }
 
 .save-btn {
-    background-color: #000;
+    background: #000;
     color: #fff;
-    border: 1px solid #000;
+    border: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .save-btn:hover {
-    background-color: #222;
-    /* Changed hover color to a darker gray for consistency */
-    border-color: #222;
+    background: #222;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* Container for edit + delete icons */
-.address-card-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.save-btn:active {
+    transform: translateY(0);
 }
 
-/* ================================================= */
-/* --- Error --- */
-/* ================================================= */
+/* --- Error Messages --- */
 .error-msg {
     display: block;
     color: #dc3545;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     margin-bottom: 0.4rem;
-    font-weight: 500;
-    min-height: 0;
+    font-weight: 600;
 }
 
 .input-error {
     border-color: #dc3545 !important;
+    background: #fffafa !important;
 }
 
-
 /* ================================================= */
-/* --- MEDIA QUERIES (Responsiveness) --- */
+/* --- MEDIA QUERIES --- */
 /* ================================================= */
 
 @media (max-width: 576px) {
-
-    /* --- MOBILE MODAL ADJUSTMENT --- */
     .modal-content {
-        width: 95%;
-        max-width: 95%;
-        padding: 1.25rem;
+        padding: 1.5rem;
     }
 
     .form-row {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 0;
     }
 
-    .form-row .form-group {
-        margin-bottom: 1.25rem;
+    .radio-icon-container {
+        gap: 0.5rem;
     }
 
-    .radio-icon-label {
-        /* Adjusted flex-basis for better layout on small screens */
-        flex-basis: 30%;
-        min-width: 90px;
-    }
-
-    .address-card {
-        padding: 1rem;
-    }
-
-    /* --- MOBILE BUTTON FIX --- */
     .modal-actions {
-        /* Stack buttons vertically */
-        flex-direction: column;
-        gap: 0.75rem;
-        /* Ensure buttons are flush with the sides of the content */
-        margin-left: 0;
-        margin-right: 0;
+        flex-direction: column-reverse;
     }
+}
 
-    .modal-actions button {
-        width: 100%;
-        /* Make buttons full width */
-    }
+/* ================================================= */
+/* --- EMPTY ADDRESS STATE STYLES --- */
+/* ================================================= */
 
-    /* --- END MOBILE BUTTON FIX --- */
+.empty-address-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    background: #fff;
+    border: 1px dashed #e0e0e0;
+    border-radius: 16px;
+    text-align: center;
+    margin: 4rem auto;
+    max-width: 440px;
+}
+
+.empty-address-content {
+    max-width: 280px;
+}
+
+.empty-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+}
+
+.empty-icon-wrapper i {
+    font-size: 2rem;
+    color: #adb5bd;
+}
+
+.empty-address-content h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.empty-address-content p {
+    font-size: 0.85rem;
+    color: #6c757d;
+    line-height: 1.5;
+    margin: 0;
 }
