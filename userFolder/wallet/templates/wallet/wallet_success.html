@@ -7,6 +7,8 @@ Successful{% endblock %} {% block extra_styles %}
     align-items: center;
     padding: 40px 20px;
     min-height: 60vh;
+    position: relative;
+    overflow: hidden;
   }
 
   .success-card {
@@ -17,6 +19,8 @@ Successful{% endblock %} {% block extra_styles %}
     border-radius: 4px;
     text-align: center;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    position: relative;
+    z-index: 10;
   }
 
   .icon-circle {
@@ -28,6 +32,17 @@ Successful{% endblock %} {% block extra_styles %}
     align-items: center;
     margin: 0 auto 20px auto;
     background-color: #e7f9e7;
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-green {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 15px rgba(40, 167, 69, 0);
+    }
   }
 
   .icon-circle i {
@@ -106,8 +121,56 @@ Successful{% endblock %} {% block extra_styles %}
     color: #000;
     text-decoration: underline;
   }
+
+  /* Confetti Animation */
+  .confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1000;
+  }
+
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    opacity: 0;
+    animation: confetti-fall 4s ease-out forwards;
+  }
+
+  .confetti.circle {
+    border-radius: 50%;
+  }
+  .confetti.square {
+    border-radius: 2px;
+  }
+  .confetti.ribbon {
+    width: 8px;
+    height: 20px;
+    border-radius: 2px;
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      opacity: 1;
+      transform: translateY(-100px) rotate(0deg) scale(1);
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(100vh) rotate(720deg) scale(0.5);
+    }
+  }
 </style>
 {% endblock extra_styles %} {% block content %}
+<div class="confetti-container" id="confetti-container"></div>
+
 <div class="success-wrapper">
   <div class="success-card">
     <div class="icon-circle">
@@ -129,4 +192,71 @@ Successful{% endblock %} {% block extra_styles %}
     <a href="{% url 'Home_page_user' %}" class="link-grey">Continue Shopping</a>
   </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("confetti-container");
+    const colors = [
+      "#28a745",
+      "#ffc107",
+      "#17a2b8",
+      "#ff6b6b",
+      "#4ecdc4",
+      "#45b7d1",
+      "#96ceb4",
+      "#ffeaa7",
+    ];
+    const shapes = ["circle", "square", "ribbon"];
+    const confettiCount = 80;
+
+    function createConfetti() {
+      for (let i = 0; i < confettiCount; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement("div");
+          confetti.className =
+            "confetti " + shapes[Math.floor(Math.random() * shapes.length)];
+
+          // Random position across the screen
+          confetti.style.left = Math.random() * 100 + "%";
+          confetti.style.top = "-20px";
+
+          // Random color
+          confetti.style.backgroundColor =
+            colors[Math.floor(Math.random() * colors.length)];
+
+          // Random size variation
+          const size = 5 + Math.random() * 10;
+          confetti.style.width = size + "px";
+          confetti.style.height =
+            (confetti.classList.contains("ribbon") ? size * 2.5 : size) + "px";
+
+          // Random animation duration and delay for variety
+          const duration = 3 + Math.random() * 2;
+          const delay = Math.random() * 0.5;
+          confetti.style.animation = `confetti-fall ${duration}s ease-out ${delay}s forwards`;
+
+          // Random horizontal drift
+          const drift = (Math.random() - 0.5) * 200;
+          confetti.style.transform = `translateX(${drift}px)`;
+
+          container.appendChild(confetti);
+
+          // Remove confetti after animation
+          setTimeout(
+            () => {
+              confetti.remove();
+            },
+            (duration + delay) * 1000 + 100,
+          );
+        }, i * 30); // Stagger creation
+      }
+    }
+
+    // Start confetti immediately
+    createConfetti();
+
+    // Create another burst after 1 second
+    setTimeout(createConfetti, 1000);
+  });
+</script>
 {% endblock content %}
