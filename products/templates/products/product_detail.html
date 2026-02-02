@@ -125,7 +125,11 @@
                 <div class="action-buttons">
                     <button class="btn btn-outline" id="addToCartBtn">Add to Cart</button>
                     <button class="btn btn-solid" id="addToWishlistBtn">
-                        <i class='bx bx-heart'></i> <span>Add to Wishlist</span>
+                        {% if product.in_wishlist %}
+                            <i class='bx bxs-heart'></i> <span>Remove from Wishlist</span>
+                        {% else %}
+                            <i class='bx bx-heart'></i> <span>Add to Wishlist</span>
+                        {% endif %}
                     </button>
                 </div>
 
@@ -614,24 +618,45 @@
             });
         }
         
-        // --- Add To Wishlist ---
+        // --- Add/Remove Wishlist (with separate endpoints) ---
         if (addToWishlistBtn) {
+            // Track current state from Django template
+            let isInWishlist = {{ product.in_wishlist|yesno:"true,false" }};
+            
             addToWishlistBtn.addEventListener('click', function() {
                 const data = getActionData(true);
                 if (!data) return;
                 
                 addToWishlistBtn.disabled = true;
                 
+                // Choose endpoint based on current state
+                const endpoint = isInWishlist ? "{% url 'remove_from_wishlist' %}" : "{% url 'add_to_wishlist' %}";
+                
                 axios.post(
-                    "{% url 'add_to_wishlist' %}",
+                    endpoint,
                     data,
                     { headers: { 'X-CSRFToken': csrftoken } }
                 )
                 .then(function(response) {
-                    toastr.success(response.data.message || "Item added to your Wishlist");
+                    toastr.success(response.data.message || (isInWishlist ? "Removed from Wishlist" : "Added to Wishlist"));
+                    
+                    // Toggle the state
+                    isInWishlist = !isInWishlist;
+                    
+                    // Update button UI
+                    const icon = addToWishlistBtn.querySelector('i');
+                    const text = addToWishlistBtn.querySelector('span');
+                    
+                    if (isInWishlist) {
+                        icon.className = 'bx bxs-heart';
+                        text.textContent = 'Remove from Wishlist';
+                    } else {
+                        icon.className = 'bx bx-heart';
+                        text.textContent = 'Add to Wishlist';
+                    }
                 })
                 .catch(function(error) {
-                    handleAxiosError(error, "Wishlist Add");
+                    handleAxiosError(error, "Wishlist");
                 })
                 .finally(function() {
                     addToWishlistBtn.disabled = false;

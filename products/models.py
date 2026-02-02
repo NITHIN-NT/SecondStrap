@@ -36,6 +36,7 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    in_wishlist = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_at"]

@@ -7,7 +7,7 @@ from .models import *
 from products.models import *
 from django.views.decorators.http import require_POST
 from django.db import transaction
-from .utils import get_annotated_cart_items
+from .utils import get_annotated_cart_items,verification_requried
 # Create your views here.
 class CartView(LoginRequiredMixin, ListView):
     template_name = "cart/cart.html"
@@ -35,6 +35,7 @@ class CartView(LoginRequiredMixin, ListView):
         return context
 
 @require_POST
+@verification_requried
 @transaction.atomic
 def cart_item_add(request):
     # Check if the user is logged in
@@ -125,6 +126,7 @@ def cart_item_add(request):
 
 
 @require_POST
+@verification_requried
 def cart_item_remove(request):
     data = json.loads(request.body)
     item_id = data.get("item_id")
@@ -140,6 +142,7 @@ def cart_item_remove(request):
 
 
 @require_POST
+@verification_requried
 def update_cart_item_quantity(request):
     # Getting the data
     try:

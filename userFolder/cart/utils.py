@@ -2,6 +2,7 @@ from django.db.models.functions import Coalesce,Greatest
 from django.db.models import F,Q,Value,Case,When,DecimalField,ExpressionWrapper
 from offer.selectors import get_active_offer_subqueries_cart
 from .models import *
+from django.http import JsonResponse
 
 def get_annotated_cart_items(user):
     
@@ -59,3 +60,10 @@ def get_annotated_cart_items(user):
             output_field = DecimalField()
         )
     )
+
+def verification_requried(view_func):
+    def wrapper(request,*args,**kwargs):
+        if request.user and not request.user.is_verified:
+            return JsonResponse({"message":"Your account is not verified,Verify in the profile section to continue"},status=400)
+        return view_func(request,*args,**kwargs)
+    return wrapper

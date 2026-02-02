@@ -8,8 +8,10 @@ from .models import Wishlist,WishlistItem
 from userFolder.cart.models import Cart,CartItems
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from userFolder.cart.utils import verification_requried
 
 # Create your views here.
+@verification_requried
 def wishlistView(request):
     wishlist_items = None
     if request.user.is_authenticated:    
@@ -21,6 +23,7 @@ def wishlistView(request):
     return render(request,'wishlist/wishlist.html',context)
 
 @require_POST
+@verification_requried
 def add_to_wishlist(request):
     if not request.user.is_authenticated:
         return JsonResponse(
@@ -38,6 +41,13 @@ def add_to_wishlist(request):
         return JsonResponse({"status" : "error","message":"Variant ID missing"},status = 400)
     
     variant = get_object_or_404(ProductVariant,id=variant_id)
+    product = variant.product
+    
+    if not product.is_active:
+        return JsonResponse({"status":"error","message":"Sorry. Not Available"},status=400) 
+    
+    if not variant.stock > 0:
+        return JsonResponse({"status":"error","message":"Sorry. Out of stock"},status=400)  
     
     cart,_ = Cart.objects.get_or_create(user=request.user)
     productExists = CartItems.objects.filter(cart=cart,variant=variant).exists()
@@ -52,14 +62,17 @@ def add_to_wishlist(request):
         product = variant.product,
         variant = variant
     )
+
+    product.in_wishlist = True
+    product.save()
     
     if created:
         return JsonResponse({"status":"success","message":"Item Added to the wishlist",},status=200)
     else:
         return JsonResponse({"status":"error","message":"Item already in the wishlist",},status=400)
     
-@login_required
-@require_POST    
+@require_POST
+@verification_requried
 def add_to_cart(request):
     try:
         data = json.loads(request.body)
@@ -96,23 +109,48 @@ def add_to_cart(request):
     else:
         return JsonResponse({"status":"error","message":"Item already in the cart"})
     
-    
 @require_POST
-@login_required
+@verification_requried
 @transaction.atomic
 def remove_from_wishlist(request):
     try:
         data = json.loads(request.body)
         item_id = data.get('item_id')
+        variant_id = data.get('variant_id')
+        
+        if not item_id and not variant_id:
+            return JsonResponse({
+                "status": "error", 
+                "message": "Item ID or Variant ID is required"
+            }, status=400)
+            
     except json.JSONDecodeError:
-        return JsonResponse({"status":"error","message":"Data is not here "})
+        return JsonResponse({
+            "status": "error", 
+            "message": "Invalid data"
+        }, status=400)
     
     try:
-        item = get_object_or_404(WishlistItem,id=item_id)
+        if item_id:
+            item = get_object_or_404(WishlistItem, id=item_id, wishlist__user=request.user)
+        elif variant_id:
+            item = get_object_or_404(
+                WishlistItem, 
+                variant_id=variant_id, 
+                wishlist__user=request.user
+            )
+        
+        item.product.in_wishlist = False
+        item.product.save()
         item.delete()
-        return JsonResponse({"status":"success","message":"Item removed from the wishlist !"})
+        return JsonResponse({
+            "status": "success", 
+            "message": "Item removed from the wishlist!"
+        })
+        
     except Exception as e:
         print(str(e))
-        return JsonResponse({"status":"error","message":"Something went wrong"})
-
-    
+        return JsonResponse({
+            "status": "error", 
+            "message": "Something went wrong"
+        }, status=500)
