@@ -94,9 +94,6 @@ def edit_action(request):
 
         if phone is not None:
             phone = str(phone).strip()
-            if not phone.isdigit() or len(phone) != 10:
-                return JsonResponse({'status': 'error', 'message': 'Invalid phone number'})
-
             if phone != getattr(user, 'phone', ''):
                 user.phone = phone
                 is_change = True
@@ -104,7 +101,19 @@ def edit_action(request):
         if not is_change:
             return JsonResponse({'status': 'success', 'message': 'No changes detected'})
 
-        user.save()
+        try:
+            # Trigger model-level validators (regex, etc.)
+            user.full_clean()
+            user.save()
+        except Exception as e:
+            # Return the first validation error message
+            if hasattr(e, 'message_dict'):
+                # Extract first error from the dictionary
+                first_field = next(iter(e.message_dict))
+                error_msg = e.message_dict[first_field][0]
+            else:
+                error_msg = str(e)
+            return JsonResponse({'status': 'error', 'message': error_msg})
 
         if is_email_change:
             request.session['is_email_change'] = True

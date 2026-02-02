@@ -78,6 +78,37 @@ document.addEventListener("DOMContentLoaded", () => {
                 phone: formData.get("phone"),
             };
 
+            // --- Frontend Validation ---
+            const nameRegex = /^[A-Za-z\s]+$/;
+            const phoneRegex = /^[6-9]\d{9}$/;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (!payload.first_name || !payload.last_name) {
+                toastr.error("Name fields cannot be empty");
+                return;
+            }
+
+            if (!nameRegex.test(payload.first_name)) {
+                toastr.error("First name must contain only letters");
+                return;
+            }
+
+            if (!nameRegex.test(payload.last_name)) {
+                toastr.error("Last name must contain only letters");
+                return;
+            }
+
+            if (payload.email && !emailRegex.test(payload.email)) {
+                toastr.error("Enter a valid email address.");
+                return;
+            }
+
+            if (payload.phone && !phoneRegex.test(payload.phone)) {
+                toastr.error("Enter a valid 10-digit Indian phone number.");
+                return;
+            }
+            // ---------------------------
+
             const csrfToken =
                 document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
 
