@@ -133,4 +133,41 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // ==================================================
+    // 4. VERIFY NOW BUTTON LOADING STATE
+    // ==================================================
+    const verifyNowBtn = document.getElementById("verifyNowBtn");
+    if (verifyNowBtn) {
+        verifyNowBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            
+            const originalContent = verifyNowBtn.innerHTML;
+            verifyNowBtn.classList.add("loading");
+            verifyNowBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Sending...';
+            
+            try {
+                const response = await axios.get(verifyNowBtn.href, {
+                    params: { ajax: 'true' },
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                if (response.data.status === 'success') {
+                    toastr.success(response.data.message);
+                    setTimeout(() => {
+                        window.location.href = response.data.redirect_url;
+                    }, 1000);
+                } else {
+                    toastr.error(response.data.message || "Failed to send OTP");
+                    verifyNowBtn.classList.remove("loading");
+                    verifyNowBtn.innerHTML = originalContent;
+                }
+            } catch (error) {
+                console.error("Verification Error:", error);
+                toastr.error("Something went wrong. Please try again.");
+                verifyNowBtn.classList.remove("loading");
+                verifyNowBtn.innerHTML = originalContent;
+            }
+        });
+    }
 });

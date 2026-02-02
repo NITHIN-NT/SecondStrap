@@ -36,13 +36,14 @@ class SecureUserMixin(LoginRequiredMixin):
             messages.error(request, "Your account is blocked by admin.")
             return redirect('login')
 
-        if not user.is_verified:
-            messages.warning(request, "Please verify your email to continue.")
-            messages.info(request, "OTP send to your Mail.")
-            send_email_otp(user, request)
-            return redirect('otp_page')  
+        # if not user.is_verified:
+        #     messages.warning(request, "Please verify your email to continue.")
+        #     messages.info(request, "OTP send to your Mail.")
+        #     send_email_otp(user, request)
+        #     return redirect('otp_page')  
 
         return super().dispatch(request, *args, **kwargs)
+        
 class ProfileView(SecureUserMixin, TemplateView):
     template_name = 'userprofile/profile.html'
 
@@ -51,7 +52,6 @@ class ProfileView(SecureUserMixin, TemplateView):
         
         user_referral,_ = Referral.objects.get_or_create(user=self.request.user)
         total_refer_count = ReferralUsage.objects.filter(referrer=user_referral,is_reward_credited=True).count()
-        print(total_refer_count)
         context['user'] = self.request.user
         context['referral_code'] = user_referral.referral_code
         context['total_refer_count'] = total_refer_count
@@ -123,21 +123,37 @@ def edit_action(request):
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 @ajax_login_required
-@require_POST
 def resend_otp_view(request):
-    if 'is_email_change' not in request.session:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+    if request.method == 'POST':
+        if 'is_email_change' not in request.session and request.user.is_verified:
+            return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
-    try:
-        send_email_otp(request.user, request)
-        return JsonResponse({'status': 'success', 'message': 'OTP resent successfully'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)})
+        try:
+            send_email_otp(request.user, request)
+            return JsonResponse({'status': 'success', 'message': 'OTP resent successfully'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+    else:
+        # Handling GET request from "Verify Now" link
+        if not request.user.is_verified:
+            request.session['is_email_change'] = True
+            send_email_otp(request.user, request)
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true':
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'OTP sent to your email. Verify to continue.',
+                    'redirect_url': reverse('otp_page')
+                })
+                
+            messages.info(request, "OTP sent to your email. Verify to continue.")
+            return redirect('otp_page')
+        return redirect('profile_view_user')
 
 @ajax_login_required
 def otp_page(request):
     if 'is_email_change' not in request.session:
-        return redirect('profile')
+        return redirect('profile_view_user')
 
     return render(request, 'userprofile/verify_otp.html')
 

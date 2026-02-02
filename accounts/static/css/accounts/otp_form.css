@@ -62,6 +62,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    appearance: textfield;
     -moz-appearance: textfield;
     touch-action: manipulation;
     background-clip: padding-box;
@@ -101,6 +102,30 @@
     transition: background-color 0.18s ease;
 }
 .btn-submit:hover { background-color: var(--accent-strong); }
+
+.otp-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.btn-later {
+    display: inline-block;
+    width: auto;
+    margin: 0.5rem auto 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #666;
+    background-color: transparent;
+    border: none;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-later:hover {
+    color: #000;
+    text-decoration: underline;
+}
 
 /* Timer/resend */
 .resend-timer-container {

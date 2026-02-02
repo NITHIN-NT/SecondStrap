@@ -20,26 +20,22 @@
                         <dt>Full Name</dt>
                         <dd id="display_fullname">{{ user.first_name }} {{ user.last_name }}</dd>
                     </div>
-                   <div class="email-row">
+                    <div class="email-row">
                         <dt>Email Address</dt>
 
-                        <dd class="email-with-status {% if user.is_verified %}row-layout{% else %}col-layout{% endif %}">
+                        <dd class="email-with-status">
                             <span id="display_email">{{ user.email }}</span>
-
-                            <!-- Verified icon (always in DOM) -->
-                            <i class="bx bxs-check-circle verified-tick"
-                            title="Verified"
-                            style="{% if not user.is_verified %}display:none{% endif %}">
-                            </i>
-
-                            <!-- Not verified pill (always in DOM) -->
-                            <a href="{% url "send_otp" %}"
-                            class="verify-pill not-verified"
-                            id="verifyNowBtn"
-                            style="{% if user.is_verified %}display:none{% endif %}">
-                                <i class="bx bxs-x-circle"></i> Not Verified
-                            </a>
-
+                            &nbsp;
+                
+                            {% if user.is_verified %}
+                                <span class="verify-pill verified">
+                                    <i class="bx bxs-check-circle"></i> Verified
+                                </span>
+                            {% else %}
+                                <a href="{% url 'send_otp' %}" class="verify-pill not-verified" id="verifyNowBtn">
+                                    <i class="bx bxs-x-circle"></i> Verify Now
+                                </a>
+                            {% endif %}
                         </dd>
                     </div>
 
@@ -128,5 +124,5 @@
 {% endblock profile_content %}
 {% block profile_script %}
 <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
-<script src='{% static "js/profile/profile-info.js" %}'></script>
+<script src="{% static 'js/profile/profile-info.js' %}"></script>
 {% endblock profile_script %}

@@ -26,7 +26,10 @@
             <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
         </div>
         
-        <button type="submit" class="btn-submit">Verify & Continue</button>
+        <div class="otp-actions">
+            <button type="submit" class="btn-submit">Verify & Continue</button>
+            <a href="{% url 'verify_later_signup' %}" class="btn-later">Verify Later</a>
+        </div>
     </form>
 
     <div class="resend-timer-container">
@@ -94,22 +97,54 @@
             combineInputs();
         });
 
-        // --- Timer Logic (from previous answer) ---
-        let timeLeft = 60; // 60 seconds timer
+        // --- Timer Logic ---
         const timerElement = document.getElementById('timer');
         const timerContainer = document.getElementById('timer-container');
         const resendContainer = document.getElementById('resend-container');
+        const STORAGE_KEY = 'otp_expiry_signup';
 
-        const countdown = setInterval(() => {
-            timeLeft--;
-            timerElement.textContent = timeLeft;
+        function initTimer() {
+            let expiry = localStorage.getItem(STORAGE_KEY);
+            let now = Date.now();
 
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
+            if (expiry === 'expired') {
+                // Already finished, show resend
                 timerContainer.style.display = 'none';
                 resendContainer.style.display = 'block';
+                return;
             }
-        }, 1000);
+
+            if (!expiry || now > parseInt(expiry)) {
+                // First arrival or session expired, start a 60s timer
+                expiry = now + 60000;
+                localStorage.setItem(STORAGE_KEY, expiry);
+            } else {
+                expiry = parseInt(expiry);
+            }
+
+            const countdown = setInterval(() => {
+                now = Date.now();
+                let timeLeft = Math.ceil((expiry - now) / 1000);
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    timerContainer.style.display = 'none';
+                    resendContainer.style.display = 'block';
+                    localStorage.setItem(STORAGE_KEY, 'expired');
+                } else {
+                    timerElement.textContent = timeLeft;
+                    timerContainer.style.display = 'block';
+                    resendContainer.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        // Reset timer when resend link is clicked (re-triggers the 60s timer on refresh)
+        document.getElementById('resend-link')?.addEventListener('click', () => {
+            localStorage.removeItem(STORAGE_KEY);
+        });
+
+        initTimer();
     });
 </script>
 {% endblock extra_script %}

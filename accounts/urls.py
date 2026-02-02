@@ -6,6 +6,7 @@ from userFolder.referral.views import referral_view
 urlpatterns = [
     path('signup/', views.signup_view, name='signup'),
     path('activate/', views.activate_account, name='activate_account'),
+    path('activate/later/', views.verify_later_signup, name='verify_later_signup'),
     path('refaral/',referral_view,name='referral_view'),
     path('verify/resend',views.resent_otp,name='resent_otp'),
 

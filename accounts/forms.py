@@ -4,8 +4,8 @@ from django.core.validators import RegexValidator
 
 class CustomUserRegisterForm(forms.Form):
     email = forms.EmailField(max_length=254,widget=forms.EmailInput(attrs={'class' : 'form-control'}))
-    first_name = forms.CharField(max_length=150,required=False,widget=forms.TextInput(attrs={'class' : 'form-control'}), validators=[CustomUser.name_validator_regex])
-    last_name = forms.CharField(max_length=150,required=False,widget=forms.TextInput(attrs={'class' : 'form-control'}), validators=[CustomUser.name_validator_regex])
+    first_name = forms.CharField(max_length=150,required=True,widget=forms.TextInput(attrs={'class' : 'form-control'}), validators=[CustomUser.name_validator_regex])
+    last_name = forms.CharField(max_length=150,required=True,widget=forms.TextInput(attrs={'class' : 'form-control'}), validators=[CustomUser.name_validator_regex])
     password = forms.CharField(required=True,
                                 widget=forms.PasswordInput(attrs={'class': 'form-control'})
                                ,validators=[RegexValidator(regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$',

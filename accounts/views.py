@@ -19,7 +19,7 @@ from allauth.socialaccount.providers.google.views import oauth2_callback
 logger = logging.getLogger(__name__) 
 
 
-OTP_SESSION_EXPIRY = 120
+OTP_SESSION_EXPIRY = 600
 
 class LoggedInRedirectMixin:
     """
@@ -58,13 +58,14 @@ def signup_view(request):
                         last_name=last_name,
                         password=password
                     )
-                    user.is_active = False
+                    user.is_active = True
                     user.is_verified = False
                     user.save()
 
                     EmailOTP.objects.filter(user=user).delete()
 
                     otp_code = EmailOTP.generate_otp()
+                    print(otp_code)
                     EmailOTP.objects.create(user=user, otp=otp_code)
 
                     plain_message = f"Your OTP code is {otp_code}"
@@ -96,13 +97,33 @@ def signup_view(request):
 
 @never_cache
 @login_redirect
+def verify_later_signup(request):
+    user_id = request.session.get('pending_user_id')
+    if not user_id:
+        return redirect('signup')
+    
+    try:
+        user = CustomUser.objects.get(id=user_id)
+        # User is already is_active=True from signup_view
+        backend = settings.AUTHENTICATION_BACKENDS[0]
+        login(request, user, backend=backend)
+        request.session.pop('pending_user_id', None)
+        messages.success(request, f"Welcome {user.first_name}! You can verify your email later in your profile.")
+        return redirect('referral_view')
+    except CustomUser.DoesNotExist:
+        messages.error(request, "User Not Found")
+        return redirect('signup')
+
+@never_cache
+@login_redirect
 def activate_account(request):
     '''
         Verifies the OTP entered after signup
     '''
 
     user_id = request.session.get('pending_user_id')
-
+    otp_session_time = request.session.get_expiry_date()
+    print(otp_session_time)
     if not user_id:
         messages.error(request, 'No pending Verification Found')
         return redirect('signup')
@@ -114,20 +135,23 @@ def activate_account(request):
         return redirect('signup')
 
     if request.method == 'POST':
-        otp_input = request.POST.get('otp', '').strip()
+        form = VerifyOTPForm(request.POST)
+        if form.is_valid():
+            otp_input = form.cleaned_data['otp']
+            otp_record = EmailOTP.objects.filter(user=user, otp=otp_input).last()
 
-        otp_record = EmailOTP.objects.filter(user=user, otp=otp_input).last()
-
-        if otp_record and otp_record.is_valid():
-            user.is_active = True
-            user.is_verified = True
-            user.save()
-            otp_record.delete()
-            request.session.pop('pending_user_id', None)
-            backend = settings.AUTHENTICATION_BACKENDS[0] 
-            login(request, user,backend=backend)
-            messages.success(request, "Your email has been verified successfully!")
-            return redirect('referral_view')
+            if otp_record and otp_record.is_valid():
+                user.is_verified = True
+                user.save()
+                otp_record.delete()
+                request.session.pop('pending_user_id', None)
+                backend = settings.AUTHENTICATION_BACKENDS[0] 
+                login(request, user,backend=backend)
+                messages.success(request,f"Welcome {user.first_name} to SecondStrap!")
+                return redirect('referral_view')
+            else:
+                messages.error(request, 'Invalid or expired OTP. Please try again.')
+                return render(request, 'accounts/activate_account.html', {'email': user.email})
         else:
             messages.error(request, 'Invalid or expired OTP. Please try again.')
             return render(request, 'accounts/activate_account.html', {'email': user.email})
@@ -150,6 +174,7 @@ def resent_otp(request):
     email = user.email
 
     otp_code = EmailOTP.generate_otp()
+    print(otp_code)
     EmailOTP.objects.create(user=user, otp=otp_code)
 
     plain_message = f"Your OTP code is {otp_code}"
@@ -190,7 +215,10 @@ def login_view(request):
                 if user.is_active:
                     login(request, user)
                     request.session.cycle_key()
-                    messages.success(request, f"Welcome back, {user.first_name or user.email}!")
+                    message = ''
+                    if not user.is_verified:
+                        message = ', verify your email to continue'
+                    messages.success(request, f"Welcome back, {user.first_name or user.email}! {message}")
                     return redirect('referral_view')
                 else:
                     messages.error(request, "Please verify your email first.")

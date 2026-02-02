@@ -50,6 +50,7 @@
                     <th>Phone</th>
                     <th>Staff</th>
                     <th>Status</th>
+                    <th>Verified</th>
                     <th>Last Login</th>
                     <th>Actions</th>
                 </tr>
@@ -69,7 +70,14 @@
                             <span class="status-badge status-blocked">Blocked</span>
                         {% endif %}
                     </td>
-                    <td>{{user.last_login}}</td>
+                    <td>
+                        {% if user.is_verified %}
+                            <span class="status-badge status-active">Verified</span>
+                        {% else %}
+                            <span class="status-badge status-blocked">Not Verified</span>
+                        {% endif %}
+                    </td>
+                    <td>{{user.last_login|date:"d M Y H:i"}}</td>
                     <td class="action-buttons">
                     {% if user.is_active %}
                         <form action="{% url 'admin_user_block' user.id %}" method="POST" style="display:inline;" id="block-form-{{ user.id }}">

@@ -71,27 +71,46 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ===============================
-    // Resend Timer (60s)
+    // Resend Timer (LocalStorage Persistence)
     // ===============================
-    function startResendTimer() {
-        let timeLeft = 60;
-        resendBtn.disabled = true;
-        timerSpan.textContent = `(${timeLeft}s)`;
+    const STORAGE_KEY = 'otp_expiry_profile';
+
+    function startResendTimer(isResend = false) {
+        let now = Date.now();
+        let expiry = localStorage.getItem(STORAGE_KEY);
+
+        if (!isResend && expiry === 'expired') {
+            resendBtn.disabled = false;
+            resendBtn.innerHTML = `Resend Code`;
+            return;
+        }
+
+        if (isResend || !expiry || now > parseInt(expiry)) {
+            expiry = now + 60000;
+            localStorage.setItem(STORAGE_KEY, expiry);
+        } else {
+            expiry = parseInt(expiry);
+        }
 
         clearInterval(resendInterval);
+        resendBtn.disabled = true;
 
         resendInterval = setInterval(() => {
-            timeLeft--;
-            timerSpan.textContent = `(${timeLeft}s)`;
+            now = Date.now();
+            let timeLeft = Math.ceil((expiry - now) / 1000);
 
             if (timeLeft <= 0) {
                 clearInterval(resendInterval);
                 resendBtn.disabled = false;
-                timerSpan.textContent = "";
+                resendBtn.innerHTML = `Resend Code`;
+                localStorage.setItem(STORAGE_KEY, 'expired');
+            } else {
+                resendBtn.innerHTML = `Resend Code <span id="resendTimer">(${timeLeft}s)</span>`;
             }
         }, 1000);
     }
 
+    // Call on load
     startResendTimer();
 
     // ===============================
@@ -145,6 +164,11 @@ document.addEventListener("DOMContentLoaded", () => {
     resendBtn.addEventListener('click', () => {
         const csrfToken =
             document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+        
+        const originalContent = resendBtn.innerHTML;
+        resendBtn.disabled = true;
+        resendBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Resending...';
+
         axios.post("{% url 'send_otp' %}", {}, {
             headers: {
                 "X-CSRFToken": csrfToken
@@ -153,14 +177,18 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(res => {
             if (res.data.status === 'success') {
                 toastr.success(res.data.message || "OTP resent successfully");
-                startResendTimer();
+                startResendTimer(true);
             } else {
                 toastr.error(res.data.message || "Something went wrong");
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = originalContent;
             }
         })
         .catch(err => {
             console.error(err);
             toastr.error("Failed to resend OTP");
+            resendBtn.disabled = false;
+            resendBtn.innerHTML = originalContent;
         });
     });
 
