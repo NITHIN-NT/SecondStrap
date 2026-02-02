@@ -439,9 +439,11 @@ def razorpay_callback(request):
         print(f"DEBUG: Derived Razorpay Order ID: {razorpay_order_id}")
 
         order = None
+        user = None  # Will be set when order is found
         
         # Helper to mark failed and render error
         def handle_failure(msg):
+            nonlocal user
             messages.error(request, msg)
             if order:
                 # Mark as failed if it was still draft or pending
@@ -449,6 +451,9 @@ def razorpay_callback(request):
                     order.order_status = 'failed'
                     order.save(update_fields=['order_status'])
                     order.items.all().update(status='failed')
+                # Restore login if session lost due to SameSite cookie (Razorpay redirect)
+                if user and not request.user.is_authenticated:
+                    auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return render(request, 'orders/order_error.html', {'order_id': order.order_id if order else None})
 
         # 1. Lookup Order

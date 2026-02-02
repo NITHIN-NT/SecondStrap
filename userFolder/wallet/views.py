@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
+from django.contrib.auth import login as auth_login
 from django.db import transaction
 from django.db.models import F, Q
 from django.urls import reverse
@@ -36,6 +37,11 @@ class ProfileWalletView(SecureUserMixin, TemplateView):
         user_wallet = Wallet.objects.select_related('user').prefetch_related('transactions').get(user=self.request.user)
         context['wallet'] = user_wallet
         return context
+
+def wallet_top_up_success_view(request):
+    """Display wallet top-up success page with the amount added."""
+    amount = request.session.pop('wallet_topup_amount', None)
+    return render(request, 'wallet/wallet_success.html', {'amount': amount})
 
 @require_POST
 @login_required(login_url='login')
@@ -104,26 +110,21 @@ def create_wallet_razorpay_order(request):
 def wallet_razorpay_callback(request):
     """
     This function handles the callback from Razorpay after a user 
-    attempts to add money to their wallet.
+    attempts to add money to their wallet. Uses redirect like checkout.
     """
     if request.method == "GET":
         return redirect('profile_wallet')
 
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        data = request.POST 
+    # Razorpay redirect sends form data as POST
+    data = request.POST
     
     razorpay_payment_id = data.get("razorpay_payment_id")
     razorpay_order_id = data.get("razorpay_order_id")
     razorpay_signature = data.get("razorpay_signature")
     
     if not razorpay_order_id:
-        return JsonResponse({
-            "status": "error", 
-            "message": "We couldn't find your Razorpay Order ID.",
-            "redirect_url": reverse('wallet_top_up_failure')
-        })
+        messages.error(request, "We couldn't find your Razorpay Order ID.")
+        return redirect('wallet_top_up_failure')
 
     # --- STEP 2: Find the Transaction in our Database ---
     transaction_obj = Transaction.objects.filter(
@@ -131,10 +132,9 @@ def wallet_razorpay_callback(request):
     ).first()
 
     if transaction_obj and transaction_obj.status == TransactionStatus.COMPLETED:
-        return JsonResponse({
-            "status": "success", 
-            "message": f"Successfully added ₹{transaction_obj.amount} to your wallet!"
-        })
+        # Already processed - redirect to success
+        messages.success(request, f"Successfully added ₹{transaction_obj.amount} to your wallet!")
+        return redirect('wallet_top_up_success')
 
     # Figure out the amount and wallet to update
     if transaction_obj:
@@ -146,11 +146,8 @@ def wallet_razorpay_callback(request):
             amount_to_add = Decimal(session_data['amount'])
             wallet_id = session_data['wallet_id']
         else:
-            return JsonResponse({
-                "status": "error", 
-                "message": "Transaction session expired. Please try again.",
-                "redirect_url": reverse('wallet_top_up_failure')
-            })
+            messages.error(request, "Transaction session expired. Please try again.")
+            return redirect('wallet_top_up_failure')
     
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
     try:
@@ -160,17 +157,20 @@ def wallet_razorpay_callback(request):
             'razorpay_signature': razorpay_signature,
         })
     except razorpay.errors.SignatureVerificationError:
-        return JsonResponse({
-            "status": "error", 
-            "message": "Security check failed. Invalid signature.",
-            "redirect_url": reverse('wallet_top_up_failure')
-        })
-    except Exception:
-        return JsonResponse({
-            "status": "error", 
-            "message": "Something went wrong while verifying the payment.",
-            "redirect_url": reverse('wallet_top_up_failure')
-        })
+        # Mark transaction as failed
+        if transaction_obj:
+            transaction_obj.status = TransactionStatus.FAILED
+            transaction_obj.save()
+        messages.error(request, "Security check failed. Invalid signature.")
+        return redirect('wallet_top_up_failure')
+    except Exception as e:
+        print(f"Razorpay verification error: {e}")
+        # Mark transaction as failed
+        if transaction_obj:
+            transaction_obj.status = TransactionStatus.FAILED
+            transaction_obj.save()
+        messages.error(request, "Something went wrong while verifying the payment.")
+        return redirect('wallet_top_up_failure')
     
     # --- STEP 4: Update the Wallet Balance ---
     try:
@@ -200,18 +200,24 @@ def wallet_razorpay_callback(request):
             if 'pending_payment' in request.session:
                 request.session.pop('pending_payment', None)
             
-            return JsonResponse({
-                "status": "success", 
-                "message": f"Successfully added ₹{amount_to_add} to your wallet!"
-            })            
+            # Store amount in session for success page
+            request.session['wallet_topup_amount'] = str(amount_to_add)
+            
+            # Restore login if session lost due to SameSite cookie (Razorpay redirect)
+            if not request.user.is_authenticated:
+                auth_login(request, user_wallet.user, backend='django.contrib.auth.backends.ModelBackend')
+            
+            messages.success(request, f"Successfully added ₹{amount_to_add} to your wallet!")
+            return redirect('wallet_top_up_success')
             
     except Exception as e:
         print(f"Error updating wallet: {e}")
-        return JsonResponse({
-            "status": "error", 
-            "message": "Payment was successful, but your balance failed to update.",
-            "redirect_url": reverse('wallet_top_up_failure')
-        })
+        # Mark transaction as failed if wallet update fails
+        if transaction_obj:
+            transaction_obj.status = TransactionStatus.FAILED
+            transaction_obj.save()
+        messages.error(request, "Payment was successful, but your balance failed to update. Please contact support.")
+        return redirect('wallet_top_up_failure')
 
 @require_POST
 @never_cache

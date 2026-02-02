@@ -1,0 +1,153 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Wallet Top-up
+Failed{% endblock %} {% block extra_styles %}
+<style>
+  .failure-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    min-height: 60vh;
+  }
+
+  .failure-card {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 450px;
+    padding: 40px 30px;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  }
+
+  .icon-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px auto;
+    background-color: #fce7e7;
+  }
+
+  .icon-circle i {
+    font-size: 40px;
+    color: #dc3545;
+  }
+
+  .failure-card h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .failure-card p.subtext {
+    color: #4a4a4a;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    font-weight: 400;
+  }
+
+  .error-reasons-box {
+    text-align: left;
+    background-color: #fff8f8;
+    border: 1px solid #f9dcdc;
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 30px;
+  }
+
+  .reasons-heading {
+    font-size: 14px;
+    color: #dc3545;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .error-reasons-box ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin: 0;
+  }
+
+  .error-reasons-box ul li {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #4a4a4a;
+  }
+
+  .btn-black {
+    display: block;
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    padding: 15px 0;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    transition: background-color 0.3s;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .btn-black:hover {
+    background-color: #333;
+    color: #fff;
+  }
+
+  .link-grey {
+    color: #666;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.3s;
+    text-decoration: none;
+  }
+
+  .link-grey:hover {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  .contact-link {
+    display: block;
+    text-align: center;
+    padding: 5px 0;
+  }
+</style>
+{% endblock extra_styles %} {% block content %}
+<div class="failure-wrapper">
+  <div class="failure-card">
+    <div class="icon-circle">
+      <i class="bx bx-x"></i>
+    </div>
+
+    <h2>Wallet Top-up Failed</h2>
+    <p class="subtext">
+      Your wallet top-up could not be completed. No amount has been deducted
+      from your account.
+    </p>
+
+    <div class="error-reasons-box">
+      <p class="reasons-heading">Possible reasons:</p>
+      <ul>
+        <li>Payment was cancelled</li>
+        <li>Insufficient funds in payment account</li>
+        <li>Bank declined the transaction</li>
+        <li>Network connectivity issues</li>
+      </ul>
+    </div>
+
+    <a href="{% url 'profile_wallet' %}" class="btn-black">Back to Wallet</a>
+
+    <a href="mailto:support@secondstrap.com" class="link-grey contact-link"
+      >Contact Support</a
+    >
+  </div>
+</div>
+{% endblock content %}

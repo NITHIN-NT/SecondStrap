@@ -1,0 +1,132 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Wallet Top-up
+Successful{% endblock %} {% block extra_styles %}
+<style>
+  .success-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    min-height: 60vh;
+  }
+
+  .success-card {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 450px;
+    padding: 40px 30px;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  }
+
+  .icon-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px auto;
+    background-color: #e7f9e7;
+  }
+
+  .icon-circle i {
+    font-size: 40px;
+    color: #28a745;
+  }
+
+  .success-card h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .success-card p.subtext {
+    color: #4a4a4a;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    font-weight: 400;
+  }
+
+  .amount-box {
+    background-color: #f8fff8;
+    border: 1px solid #d4edda;
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 30px;
+  }
+
+  .amount-label {
+    font-size: 14px;
+    color: #28a745;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+
+  .amount-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .btn-black {
+    display: block;
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    padding: 15px 0;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    transition: background-color 0.3s;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .btn-black:hover {
+    background-color: #333;
+    color: #fff;
+  }
+
+  .link-grey {
+    color: #666;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.3s;
+    text-decoration: none;
+  }
+
+  .link-grey:hover {
+    color: #000;
+    text-decoration: underline;
+  }
+</style>
+{% endblock extra_styles %} {% block content %}
+<div class="success-wrapper">
+  <div class="success-card">
+    <div class="icon-circle">
+      <i class="bx bx-check"></i>
+    </div>
+
+    <h2>Top-up Successful!</h2>
+    <p class="subtext">Your wallet has been credited successfully.</p>
+
+    {% if amount %}
+    <div class="amount-box">
+      <p class="amount-label">Amount Added</p>
+      <p class="amount-value">₹{{ amount }}</p>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'profile_wallet' %}" class="btn-black">View Wallet</a>
+
+    <a href="{% url 'Home_page_user' %}" class="link-grey">Continue Shopping</a>
+  </div>
+</div>
+{% endblock content %}
