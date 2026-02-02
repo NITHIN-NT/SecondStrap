@@ -92,6 +92,12 @@ def create_wallet_razorpay_order(request):
         'wallet_id': wallet.id,
     }
     
+    # Build callback URL - use setting if available, otherwise build from request
+    if settings.RAZORPAY_WALLET_CALLBACK_URL:
+        callback_url = settings.RAZORPAY_WALLET_CALLBACK_URL
+    else:
+        callback_url = request.build_absolute_uri(reverse('wallet_razorpay_callback'))
+    
     return JsonResponse({
         "success": True,
         "razorpay_key_id": settings.RAZORPAY_KEY_ID,
@@ -102,7 +108,7 @@ def create_wallet_razorpay_order(request):
         "user_name":  user.first_name,
         "user_email": user.email,
         "user_phone": getattr(user, 'phone', '9999999999'), 
-        "callback_url": request.build_absolute_uri(reverse('wallet_razorpay_callback')),
+        "callback_url": callback_url,
     })
 
 @csrf_exempt
