@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from decimal import Decimal,ROUND_HALF_UP
 
 from products.models import Product,Category
-from userFolder.order.models import OrderItem,OrderMain,ORDER_STATUS_CHOICES,ADMIN_ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES,ReturnOrder
+from userFolder.order.models import OrderItem,OrderMain,ORDER_STATUS_CHOICES,ADMIN_ORDER_STATUS_CHOICES,PAYMENT_STATUS_CHOICES,ReturnOrder,CancelOrder,CancelItem
 from userFolder.wallet.models import Wallet,Transaction,TransactionStatus,TransactionType
 
 @method_decorator([never_cache, staff_member_required(login_url='admin_login')], name="dispatch")
@@ -184,7 +184,48 @@ def admin_order_status_update(request,order_id):
                 if item.variant:
                     item.variant.stock = F('stock') + item.quantity
                     item.variant.save()
-        
+
+            if order.payment_status == 'paid' and order.is_paid == True:
+                wallet,_ = Wallet.objects.get_or_create(user=order.user)
+                amount_refund = order.final_price - order.shipping_amount
+                wallet.balance += amount_refund
+                wallet.save()
+
+                transaction = Transaction.objects.create(
+                    wallet = wallet,
+                    amount=amount_refund,
+                    transaction_type=TransactionType.CREDIT,
+                    description = f"Refund for order {order.order_id}",
+                    status = TransactionStatus.COMPLETED,
+                    related_order = order,
+                )
+
+                if order.coupon_code:
+                    coupon = Coupon.objects.get(code=order.coupon_code)
+                    if coupon.usage_limit:
+                        coupon.usage_limit -= 1 
+                    coupon.save()
+
+                cancel_order = CancelOrder.objects.create(
+                    order = order,
+                    user = order.user,
+                    is_full_cancel = True,
+                    refund_amount = amount_refund,
+                    cancel_status = 'completed',
+                )
+
+                CancelItem.objects.bulk_create([
+                    CancelItem(
+                        cancel_order = cancel_order,
+                        order_item = item,    
+                        quantity = item.quantity,
+                        reason = "Order Cancelled by Admin",
+                        note = "Order Cancelled by Admin",
+                        refund_amount = item.get_total_price
+                    )
+                    for item in order.items.all()
+                ])
+                        
         order.order_status = order_status
         order.payment_status = payment_status
         order.save()
