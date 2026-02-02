@@ -60,7 +60,11 @@ def manage_coupon_view(request,id=None):
         form = CouponForm(request.POST,instance=coupon)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Coupon created successfully!')
+            if id:
+                message = 'updated'
+            else:
+                message = 'created'
+            messages.success(request, f'Coupon {message} successfully!')
             return redirect('admin_coupons')  
         else:
             # Form has validation errors

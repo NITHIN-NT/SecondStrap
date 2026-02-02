@@ -3,20 +3,27 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal
+from django.core.validators import MinValueValidator, MaxValueValidator,RegexValidator
 
 class CouponType(models.TextChoices):
     FIXED_AMOUNT = 'fixed', 'Fixed Amount'
     PERCENTAGE = 'percentage', 'Percentage'
 
 class Coupon(models.Model):
-    name = models.CharField(max_length=150, help_text="Internal name (e.g., 'Summer Sale 2024')")
-    code = models.CharField(max_length=50, unique=True, db_index=True, help_text="Code users enter (e.g., 'SUMMER20')")
+    code_regex = RegexValidator(r'^[A-Z0-9]{3,15}$', 'Coupon code must be 3–15 uppercase letters or numbers.')
+    coupon_amount_regex = RegexValidator(r'^\d{1,10}(\.\d{1,2})?$', 'Coupon amount must be a positive number (up to 2 decimal places)')
+    coupon_percentage_regex = RegexValidator(r'^\d{1,3}(\.\d{1,2})?$', 'Coupon percentage must be between 0 and 100 (up to 2 decimal places)')
+    min_purchase_amount_regex = RegexValidator(r'^\d{1,10}(\.\d{1,2})?$', 'Minimum purchase amount must be a positive number (up to 2 decimal places)')
+    name_regex = RegexValidator(r'^[A-Za-z0-9 ]{3,100}$', 'Name must be 3–100 characters long and can only contain letters, numbers, and spaces.')
+
+    name = models.CharField(max_length=150, help_text="Internal name (e.g., 'Summer Sale 2024')",validators=[name_regex])
+    code = models.CharField(max_length=50, unique=True, db_index=True, help_text="Code users enter (e.g., 'SUMMER20')",validators=[code_regex])
     description = models.TextField(blank=True, help_text="Internal notes")
     
     coupon_type = models.CharField(max_length=20,choices=CouponType.choices,default=CouponType.FIXED_AMOUNT)
-    coupon_amount = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True,validators=[MinValueValidator(Decimal('0.01'))],)
-    coupon_percentage = models.DecimalField(max_digits=5,decimal_places=2,null=True,blank=True,validators=[MinValueValidator(Decimal('0.01')), MaxValueValidator(Decimal('100.00'))])
-    min_purchase_amount = models.DecimalField(max_digits=10,decimal_places=2,default=Decimal('0.00'),validators=[MinValueValidator(Decimal('0.00'))],)
+    coupon_amount = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True,validators=[MinValueValidator(Decimal('0.01')),coupon_amount_regex],)
+    coupon_percentage = models.DecimalField(max_digits=5,decimal_places=2,null=True,blank=True,validators=[MinValueValidator(Decimal('0.01')), MaxValueValidator(Decimal('100.00')),coupon_percentage_regex])
+    min_purchase_amount = models.DecimalField(max_digits=10,decimal_places=2,default=Decimal('0.00'),validators=[MinValueValidator(Decimal('0.00')),min_purchase_amount_regex],)
     
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
@@ -52,13 +59,21 @@ class Coupon(models.Model):
                 errors['coupon_amount'] = "Fixed amount is required for 'Fixed Amount' type"
             if self.coupon_percentage:
                 errors['coupon_percentage'] = "Remove percentage for 'Fixed Amount' type"
+            if not self.min_purchase_amount:
+                errors['min_purchase_amount'] = "Minimum purchase amount is required for 'Fixed Amount' type"
                 
         elif self.coupon_type == CouponType.PERCENTAGE:
             if not self.coupon_percentage:
                 errors['coupon_percentage'] = "Percentage is required for 'Percentage' type"
             if self.coupon_amount:
                 errors['coupon_amount'] = "Remove amount for 'Percentage' type"
-        
+            if self.coupon_percentage > 100:
+                errors['coupon_percentage'] = "Percentage cannot be greater than 100%"
+            if self.coupon_percentage < 0:
+                errors['coupon_percentage'] = "Percentage cannot be negative"
+            if not self.min_purchase_amount:
+                errors['min_purchase_amount'] = "Minimum purchase amount is required for 'Percentage' type"
+                       
         if self.start_date and self.end_date:
             if self.start_date >= self.end_date:
                 errors['end_date'] = "End date must be after start date"
