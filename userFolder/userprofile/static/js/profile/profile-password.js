@@ -32,15 +32,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = response.data;
 
             if (data.status === "success") {
-                toastr.success(data.message || "Password updated successfully! (frontend)");
+                toastr.success(data.message || "Password updated successfully!");
                 form.reset();
             } else {
                 // just in case backend sends 200 with status=error
-                toastr.error(data.message || "Something went wrong while updating password. (frontend)");
+                toastr.error(data.message || "Something went wrong while updating password.");
             }
         })
         .catch(function (error) {
-            let msg = "Something went wrong while updating password. (frontend)";
+            let msg = "Something went wrong while updating password.";
 
             if (error.response && error.response.data) {
                 // backend uses "message", not "error"

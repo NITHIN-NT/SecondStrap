@@ -333,7 +333,7 @@ class ProfileOrderView(SecureUserMixin, ListView):
 @ajax_login_required
 def change_password(request):
     if request.method == 'POST' :
-        form = ChangePasswordForm(request.POST)
+        form = ChangePasswordForm(request.POST, user=request.user)
         if form.is_valid():
             pass1 = form.cleaned_data['new_password']
     
@@ -345,19 +345,25 @@ def change_password(request):
                 update_session_auth_hash(request, user)
                 return JsonResponse({
                     'status' : 'success',
-                    'message' : 'Password Changed Successfuly. backend'
+                    'message' : 'Password Changed Successfuly.'
                 })
             except (IntegrityError, ValueError) as e:
                 logger.error(f"Password change failed for user {user.id}: {str(e)}")
                 return JsonResponse({'status': 'error', 'message': 'Something went wrong while updating the password.'})
         else:
-            errors = form.errors.as_json()
+            errors = json.loads(form.errors.as_json())
+            # Extract the first error message for the response
+            first_error = "Invalid data submitted."
+            if errors:
+                first_field = next(iter(errors))
+                first_error = errors[first_field][0]['message']
+            
             return JsonResponse({
                 'status': 'error',
-                'message': 'Invalid data submitted.',
+                'message': first_error,
                 'errors': errors,
             })
-    form = ChangePasswordForm()
+    form = ChangePasswordForm(user=request.user)
     return render(request,'userprofile/change_password.html',{'form':form})
 
 @ajax_login_required
