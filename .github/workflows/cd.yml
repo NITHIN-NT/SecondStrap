@@ -39,6 +39,7 @@ jobs:
               -e RAZORPAY_KEY_ID="${{ secrets.RAZORPAY_KEY_ID }}" \
               -e RAZORPAY_KEY_SECRET="${{ secrets.RAZORPAY_KEY_SECRET }}" \
               -e RAZORPAY_CALLBACK_URL="${{ secrets.RAZORPAY_CALLBACK_URL }}" \
+              -e RAZORPAY_WALLET_CALLBACK_URL="${{ secrets.RAZORPAY_WALLET_CALLBACK_URL }}" \
               -e EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER }}" \
               -e EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD }}" \
               ${{ secrets.DOCKER_USERNAME }}/secondstrap:latest
