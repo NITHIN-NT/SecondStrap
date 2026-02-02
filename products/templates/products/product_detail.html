@@ -125,11 +125,11 @@
                 <div class="action-buttons">
                     <button class="btn btn-outline" id="addToCartBtn">Add to Cart</button>
                     <button class="btn btn-solid" id="addToWishlistBtn">
-                        {% if product.in_wishlist %}
-                            <i class='bx bxs-heart'></i> <span>Remove from Wishlist</span>
-                        {% else %}
-                            <i class='bx bx-heart'></i> <span>Add to Wishlist</span>
-                        {% endif %}
+                            {% if product.in_wishlist %}
+                                <i class='bx bxs-heart'></i> <span>Remove from Wishlist</span>
+                            {% else %}
+                                <i class='bx bx-heart'></i> <span>Add to Wishlist</span>
+                            {% endif %}
                     </button>
                 </div>
 
@@ -638,21 +638,28 @@
                     { headers: { 'X-CSRFToken': csrftoken } }
                 )
                 .then(function(response) {
-                    toastr.success(response.data.message || (isInWishlist ? "Removed from Wishlist" : "Added to Wishlist"));
-                    
-                    // Toggle the state
-                    isInWishlist = !isInWishlist;
-                    
-                    // Update button UI
-                    const icon = addToWishlistBtn.querySelector('i');
-                    const text = addToWishlistBtn.querySelector('span');
-                    
-                    if (isInWishlist) {
-                        icon.className = 'bx bxs-heart';
-                        text.textContent = 'Remove from Wishlist';
+                    // Only toggle state if the action was successful (status 200)
+                    // Status 208 means "item already in cart" - don't toggle in that case
+                    if (response.status === 200) {
+                        toastr.success(response.data.message || (isInWishlist ? "Removed from Wishlist" : "Added to Wishlist"));
+                        
+                        // Toggle the state
+                        isInWishlist = !isInWishlist;
+                        
+                        // Update button UI
+                        const icon = addToWishlistBtn.querySelector('i');
+                        const text = addToWishlistBtn.querySelector('span');
+                        
+                        if (isInWishlist) {
+                            icon.className = 'bx bxs-heart';
+                            text.textContent = 'Remove from Wishlist';
+                        } else {
+                            icon.className = 'bx bx-heart';
+                            text.textContent = 'Add to Wishlist';
+                        }
                     } else {
-                        icon.className = 'bx bx-heart';
-                        text.textContent = 'Add to Wishlist';
+                        // Show info message for non-200 responses (like 208 - already in cart)
+                        toastr.info(response.data.message || "Action could not be completed");
                     }
                 })
                 .catch(function(error) {

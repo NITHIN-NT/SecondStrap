@@ -4,6 +4,7 @@ from autoslug import AutoSlugField
 from decimal import Decimal
 from django.db.models import Q
 from django.utils import timezone
+from django.core.validators import RegexValidator
 
 def product_image_upload_to(instance, filename):
     return f"products/{instance.slug}/{filename}"
@@ -24,11 +25,26 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=1024)
+    product_name_validator = RegexValidator(
+        regex=r'^[A-Za-z0-9\s\-\&\(\)\[\]\/\.\+\,]+$',
+        message="Product name can contain letters, numbers, spaces and - & ( ) [ ] / . + ,",
+        code='invalid_product_name'
+    )
+    description_validator_regex = RegexValidator(
+        regex=r'^[A-Za-z0-9\s\-\&\(\)\[\]\/\.\+\,]+$',
+        message="Description must contain contain letters, numbers, spaces and - & ( ) [ ] / . + ,",
+        code='invalid_description'
+    )
+    name_validator_regex = RegexValidator(
+        regex=r'^[A-Za-z\s]+$',
+        message="Alt text must contain only letters",
+        code='invalid_alt_text'
+    )
+    name = models.CharField(max_length=1024, validators=[product_name_validator])
     slug = AutoSlugField(populate_from="name", unique=True, max_length=1024)
-    description = models.TextField()
+    description = models.TextField(validators=[description_validator_regex])
     image = models.ImageField(upload_to=product_image_upload_to, blank=True, null=True)
-    alt_text = models.CharField(max_length=255, blank=True, null=True)
+    alt_text = models.CharField(max_length=255, blank=True, null=True, validators=[name_validator_regex])
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name="products"
     )
@@ -51,11 +67,16 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
+    name_validator_regex = RegexValidator(
+        regex=r'^[A-Za-z\s]+$',
+        message="Name must contain only letters",
+        code='invalid_name'
+    )
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="images"
     )
     image = models.ImageField(upload_to="products/", blank=True, null=True)
-    alt_text = models.CharField(max_length=255, blank=True, null=True)
+    alt_text = models.CharField(max_length=255, blank=True, null=True, validators=[name_validator_regex])
 
     def __str__(self):
         return f"Image for {self.product.name}"
@@ -91,8 +112,8 @@ class ProductVariant(models.Model):
         return self.stock > 0
 
     def clean(self):
-        if self.offer_price is not None and self.offer_price >= self.base_price:
-            raise ValidationError("Offer price must be less than base price.")
+        if self.offer_price is not None and self.offer_price > self.base_price:
+            raise ValidationError({'offer_price': "Offer price must be less than base price."})
         
     def get_offer_price(self, offer=None):
         """
