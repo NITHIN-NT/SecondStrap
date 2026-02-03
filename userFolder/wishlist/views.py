@@ -8,10 +8,10 @@ from .models import Wishlist,WishlistItem
 from userFolder.cart.models import Cart,CartItems
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from userFolder.cart.utils import verification_requried
+from userFolder.cart.utils import verification_required
 
 # Create your views here.
-@verification_requried
+@verification_required
 def wishlistView(request):
     wishlist_items = None
     if request.user.is_authenticated:    
@@ -23,7 +23,7 @@ def wishlistView(request):
     return render(request,'wishlist/wishlist.html',context)
 
 @require_POST
-@verification_requried
+@verification_required
 def add_to_wishlist(request):
     if not request.user.is_authenticated:
         return JsonResponse(
@@ -72,7 +72,7 @@ def add_to_wishlist(request):
         return JsonResponse({"status":"error","message":"Item already in the wishlist",},status=400)
     
 @require_POST
-@verification_requried
+@verification_required
 def add_to_cart(request):
     try:
         data = json.loads(request.body)
@@ -110,7 +110,7 @@ def add_to_cart(request):
         return JsonResponse({"status":"error","message":"Item already in the cart"})
     
 @require_POST
-@verification_requried
+@verification_required
 @transaction.atomic
 def remove_from_wishlist(request):
     try:
