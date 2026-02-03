@@ -76,16 +76,15 @@ def get_annotated_cart_items(user):
         )
     )
 
-def verification_requried(view_func):
+def verification_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-
-        if request.user.is_authenticated and not request.user.is_verified:
-            msg = "Your account is not verified. Please verify your account in the profile section to continue."
-
-            messages.error(request, msg)
-            return redirect("cart")
-
+        if request.user.is_authenticated:
+            if not getattr(request.user, "is_verified", False):
+                messages.error(request, "Your account is not verified. Please verify your account to continue.")
+                return redirect("profile")
+        else:
+            return redirect("login")
         return view_func(request, *args, **kwargs)
 
     return wrapper
