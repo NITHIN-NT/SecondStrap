@@ -83,9 +83,6 @@ def verification_requried(view_func):
         if request.user.is_authenticated and not request.user.is_verified:
             msg = "Your account is not verified. Please verify your account in the profile section to continue."
 
-            if request.headers.get("x-requested-with") == "XMLHttpRequest":
-                return JsonResponse({"status": "error", "message": msg}, status=403)
-
             messages.error(request, msg)
             return redirect("cart")
 
