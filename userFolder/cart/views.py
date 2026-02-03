@@ -38,12 +38,6 @@ class CartView(LoginRequiredMixin, ListView):
 @verification_requried
 @transaction.atomic
 def cart_item_add(request):
-    # Check if the user is logged in
-    if not request.user.is_authenticated:
-        return JsonResponse(
-            {"status": "error", "message": "Please log in to add items to your cart."},
-            status=401,
-        )
 
     # JSON data from the request body
     try:

@@ -75,7 +75,7 @@ def get_annotated_cart_items(user):
 
 def verification_requried(view_func):
     def wrapper(request,*args,**kwargs):
-        if request.user and not request.user.is_verified:
-            return JsonResponse({"message":"Your account is not verified,Verify in the profile section to continue"},status=400)
+        if request.user.is_authenticated and not request.user.is_verified:
+            return JsonResponse({"status":"error","message":"Your account is not verified. Please verify your account in the profile section to continue."},status=400)
         return view_func(request,*args,**kwargs)
     return wrapper

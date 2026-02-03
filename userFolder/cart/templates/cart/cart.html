@@ -156,19 +156,45 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    const USER_LIMIT = 10;
 
-    // ========================================
-    // 1. CONFIGURATION
-    // ========================================
-    const USER_LIMIT = 10; 
+    function toastOptions() {
+        if (typeof toastr === "undefined") return;
 
-    // ========================================
-    // 2. HELPER FUNCTIONS
-    // ========================================
-    
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            newestOnTop: true,
+            positionClass: "toast-top-right",
+            timeOut: "2500",
+        };
+    }
+
+    function showToast(message, type = "error") {
+        toastOptions();
+
+        if (typeof toastr === "undefined") {
+            console.log(message);
+            return;
+        }
+
+        if (type === "success") toastr.success(message);
+        else if (type === "info") toastr.info(message);
+        else toastr.error(message);
+    }
+
+    function getErrorMessage(error) {
+        return (
+            error?.response?.data?.message ||
+            error?.response?.data?.detail ||
+            error?.message ||
+            "Something went wrong"
+        );
+    }
+
     function formatCurrency(amount) {
         const num = Number(amount);
-        if (isNaN(num)) return "₹0";
+        if (isNaN(num)) return "₹0.00";
         return "₹" + num.toFixed(2);
     }
 
@@ -178,23 +204,20 @@ document.addEventListener("DOMContentLoaded", function () {
         let totalSavings = 0;
 
         rows.forEach(row => {
-            // Calculate subtotal
             const subtotalEl = row.querySelector(".cart-subtotal");
             if (!subtotalEl) return;
-            
+
             const subtotalText = subtotalEl.textContent || "";
             const subtotalCleaned = subtotalText.replace(/[^\d.]/g, "");
             const subtotalValue = parseFloat(subtotalCleaned) || 0;
             total += subtotalValue;
-            
-            // Calculate savings for this row
+
             const discount = parseFloat(row.getAttribute("data-discount")) || 0;
             const qtySpan = row.querySelector(".qty-value");
             const qty = parseInt(qtySpan.textContent, 10) || 1;
             totalSavings += discount * qty;
         });
 
-        // Update all total displays
         const leftSubtotal = document.getElementById("summary-left-subtotal");
         const rightSubtotal = document.getElementById("summary-right-subtotal");
         const rightTotal = document.getElementById("summary-right-total");
@@ -207,26 +230,23 @@ document.addEventListener("DOMContentLoaded", function () {
         if (leftSubtotal) leftSubtotal.textContent = fmtTotal;
         if (rightSubtotal) rightSubtotal.textContent = fmtTotal;
         if (rightTotal) rightTotal.textContent = fmtTotal;
-        
+
         if (totalSavings > 0) {
             if (leftSavings) {
                 leftSavings.textContent = fmtSavings;
-                leftSavings.parentElement.style.display = 'block';
+                leftSavings.parentElement.style.display = "block";
             }
             if (rightSavings) {
                 rightSavings.textContent = "−" + fmtSavings;
-                rightSavings.parentElement.style.display = 'flex';
+                rightSavings.parentElement.style.display = "flex";
             }
         } else {
-            if (leftSavings) leftSavings.parentElement.style.display = 'none';
-            if (rightSavings) rightSavings.parentElement.style.display = 'none';
+            if (leftSavings) leftSavings.parentElement.style.display = "none";
+            if (rightSavings) rightSavings.parentElement.style.display = "none";
         }
     }
 
-    // ========================================
-    // 3. CSRF SETUP
-    // ========================================
-    
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {
@@ -241,14 +261,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return cookieValue;
     }
-    
+
     const csrftoken = getCookie("csrftoken");
     axios.defaults.headers.common["X-CSRFToken"] = csrftoken;
 
-    // ========================================
-    // 4. AUTOMATIC STOCK CHECK ON LOAD
-    // ========================================
-    
     function checkStockLimitsOnLoad() {
         const rows = document.querySelectorAll(".cart-row");
         let changesMade = false;
@@ -264,30 +280,23 @@ document.addEventListener("DOMContentLoaded", function () {
             if (currentQty > effectiveLimit) {
                 const newQty = effectiveLimit > 0 ? effectiveLimit : 0;
 
-                // Update quantity display
                 qtySpan.textContent = newQty;
-                
-                // Update subtotal
+
                 const unitPrice = parseFloat(row.getAttribute("data-price")) || 0;
                 const newSubtotal = unitPrice * newQty;
+
                 const rowSubtotalEl = row.querySelector(".cart-subtotal");
                 if (rowSubtotalEl) rowSubtotalEl.textContent = formatCurrency(newSubtotal);
 
-                // Update summary sidebar
                 const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
                 if (summaryItem) {
                     const qtyTextEl = summaryItem.querySelector(".summary-qty");
                     const sumSubEl = summaryItem.querySelector(".summary-subtotal");
-                    
-                    if (qtyTextEl) {
-                        qtyTextEl.textContent = `Qty: ${newQty}`;
-                    }
-                    if (sumSubEl) {
-                        sumSubEl.textContent = formatCurrency(newSubtotal);
-                    }
+
+                    if (qtyTextEl) qtyTextEl.textContent = `Qty: ${newQty}`;
+                    if (sumSubEl) sumSubEl.textContent = formatCurrency(newSubtotal);
                 }
 
-                // Sync with backend silently
                 if (newQty > 0) {
                     axios.post("{% url 'update_cart_item_quantity' %}", {
                         item_id: itemId,
@@ -301,16 +310,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (changesMade) {
             recalcTotals();
+            showToast("Cart quantities adjusted based on available stock.", "info");
         }
     }
 
-    // Run stock check on page load
     checkStockLimitsOnLoad();
 
-    // ========================================
-    // 5. REMOVE ITEM
-    // ========================================
-    
     document.querySelectorAll(".remove").forEach(btn => {
         btn.addEventListener("click", function (e) {
             e.preventDefault();
@@ -319,37 +324,30 @@ document.addEventListener("DOMContentLoaded", function () {
             axios.post("{% url 'remove_cart_item' %}", { item_id: itemId })
             .then(response => {
                 const data = response.data;
+
                 if (data.status === "success") {
-                    // Remove cart row
                     const row = document.querySelector(`.cart-row[data-item-id="${itemId}"]`);
                     if (row && row.parentNode) row.parentNode.remove();
-                    
-                    // Remove summary item
+
                     const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
                     if (summaryItem && summaryItem.parentNode) summaryItem.parentNode.remove();
 
-                    // Recalculate totals
                     recalcTotals();
-                    
-                    // Reload if cart is empty
+
+                    showToast("Item removed from cart", "success");
+
                     const remainingRows = document.querySelectorAll(".cart-row");
-                    if (remainingRows.length === 0) {
-                        location.reload();
-                    }
+                    if (remainingRows.length === 0) location.reload();
                 } else {
-                    console.error(data.message);
+                    showToast(data.message || "Failed to remove item", "error");
                 }
             })
             .catch(error => {
-                console.error("Server error while removing item", error);
+                showToast(getErrorMessage(error), "error");
             });
         });
     });
 
-    // ========================================
-    // 6. QUANTITY INCREASE/DECREASE
-    // ========================================
-    
     document.addEventListener("click", function (e) {
         const plusBtn = e.target.closest(".qty-btn.plus");
         const minusBtn = e.target.closest(".qty-btn.minus");
@@ -370,74 +368,52 @@ document.addEventListener("DOMContentLoaded", function () {
         const stockAttr = row.getAttribute("data-stock") || "0";
         const stock = parseInt(stockAttr, 10);
 
-        // Don't allow quantity below 1
         if (newQty < 1) return;
 
         const effectiveLimit = Math.min(stock, USER_LIMIT);
 
-        // Check if we're hitting the limit
         if (plusBtn && newQty > effectiveLimit) {
-            console.log("Stock limit reached");
+            showToast(`Only ${effectiveLimit} item(s) allowed.`, "info");
             return;
         }
 
-        // Update UI immediately
         qtySpan.textContent = newQty;
-        
+
         const unitPrice = parseFloat(row.getAttribute("data-price")) || 0;
-        const discount = parseFloat(row.getAttribute("data-discount")) || 0;
         const newSubtotal = unitPrice * newQty;
 
-        // Update row subtotal
         const rowSubtotalEl = row.querySelector(".cart-subtotal");
         if (rowSubtotalEl) rowSubtotalEl.textContent = formatCurrency(newSubtotal);
 
-        // Update summary sidebar
         const summaryItem = document.querySelector(`.cart-right .summary-item[data-item-id="${itemId}"]`);
         if (summaryItem) {
             const qtyTextEl = summaryItem.querySelector(".summary-qty");
             const sumSubEl = summaryItem.querySelector(".summary-subtotal");
 
-            if (qtyTextEl) {
-                qtyTextEl.textContent = `Qty: ${newQty}`;
-            }
-            if (sumSubEl) {
-                sumSubEl.textContent = formatCurrency(newSubtotal);
-            }
+            if (qtyTextEl) qtyTextEl.textContent = `Qty: ${newQty}`;
+            if (sumSubEl) sumSubEl.textContent = formatCurrency(newSubtotal);
         }
 
-        // Recalculate all totals
         recalcTotals();
 
-        // Sync with backend
         axios.post("{% url 'update_cart_item_quantity' %}", {
             item_id: itemId,
             quantity: newQty
         })
         .then(response => {
             const data = response.data;
-            if (data.status === "success") {
-                // Optionally update with server-calculated totals
-                if (data.cart_total !== undefined) {
-                    const leftSubtotal = document.getElementById("summary-left-subtotal");
-                    const rightSubtotal = document.getElementById("summary-right-subtotal");
-                    const rightTotal = document.getElementById("summary-right-total");
-                    
-                    const fmt = formatCurrency(data.cart_total);
-                    if (leftSubtotal) leftSubtotal.textContent = fmt;
-                    if (rightSubtotal) rightSubtotal.textContent = fmt;
-                    if (rightTotal) rightTotal.textContent = fmt;
-                }
-            } else if (data.status === "error") {
-                console.error(data.message);
-                setTimeout(() => location.reload(), 1000);
+
+            if (data.status !== "success") {
+                showToast(data.message || "Quantity update failed", "error");
+                setTimeout(() => location.reload(), 600);
             }
         })
         .catch(error => {
-            console.error("Server error while updating quantity", error);
+            showToast(getErrorMessage(error), "error");
+            setTimeout(() => location.reload(), 600);
         });
     });
 
 });
 </script>
-{% endblock extra_script %}
+{% endblock %}
