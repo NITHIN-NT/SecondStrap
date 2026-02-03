@@ -52,7 +52,6 @@ def manage_offer_view(request,pk=None):
                 offer.categories.set(category_ids.split(','))
             else:
                 offer.categories.clear()
-            form.save_m2m()
             verb = "updated" if instance else "created"
             messages.success(request, f'Offer {verb} successfully!')
             return redirect('offers_view')
@@ -75,7 +74,7 @@ def search_products(request):
 @superuser_required
 def search_category(request):
     category_search_value = request.GET.get('search','')
-    categorys = Category.objects.filter(name__icontains=category_search_value).prefetch_related()[:10]
+    categorys = Category.objects.filter(name__icontains=category_search_value)[:10]
     
     return JsonResponse([{"id":category.id ,"name":category.name} for category in categorys],safe=False)
 

@@ -127,5 +127,5 @@ def get_offers(request):
     '''
         This view is used to get the offers for the offer track
     '''
-    offers_from_db = list(Offer.objects.filter(active=True,display_home=True).values_list('description',flat=True))
+    offers_from_db = list(Offer.objects.filter(active=True,display_home=True).values_list('title',flat=True))
     return JsonResponse({'offers': offers_from_db})

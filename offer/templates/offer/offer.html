@@ -39,7 +39,7 @@
                     <thead>
                         <tr>
                             <th>Offer Name</th>
-                            <th>Description</th>
+                            <th>Title</th>
                             <th>Type</th>
                             <th>Discount</th>
                             <th>Valid Period</th>
@@ -52,14 +52,10 @@
                         {% for offer in offers %}
                         <tr>
                             <td><strong>{{ offer.name }}</strong></td>
-                            <td class="truncate-text">{{ offer.description }}</td>
+                            <td class="truncate-text">{{ offer.title }}</td>
                             <td>{{ offer.get_offer_type_display }}</td>
                             <td>
-                                {% if offer.discount_type == "percentage" %}
-                                    <span class="discount-pill">{{ offer.discount_value }}% OFF</span>
-                                {% else %}
-                                    <span class="discount-pill">₹{{ offer.discount_value }} OFF</span>
-                                {% endif %}
+                                <span class="discount-pill">{{ offer.discount_percentage }}% OFF</span>
                             </td>
                             <td>{{ offer.start_date|date:"Y-m-d" }} → 
                                 {% if offer.end_date %}

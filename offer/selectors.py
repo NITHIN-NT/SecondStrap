@@ -12,7 +12,7 @@ def get_active_offer_subqueries(product_ref='id', category_ref='category'):
         active=True,
         start_date__lte=now,
         end_date__gte=now
-    ).order_by('-discount_value').values('discount_value')[:1]
+    ).order_by('-discount_percentage').values('discount_percentage')[:1]
 
     category_offer_subquery = Offer.objects.filter(
         categories=OuterRef(category_ref),
@@ -20,7 +20,7 @@ def get_active_offer_subqueries(product_ref='id', category_ref='category'):
         active=True,
         start_date__lte=now,
         end_date__gte=now
-    ).order_by('-discount_value').values('discount_value')[:1]
+    ).order_by('-discount_percentage').values('discount_percentage')[:1]
     
     return product_offer_subquery, category_offer_subquery
 
@@ -39,8 +39,8 @@ def get_active_offer_subqueries_cart(
             start_date__lte=now,
             end_date__gte=now,
         )
-        .order_by('-discount_value')
-        .values('discount_value')[:1]
+        .order_by('-discount_percentage')
+        .values('discount_percentage')[:1]
     )
 
     category_offer_subquery = (
@@ -51,8 +51,8 @@ def get_active_offer_subqueries_cart(
             start_date__lte=now,
             end_date__gte=now,
         )
-        .order_by('-discount_value')
-        .values('discount_value')[:1]
+        .order_by('-discount_percentage')
+        .values('discount_percentage')[:1]
     )
 
     return product_offer_subquery, category_offer_subquery

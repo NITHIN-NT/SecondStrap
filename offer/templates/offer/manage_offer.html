@@ -46,8 +46,7 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Offer Name</label>
-                    <input type="text" name="name" placeholder="e.g. Summer Sale 2025"
-                           value="{{ form.name.value|default_if_none:'' }}">
+                    <input type="text" name="name" value="{{ form.name.value|default_if_none:'' }}">
                     {% if form.errors.name %}<div class="field-error">{{ form.errors.name|striptags }}</div>{% endif %}
                 </div>
             </div>
@@ -65,14 +64,14 @@
                 <div class="form-group">
                     <label>Discount Type</label>
                     <select name="discount_type">
-                        <option value="fixed_amount" {% if form.discount_type.value == "fixed_amount" %}selected{% endif %}>Fixed Amount (₹)</option>
+                        <option value="percentage" {% if form.discount_type.value == "percentage" %}selected{% endif %}>Percentage (%)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Discount Value</label>
-                    <input type="number" name="discount_value" step="0.01" value="{{ form.discount_value.value|default_if_none:'' }}">
-                    {% if form.errors.discount_value %}<div class="field-error">{{ form.errors.discount_value|striptags }}</div>{% endif %}
+                    <input type="number" name="discount_percentage" step="0.01" value="{{ form.discount_percentage.value|default_if_none:'' }}">
+                    {% if form.errors.discount_percentage %}<div class="field-error">{{ form.errors.discount_percentage|striptags }}</div>{% endif %}
                 </div>
             </div>
 
@@ -120,8 +119,9 @@
             </div>
 
             <div class="form-group full-width">
-                <label>Offer Description</label>
-                <textarea name="description" rows="3">{{ form.description.value|default_if_none:'' }}</textarea>
+                <label>Offer Title (Shown in the top of the user side)</label>
+                <input type="text" name="title" value="{{ form.title.value|default_if_none:'' }}" placeholder="e.g. Summer Sale 2025">
+                {% if form.errors.title %}<div class="field-error">{{ form.errors.title|striptags }}</div>{% endif %}
             </div>
 
             <div class="form-group checkbox-group">
