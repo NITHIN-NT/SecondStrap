@@ -144,9 +144,9 @@
                                 <div class="product-image-placeholder {% if product.stock <= 5 and product.stock > 0 %}limited-stock-badge{% endif %}"
                                 style="background-image: url({{product.image.url}}); background-size: cover;">
                                 <p>
-                                    {% if product.best_discount %}
+                                    {% if product.best_discount|default:0 > 0 %}
                                         <span class='offer'>
-                                            ₹{{product.best_discount}} off
+                                            {{ product.best_discount|floatformat:0 }}% OFF
                                         </span>
                                     {% elif product.stock > 10 %}
                                         Available
@@ -165,15 +165,21 @@
                                 <div class="product-details">
                                     <h5>{{ product.name }}</h5>
 
-                                    {% if product.min_discounted_price and product.min_discounted_price < product.offer_price%}
+                                    {% if product.best_discount|default:0 > 0 %}
                                         <div class="product-price-wrapper">
-                                            <p class="product-price-old">₹{{ product.base_price }}</p>
-                                            <p class="product-price-new">₹{{ product.min_discounted_price }}</p>
+                                            <p class="product-price-old">₹{{ product.base_price|floatformat:2 }}</p>
+                                            <p class="product-price-new">₹{{ product.min_discounted_price|floatformat:2 }}</p>
                                         </div>
+
+                                    {% elif product.offer_price %}
+                                        <div class="product-price-wrapper">
+                                            <p class="product-price-old">₹{{ product.base_price|floatformat:2 }}</p>
+                                            <p class="product-price-new">₹{{ product.offer_price|floatformat:2 }}</p>
+                                        </div>
+
                                     {% else %}
                                         <div class="product-price-wrapper">
-                                            <p class="product-price-old">₹{{ product.base_price }}</p>
-                                            <p class="product-price-new">₹{{ product.offer_price }}</p>
+                                            <p class="product-price-new">₹{{ product.base_price|floatformat:2 }}</p>
                                         </div>
                                     {% endif %}
                                 </div>

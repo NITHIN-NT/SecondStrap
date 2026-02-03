@@ -271,29 +271,19 @@
         <div class="info-field">
             <label>Discount Value</label>
             <span class="value">
-                {% if offer.discount_type == 'percentage' %}
-                    {{ offer.discount_value }}%
-                {% else %}
-                    ₹{{ offer.discount_value }}
-                {% endif %}
+                {{ offer.discount_percentage }}%
             </span>
         </div>
-        {% if min_order_amount %}
-        <div class="info-field">
-            <label>Minimum Order Amount</label>
-            <span class="value">₹{{ min_order_amount }}</span>
-        </div>
-        {% endif %}
         <div class="info-field">
             <label>Validity</label>
             <span class="value">{{ offer.start_date|date:"d M Y" }} – {{ offer.end_date|date:"d M Y" }}</span>
         </div>
     </div>
 
-    {% if offer.description %}
+    {% if offer.title %}
     <div class="section description">
-        <h4>Description</h4>
-        <p>{{ offer.description }}</p>
+        <h4>Title (for carousel in the userside)</h4>
+        <p>{{ offer.title }}</p>
     </div>
     {% endif %}
 

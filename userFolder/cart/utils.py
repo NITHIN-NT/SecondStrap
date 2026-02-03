@@ -26,38 +26,50 @@ def get_annotated_cart_items(user):
         final_price = Case(
             When(
                 Q(best_discount__gt=0),
-                then=F('product_base_price') - F('best_discount'),
+                then=Greatest(
+                    ExpressionWrapper(
+                        F('product_base_price') - (F('product_base_price') * F('best_discount') / Value(100.0)),
+                        output_field=DecimalField(max_digits=10, decimal_places=2)
+                    ),
+                    Value(0, output_field=DecimalField(max_digits=10, decimal_places=2))
+                )
             ),
             When(
                 Q(product_offer_price__isnull=False),
                 then=F('product_offer_price'),
             ),
-            default=F('product_offer_price'),
-            output_field=DecimalField(),
+            default=F('product_base_price'),
+            output_field=DecimalField(max_digits=10, decimal_places=2),
         ),
         
         actual_discount = Case(
             When(
                 Q(best_discount__gt=0),
-                then=F('best_discount')
+                then=ExpressionWrapper(
+                    F('product_base_price') * F('best_discount') / Value(100.0),
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                )
             ),
             When(
                 Q(product_offer_price__isnull=False),
-                then=F('product_base_price') - F('product_offer_price')
+                then=ExpressionWrapper(
+                    F('product_base_price') - F('product_offer_price'),
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                )
             ),
-            default=F('product_base_price'),
-            output_field=DecimalField()
+            default=Value(0, output_field=DecimalField(max_digits=10, decimal_places=2)),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
         ),
         
         # Calculate line total (final_price * quantity)
         product_total=ExpressionWrapper(
             F('final_price') * F('quantity'),
-            output_field=DecimalField()
+            output_field=DecimalField(max_digits=10, decimal_places=2)
         ),
 
         subtotal = ExpressionWrapper(
             F('product_base_price') * F('quantity'),
-            output_field = DecimalField()
+            output_field = DecimalField(max_digits=10, decimal_places=2)
         )
     )
 

@@ -107,6 +107,9 @@
                                 Ended Offer
                             {% endif %}
                         </div>
+                        <div class="prod-meta">
+                            {{offer.discount_percentage}}% OFF
+                        </div>
                         <div class="prod-status active">
                             {% if offer.active %}
                                 Active
@@ -142,7 +145,7 @@
                         </div>
                         <div class="product-offers-list">
                             <div class="offer-item-row">
-                                <span class="offer-benefit">₹{{ offer.discount_value }} OFF</span>
+                                <span class="offer-benefit">{{ offer.discount_percentage }}% OFF</span>
                                 <span class="offer-validity">Ends: {% if offer.end_date %}
                                         {{ offer.end_date|date:"Y-m-d" }}
                                         {% else %}

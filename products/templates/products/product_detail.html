@@ -15,7 +15,7 @@
             <div class="product-gallery">
                 <div class="gallery-main img-zoom-container">
                    {% if product.annotated_variants and product.annotated_variants.0.best_discount > 0  %}
-                        <span class="product-offer-tag" id="gallery-offer-tag">₹{{ product.annotated_variants.0.best_discount }} OFF</span>
+                        <span class="product-offer-tag" id="gallery-offer-tag">{{ product.annotated_variants.0.best_discount|floatformat:0 }}% OFF</span>
                     {% endif %}
 
                     {% comment %} used to get the 0 th item in the queryset (list) annotated_variants[0] like this in template we user "."  {% endcomment %}
@@ -69,17 +69,17 @@
                 <div class="product-price-container">
                     {% if product.annotated_variants.0.actual_discount > 0 %}
                         <del id="base-price-display" class="old-price">
-                            ₹ {{ product.annotated_variants.0.base_price }}
+                            ₹ {{ product.annotated_variants.0.base_price|floatformat:2 }}
                         </del>
                         <span class="offer-price" id="offer-price-display">
-                            ₹ {{ product.annotated_variants.0.discounted_price }}
+                            ₹ {{ product.annotated_variants.0.discounted_price|floatformat:2 }}
                         </span>
                         <p id="discount-amount-display" class="discount-info">
-                           You save ₹{{ product.annotated_variants.0.actual_discount }} !!
+                           You save ₹{{ product.annotated_variants.0.actual_discount|floatformat:2 }} !!
                         </p>
                     {% else %}
                         <span class="offer-price" id="offer-price-display">
-                            ₹ {{ product.annotated_variants.0.base_price }}
+                            ₹ {{ product.annotated_variants.0.base_price|floatformat:2 }}
                         </span>
                     {% endif %}
                 </div>
@@ -93,9 +93,9 @@
                             {% for variant in product.annotated_variants %}
                                 <button class="btn-size {% if forloop.first %}active{% endif %}"
                                         data-size="{{ variant.size }}"
-                                        data-offer-price="{{ variant.discounted_price }}"
-                                        data-base-price="{{ variant.base_price }}"
-                                        data-discount="{{ variant.best_discount }}"
+                                        data-offer-price="{{ variant.discounted_price|floatformat:2 }}"
+                                        data-base-price="{{ variant.base_price|floatformat:2 }}"
+                                        data-discount="{{ variant.best_discount|floatformat:2 }}"
                                         data-stock="{{ variant.stock }}"
                                         data-variant-id="{{ variant.id }}"> 
                                         {{ variant.size }}
@@ -131,10 +131,6 @@
                                 <i class='bx bx-heart'></i> <span>Add to Wishlist</span>
                             {% endif %}
                     </button>
-                </div>
-
-                <div class="secondary-actions">   
-                    <a href="#" class="action-link"><i class='bx bx-share'></i> <span>Share</span></a>
                 </div>
 
                 <br>

@@ -117,13 +117,33 @@ class ProductVariant(models.Model):
         
     def get_offer_price(self, offer=None):
         """
-        Returns the price after applying the offer discount
+        Returns final price after applying offer on this variant.
         """
-        price = self.offer_price
+        base = self.base_price
+        price = self.offer_price if self.offer_price is not None else base
 
-        if offer and offer.active:
-            if offer.discount_type == "fixed_amount":
-                price -= offer.discount_value
+        if price is None:
+            return Decimal("0.00")
 
-        return max(price, Decimal("0.00")) 
-        # To avoid mixing Decimal with int or float, which causes bugs and precision errors.
+        if not offer:
+            return max(price, Decimal("0.00"))
+
+        now = timezone.now()
+
+        if not offer.active:
+            return max(price, Decimal("0.00"))
+
+        if offer.start_date and offer.start_date > now:
+            return max(price, Decimal("0.00"))
+
+        if offer.end_date and offer.end_date < now:
+            return max(price, Decimal("0.00"))
+
+        if offer.discount_type == "percentage":
+            discount_amount = (price * Decimal(str(offer.discount_percentage))) / Decimal("100")
+            price -= discount_amount
+
+        # elif offer.discount_type == "fixed_amount":
+        #     price -= Decimal(str(offer.discount_value))
+
+        return max(price, Decimal("0.00"))
