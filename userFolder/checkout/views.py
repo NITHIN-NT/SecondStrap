@@ -10,8 +10,12 @@ from userFolder.order.models import OrderMain
 from coupon.models import Coupon
 from django.utils import timezone
 from userFolder.payment.utils import calculate_cart_totals
+from userFolder.cart.utils import verification_requried
+from django.utils.decorators import method_decorator
 
+@method_decorator(verification_requried, name='get')
 class CheckOutView(View):
+    
     def get(self, request, *args, **kwargs):
         try:
             cart = Cart.objects.get(user=request.user)

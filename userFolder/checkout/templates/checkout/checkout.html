@@ -210,7 +210,7 @@
                                 <strong>Wallet (Full Payment)</strong>
                             </div>
                             <p class="sub-text">Pay the full amount with Wallet</p>
-                            <p class="sub-text">Current balance : ₹ {{wallet.balance}}</p>
+                            <p class="sub-text">Current balance : ₹ {{wallet.balance|floatformat:2}}</p>
                         </div>
                     </div>
                     
@@ -226,7 +226,7 @@
                                 <i class='bx bx-wallet'></i>
                                 <strong>Wallet Deduction</strong>
                             </div>
-                            <p class="sub-text">Current balance : ₹ {{wallet.balance}}</p>
+                            <p class="sub-text">Current balance : ₹ {{wallet.balance|floatformat:2}}</p>
                             {# The button will now trigger an AJAX call/form submission to update totals #}
                             <button type="button" class="apply-wallet-btn" id="applyWalletBtn">Apply wallet amount</button>
                         </div>
@@ -251,7 +251,7 @@
                     <div class="item-info">
                         <h4>{{ item.variant.product.name }}</h4>
                         <p>Size: {{ item.size }} X {{item.quantity}}</p>
-                        <span class="price">₹{{ item.final_price}} x {{item.quantity}}</span>
+                        <span class="price">₹{{ item.final_price|floatformat:2}} x {{item.quantity}}</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -266,21 +266,21 @@
             <h3 class="summary-title">Order Summary</h3>
             <div class="summary-row">
                 <span>Total ({{ cart_items|length }} items)</span>
-                <span>₹{{ total_price }}</span>
+                <span>₹{{ total_price|floatformat:2 }}</span>
             </div>
             <div class="summary-row discount">
                 <span>Discount</span>
-                <span>-₹{{ discount }}</span>
+                <span>-₹{{ discount|floatformat:2 }}</span>
             </div>
             <div class="summary-row">
                 <span>Subtotal</span>
-                <span>₹{{ cart_total_price }}</span>
+                <span>₹{{ cart_total_price|floatformat:2 }}</span>
             </div>
 
             {% if wallet_applied_amount %}
                 <div class="summary-row discount">
                     <span>Wallet Deduction</span>
-                    <span>-₹{{ wallet_applied_amount }}</span>
+                    <span>-₹{{ wallet_applied_amount|floatformat:2 }}</span>
                 </div>
             {% endif %}
 
@@ -292,14 +292,14 @@
             {% if coupon_discount %}
                 <div class="summary-row discount">
                     <span>Coupon Deduction</span>
-                    <span>-₹{{ coupon_discount }}</span>
+                    <span>-₹{{ coupon_discount|floatformat:2 }}</span>
                 </div>
             {% endif %}
             
             <div class="summary-divider"></div>
             <div class="summary-row total">
                 <span>Grand Total</span>
-                <span>₹{{ grand_total }}</span>
+                <span>₹{{ grand_total|floatformat:2 }}</span>
             </div>
 
             <p class="terms-text">By placing your order, you agree to our Terms of Service.</p>

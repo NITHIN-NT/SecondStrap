@@ -2,7 +2,10 @@ from django.db.models.functions import Coalesce,Greatest
 from django.db.models import F,Q,Value,Case,When,DecimalField,ExpressionWrapper
 from offer.selectors import get_active_offer_subqueries_cart
 from .models import *
+from functools import wraps
 from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.contrib import messages
 
 def get_annotated_cart_items(user):
     
@@ -74,8 +77,18 @@ def get_annotated_cart_items(user):
     )
 
 def verification_requried(view_func):
-    def wrapper(request,*args,**kwargs):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+
         if request.user.is_authenticated and not request.user.is_verified:
-            return JsonResponse({"status":"error","message":"Your account is not verified. Please verify your account in the profile section to continue."},status=400)
-        return view_func(request,*args,**kwargs)
+            msg = "Your account is not verified. Please verify your account in the profile section to continue."
+
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({"status": "error", "message": msg}, status=403)
+
+            messages.error(request, msg)
+            return redirect("cart")
+
+        return view_func(request, *args, **kwargs)
+
     return wrapper
