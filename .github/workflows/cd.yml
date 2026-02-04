@@ -42,5 +42,6 @@ jobs:
               -e RAZORPAY_WALLET_CALLBACK_URL="${{ secrets.RAZORPAY_WALLET_CALLBACK_URL }}" \
               -e EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER }}" \
               -e EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD }}" \
+              -e SECURE_SSL_REDIRECT="${{ secrets.SECURE_SSL_REDIRECT }}" \
               ${{ secrets.DOCKER_USERNAME }}/secondstrap:latest
             docker exec -t secondstrap-container python manage.py migrate
