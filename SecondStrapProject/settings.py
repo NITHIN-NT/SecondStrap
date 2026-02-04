@@ -267,6 +267,8 @@ STORAGES = {
     },
 }
 
+WHITENOISE_MANIFEST_STRICT = False
+
 # ============================ LOGGING ============================
 
 LOGGING = {
