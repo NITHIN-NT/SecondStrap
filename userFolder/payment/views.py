@@ -29,7 +29,7 @@ from coupon.models import Coupon,CouponUsage
 from userFolder.cart.utils import get_annotated_cart_items
 from .models import PaymentFailure
 
-from .utils import validate_stock_and_cart,validate_address,calculate_cart_totals,create_draft_order
+from .utils import validate_stock_and_cart,validate_address,calculate_cart_totals,create_draft_order,sync_draft_order
 from userFolder.order.utils import send_order_success_email
 
 
@@ -104,13 +104,9 @@ def apply_coupon(request):
 
                 request.session['draft_order_id'] = draft_order.order_id
 
-            final_amount = totals['grand_total']- coupon_discount- draft_order.wallet_deduction
-            final_amount = max(final_amount, Decimal('0.00'))
-
             draft_order.coupon_code = coupon_code
-            draft_order.coupon_discount = coupon_discount
-            draft_order.final_price = final_amount
-            draft_order.save()
+            draft_order = sync_draft_order(user, draft_order, cart_items, totals)
+            final_amount = draft_order.final_price
 
             return JsonResponse({
                 "success": True,
@@ -230,20 +226,11 @@ def deduct_amount_from_wallet(request):
                     )
 
 
-            amount_after_coupon = totals['grand_total'] - draft_order.coupon_discount
-            amount_after_coupon = max(amount_after_coupon, Decimal('0.00'))
-
-            if amount_after_coupon == 0:
-                return JsonResponse({"success": False, "error": "No payable amount left"},status=400)
-
-            wallet_deduction = min(wallet.balance, amount_after_coupon)
-
-            final_amount = amount_after_coupon - wallet_deduction
-            final_amount = max(final_amount, Decimal('0.00'))
-
-            draft_order.wallet_deduction = wallet_deduction
-            draft_order.final_price = final_amount
-            draft_order.save()
+            draft_order.wallet_deduction = wallet.balance # Temporary set to balance, sync will cap it
+            draft_order = sync_draft_order(user, draft_order, cart_items, totals)
+            
+            final_amount = draft_order.final_price
+            wallet_deduction = draft_order.wallet_deduction
 
             return JsonResponse({
                 "success": True,
