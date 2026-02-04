@@ -93,7 +93,7 @@ def verification_required(view_func):
             if is_ajax:
                 return JsonResponse({"status": "error", "message": "Please verify your account to continue."}, status=403)
             messages.error(request, "Your account is not verified. Please verify your account to continue.")
-            return redirect("profile")
+            return redirect("profile_view_user")
 
         return view_func(request, *args, **kwargs)
 
