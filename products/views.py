@@ -132,15 +132,6 @@ def product_list_view(request):
 
     custom_page_range = range(start_page, end_page + 1)
 
-    print("Category Offers Count:", Offer.objects.filter(offer_type=OfferType.CATEGORY).count())
-    print("Active Category Offers:", Offer.objects.filter(offer_type=OfferType.CATEGORY, active=True).count())
-    debug_products = products.values(
-        "id", "name", "category_id",
-        "offer_prod_val", "offer_cat_val", "best_discount",
-    )[:20]
-
-    print(list(debug_products))
-
     context = {
         "categories": categories,
         "page_obj": page_obj,
