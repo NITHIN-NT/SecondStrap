@@ -9,8 +9,8 @@ from userFolder.cart.utils import get_annotated_cart_items
 from userFolder.order.models import OrderMain
 from coupon.models import Coupon
 from django.utils import timezone
-from userFolder.payment.utils import calculate_cart_totals
-from userFolder.cart.utils import verification_required
+from userFolder.payment.utils import calculate_cart_totals, sync_draft_order
+from userFolder.cart.utils import verification_requried
 from django.utils.decorators import method_decorator
 
 @method_decorator(verification_required, name='dispatch')
@@ -62,6 +62,8 @@ class CheckOutView(View):
                     order_status='draft',
                     expires_at__gt=timezone.now()
                 )
+                
+                draft_order = sync_draft_order(request.user, draft_order, cart_items, totals)
                 
                 wallet_applied_amount = draft_order.wallet_deduction
                 coupon_discount = draft_order.coupon_discount
