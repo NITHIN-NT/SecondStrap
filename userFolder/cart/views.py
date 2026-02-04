@@ -8,6 +8,7 @@ from products.models import *
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from .utils import get_annotated_cart_items,verification_required
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 class CartView(LoginRequiredMixin, ListView):
     template_name = "cart/cart.html"

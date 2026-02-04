@@ -79,12 +79,22 @@ def get_annotated_cart_items(user):
 def verification_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if request.user.is_authenticated:
-            if not getattr(request.user, "is_verified", False):
-                messages.error(request, "Your account is not verified. Please verify your account to continue.")
-                return redirect("profile")
-        else:
+        # AJAX detection
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or \
+                 'application/json' in request.META.get('HTTP_ACCEPT', '')
+
+        if not request.user.is_authenticated:
+            if is_ajax:
+                return JsonResponse({"status": "error", "message": "Please login to continue."}, status=401)
+            messages.error(request, "Please login to continue.")
             return redirect("login")
+
+        if not request.user.is_verified:
+            if is_ajax:
+                return JsonResponse({"status": "error", "message": "Please verify your account to continue."}, status=403)
+            messages.error(request, "Your account is not verified. Please verify your account to continue.")
+            return redirect("profile")
+
         return view_func(request, *args, **kwargs)
 
     return wrapper

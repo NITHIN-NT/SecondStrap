@@ -109,8 +109,8 @@ def add_to_cart(request):
     else:
         return JsonResponse({"status":"error","message":"Item already in the cart"})
     
-@require_POST
 @verification_required
+@require_POST
 @transaction.atomic
 def remove_from_wishlist(request):
     try:
