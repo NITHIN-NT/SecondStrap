@@ -32,7 +32,7 @@ class SecureUserMixin(LoginRequiredMixin):
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         user = request.user
-        if not user.is_active :
+        if user.is_authenticated and not user.is_active:
             messages.error(request, "Your account is blocked by admin.")
             return redirect('login')
 
