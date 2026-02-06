@@ -38,7 +38,7 @@ def order(request):
             messages.error(request, "Draft order not found or expired.")
             return render(request, 'orders/order_error.html')
         
-        if draft_order.final_price > 1000:
+        if draft_order.final_price > 2000:
             messages.error(request,'Orders above 1000 , Only Razorpay !!')
             return redirect('checkout')
 
@@ -112,7 +112,7 @@ def order(request):
 
         totals = calculate_cart_totals(cart_items)
 
-        if totals['grand_total'] > 1000:
+        if totals['grand_total'] > 2000:
             messages.error(request, 'Orders above ₹1000 are allowed only via UPI.')
             return redirect('checkout')
 
