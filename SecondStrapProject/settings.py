@@ -36,6 +36,15 @@ DEBUG = env.bool("DEBUG", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["0.0.0.0", "127.0.0.1", "localhost"])
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in env.list("CSRF_TRUSTED_ORIGINS", default=[]) if o.strip()]
 
+# Railway specific domain handling
+RAILWAY_PUBLIC_DOMAIN = env("RAILWAY_PUBLIC_DOMAIN", default=None)
+if RAILWAY_PUBLIC_DOMAIN:
+    if RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+    railway_url = f"https://{RAILWAY_PUBLIC_DOMAIN}"
+    if railway_url not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(railway_url)
+
 """
     USER & AUTH
 """
