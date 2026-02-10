@@ -140,12 +140,17 @@ def admin_order_detailed_view(request,order_id):
 
 ORDER_STATUS_FLOW = {
     'pending': ['confirmed', 'cancelled'],
+    'return_approved' : ['confirmed','cancelled'],
+    'return_rejected' : ['confirmed','cancelled'],
+    'partially_returned' : ['confirmed','cancelled'],
+    'partially_cancelled' : ['confirmed','cancelled'],
     'confirmed': ['shipped', 'cancelled'],
     'shipped': ['out_for_delivery', 'cancelled'],
     'out_for_delivery': ['delivered', 'cancelled'],
     'delivered': ['returned'], 
     'cancelled': [], 
     'returned': [], 
+    
 }
   
 @staff_member_required(login_url='admin_login')

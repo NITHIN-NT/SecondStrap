@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    command: gunicorn --bind 0.0.0.0:8000 SecondStrapProject.wsgi:application
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DEBUG=True
+    restart: always

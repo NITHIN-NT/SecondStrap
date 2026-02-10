@@ -21,16 +21,16 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 """
     RAZORPAY INTEGRATION
 """
-RAZORPAY_KEY_ID = env("RAZORPAY_KEY_ID")
-RAZORPAY_KEY_SECRET = env("RAZORPAY_KEY_SECRET")
-RAZORPAY_CALLBACK_URL = env("RAZORPAY_CALLBACK_URL")
+RAZORPAY_KEY_ID = env("RAZORPAY_KEY_ID", default="dummy")
+RAZORPAY_KEY_SECRET = env("RAZORPAY_KEY_SECRET", default="dummy")
+RAZORPAY_CALLBACK_URL = env("RAZORPAY_CALLBACK_URL", default="http://localhost:8000")
 RAZORPAY_WALLET_CALLBACK_URL = env("RAZORPAY_WALLET_CALLBACK_URL", default="")
 RAZORPAY_CURRENCY = "INR"
 
 """
     SECURITY
 """
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="django-insecure-dummy")
 DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["0.0.0.0", "127.0.0.1", "localhost"])
@@ -162,7 +162,7 @@ TEMPLATES = [
 """
     DATABASE
 """
-DATABASE_URL = env("DATABASE_URL", default=os.environ.get("DATABASE_URL", ""))
+DATABASE_URL = env("DATABASE_URL", default="sqlite:///:memory:")
 
 DATABASES = {
     "default": dj_database_url.parse(
@@ -178,8 +178,8 @@ DATABASES = {
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            "client_id": env("CLIENT_ID"),
-            "secret": env("CLIENT_SECRET"),
+            "client_id": env("CLIENT_ID", default="dummy"),
+            "secret": env("CLIENT_SECRET", default="dummy"),
             "key": "",
             "FETCH_USERINFO": True,
         },
@@ -224,8 +224,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="dummy@example.com")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="dummy")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
@@ -262,9 +262,9 @@ SECURE_HSTS_PRELOAD = not DEBUG
 # ============================ CLOUDINARY STORAGE ============================
 
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": env("CLOUD_NAME"),
-    "API_KEY": env("API_KEY"),
-    "API_SECRET": env("API_SECRET"),
+    "CLOUD_NAME": env("CLOUD_NAME", default="dummy"),
+    "API_KEY": env("API_KEY", default="dummy"),
+    "API_SECRET": env("API_SECRET", default="dummy"),
 }
 
 STORAGES = {

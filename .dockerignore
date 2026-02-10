@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+strapvenv/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.toast
+.pytest_cache/
+
+# User-specific
+.DS_Store
+
+# Django
+staticfiles/
+media/
+
+# Node (if any)
+node_modules/
+package-lock.json
+
+# Vercel (already removed but just in case)
+vercel.json
+build.sh
