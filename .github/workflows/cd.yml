@@ -45,3 +45,4 @@ jobs:
               -e SECURE_SSL_REDIRECT="${{ secrets.SECURE_SSL_REDIRECT }}" \
               ${{ secrets.DOCKER_USERNAME }}/secondstrap:latest
             docker exec -t secondstrap-container python manage.py migrate
+            docker exec -t secondstrap-container python manage.py collectstatic --noinput
