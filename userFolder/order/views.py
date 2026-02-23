@@ -446,13 +446,7 @@ def cancel_order_view(request, order_id):
         cancel_order.save(update_fields=[
             'refund_amount', 'is_full_cancel', 'cancel_status'
         ])
-
-        # Update main order
-        order.order_status = (
-            'cancelled' if cancel_order.is_full_cancel else 'partially_cancelled'
-        )
-        order.save(update_fields=['order_status'])
-
+        
         # Wallet refund
         if total_refund > 0:
             wallet, _ = Wallet.objects.get_or_create(user=order.user)
